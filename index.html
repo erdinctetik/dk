@@ -1,0 +1,1385 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>2026 Dünya Kupası Tahmin Aracı</title>
+    
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#8b0000">
+
+    <style>
+        :root {
+            --primary: #8b0000;
+            --secondary: #1e3a8a;
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-main: #111827;
+            --text-muted: #6b7280;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --border-color: #e5e7eb;
+        }
+        body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: var(--bg-color); color: var(--text-main); margin: 0; padding: 0; transition: border 0.3s; -webkit-tap-highlight-color: transparent;}
+        
+        #adminBanner { display: none; background: #ef4444; color: white; width: 100%; text-align: center; padding: 12px; font-weight: bold; font-size: 15px; position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
+        #adminBanner button { margin-left: 15px; background-color: #ffffff; color: #ef4444; border: none; padding: 6px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: 0.2s;}
+        #adminBanner button:hover { background-color: #f8fafc; }
+        .btn-admin-settings { background-color: #fbbf24 !important; color: #000 !important; }
+        
+        header { background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; padding: 30px 20px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        h1 { margin: 0; font-weight: 900; letter-spacing: 1px; text-transform: uppercase; font-size: 22px;}
+        .subtitle { font-size: 13px; opacity: 0.8; margin-top: 5px; }
+        
+        .layout { display: flex; max-width: 1300px; margin: 30px auto; padding: 0 20px; gap: 25px; align-items: flex-start; }
+        
+        .sidebar { width: 350px; background: var(--card-bg); border-radius: 12px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); flex-shrink: 0; position: sticky; top: 30px; max-height: calc(100vh - 60px); overflow-y: auto; }
+        .sidebar select { width: 100%; padding: 10px; border-radius: 8px; border: 2px solid var(--border-color); font-size: 16px; font-weight: bold; color: var(--secondary); margin-bottom: 20px; outline: none; cursor: pointer; }
+        .standings-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 25px; }
+        .standings-table th, .standings-table td { padding: 8px 5px; text-align: center; border-bottom: 1px solid var(--border-color); }
+        .standings-table th { color: var(--text-muted); font-weight: bold; }
+        .standings-table td.team-name { text-align: left; font-weight: bold; }
+        .group-matches-list { font-size: 13px; }
+        .g-match-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed var(--border-color); }
+        .g-match-item:last-child { border-bottom: none; }
+        .g-score { font-weight: bold; color: var(--primary); background: #fee2e2; padding: 2px 6px; border-radius: 4px;}
+        
+        .main-content { flex: 1; }
+        .top-controls { background: var(--card-bg); padding: 15px 20px; border-radius: 12px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .user-view-select { padding: 10px; border-radius: 8px; border: 2px solid var(--border-color); font-weight: bold; outline: none; background-color: #f8fafc; width: 100%;}
+        .controls-buttons { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; width: 100%; justify-content: space-between;}
+        
+        .btn-gold { background: linear-gradient(45deg, #ffd700, #ff8c00); color: #000; padding: 10px 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.1); flex:1; text-align:center;}
+        .btn-blue { background: linear-gradient(45deg, #2563eb, #1d4ed8); color: white; padding: 10px 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.1); flex:1; text-align:center;}
+        .btn-purple { background: linear-gradient(45deg, #9333ea, #6b21a8); color: white; padding: 10px 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.1); flex:1; text-align:center;}
+        .btn-admin { background-color: #10b981; color: white; padding: 10px 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        
+        .save-btn { background: var(--success); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; display: none; padding: 10px 15px; flex:1;}
+        .delete-btn { background: #dc2626; color: white; padding: 10px 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; display: none; flex:1;}
+        
+        .user-input { padding: 10px; border: 2px solid var(--border-color); border-radius: 8px; width: 100%; box-sizing: border-box; font-size: 14px; outline:none;}
+        
+        .tabs { display: flex; gap: 8px; margin-bottom: 25px; flex-wrap: wrap; justify-content: center;}
+        .tab-btn { background: var(--card-bg); border: 2px solid var(--border-color); padding: 8px 12px; border-radius: 8px; font-weight: bold; font-size: 13px; color: var(--text-muted); cursor: pointer; flex: 1 1 calc(25% - 8px); text-align: center;}
+        .tab-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+        
+        .match-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; }
+        .match-card { background: var(--card-bg); border-radius: 12px; padding: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border-top: 4px solid var(--secondary); display: flex; flex-direction: column; gap: 12px; position: relative; }
+        .match-header { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); font-weight: bold; border-bottom: 1px solid var(--border-color); padding-bottom: 6px; }
+        .match-teams { display: flex; align-items: center; justify-content: space-between; gap: 5px; }
+        .team { flex: 1; text-align: center; font-weight: bold; font-size: 13px; line-height: 1.2; }
+        .team.home { text-align: right; }
+        .team.away { text-align: left; }
+        .score-inputs { display: flex; align-items: center; gap: 5px; }
+        .score-inputs input { width: 40px; height: 40px; text-align: center; font-size: 18px; font-weight: bold; border: 2px solid var(--border-color); border-radius: 6px; background: #f9fafb; color: var(--primary); outline: none; -moz-appearance: textfield;}
+        .score-inputs input::-webkit-outer-spin-button, .score-inputs input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        .score-inputs input:disabled { background: var(--border-color); color: #4b5563; cursor: not-allowed; border: none;}
+        .vs { font-weight: bold; color: #d1d5db; font-size: 12px; }
+        
+        .result-tag { background: #f8fafc; padding: 8px; border-radius: 6px; font-size: 12px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; margin-top: 5px; border: 1px solid #e2e8f0; }
+        .pts-5 { color: #059669; background: #d1fae5; padding: 3px 8px; border-radius: 4px; }
+        .pts-3 { color: #d97706; background: #fef3c7; padding: 3px 8px; border-radius: 4px; }
+        .pts-0 { color: #dc2626; background: #fee2e2; padding: 3px 8px; border-radius: 4px; }
+        
+        .action-bar { background: #f8fafc; padding: 15px; border-radius: 12px; margin-top: 25px; display: flex; flex-direction: column; gap: 15px; border: 2px solid var(--border-color); display: none;}
+        .champion-selector { display: flex; align-items: center; gap: 10px; background: #fffbeb; padding: 12px; border-radius: 8px; border: 1px solid #fde68a; width: 100%; box-sizing: border-box; }
+        .champion-selector select { padding: 8px; border-radius: 6px; border: 1px solid #fbbf24; font-weight: bold; outline: none; flex: 1; font-size: 14px; width: 100%; }
+        .save-row { display: flex; flex-direction: column; gap: 10px; width: 100%; }
+        #viewedUserChampionBox { background: #fffbeb; padding: 20px; border-radius: 12px; border: 2px solid #fde68a; text-align: center; font-weight: bold; color: #b45309; margin-top: 25px; display: none; }
+        .locked-notice { text-align: center; color: #ef4444; font-weight: bold; margin-bottom: 20px; display: none; background: #fef2f2; padding: 10px; border-radius: 8px; font-size: 14px; }
+        
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 9999; }
+        .custom-modal { background: #ffffff; color: #000; padding: 25px; border-radius: 12px; width: 90%; max-width: 500px; position: relative; max-height: 90vh; overflow-y: auto;}
+        .close-btn { position: absolute; top: 10px; right: 15px; font-size: 28px; cursor: pointer; color: #94a3b8; font-weight: bold; z-index: 10;}
+        
+        .leaderboard-list { list-style: none; padding: 0; margin: 20px 0; text-align: left;}
+        .leaderboard-list li { padding: 12px; border-bottom: 1px solid #e2e8f0; font-size: 16px; display: flex; justify-content: space-between; }
+        .leaderboard-list li:nth-child(1) { font-weight: bold; background: #fffbeb; color: #b45309; border-radius: 8px;}
+        .leaderboard-list li:nth-child(2) { font-weight: bold; background: #f8fafc; color: #475569; border-radius: 8px;}
+        .leaderboard-list li:nth-child(3) { font-weight: bold; background: #fffedd; color: #92400e; border-radius: 8px;}
+        
+        .admin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        .admin-setting-row { display: flex; justify-content: space-between; align-items: center; padding: 8px; background: #f8fafc; border-radius: 6px; border: 1px solid #e2e8f0; }
+        .admin-setting-row label { font-weight: bold; color: #334155; font-size: 12px;}
+        .admin-setting-row select { padding: 4px; border-radius: 6px; border: 1px solid #cbd5e1; outline: none; font-weight: bold; font-size: 12px;}
+
+        /* Eşleşmeler & Hızlı Tahmin CSS (Güncellenmiş Kompakt Hali) */
+/* Eşleşmeler CSS */
+    .bracket-container { display: flex; gap: 30px; overflow-x: auto; padding: 15px; background: transparent; height: 75vh; align-items: stretch; }
+        .bracket-column { display: flex; flex-direction: column; min-width: 200px; }
+        .bracket-round-title { text-align: center; color: var(--secondary); font-weight: 900; text-transform: uppercase; letter-spacing: 1px; font-size: 14px; height: 35px; border-bottom: 3px solid #cbd5e1; margin-bottom: 15px; }
+        .bracket-matches-wrapper { display: flex; flex-direction: column; justify-content: space-around; flex: 1; gap: 15px; }
+        .bracket-match { background: #ffffff; border: 1px solid #cbd5e1; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); display: flex; flex-direction: column; transition: transform 0.2s; }
+        .bracket-match:hover { transform: scale(1.02); box-shadow: 0 6px 15px rgba(0,0,0,0.1); }
+        .bracket-team { display: flex; justify-content: space-between; padding: 10px 12px; border-bottom: 1px solid #f1f5f9; font-size: 13px; color: #475569; font-weight: bold; align-items: center; }
+        .bracket-team:last-child { border-bottom: none; }
+        .bracket-team.winner { color: #111827; background: #f0fdf4; border-left: 5px solid var(--success); }
+        .bracket-score { background: #e2e8f0; color: #475569; padding: 3px 8px; border-radius: 6px; min-width: 20px; text-align: center; font-size: 13px;}
+        .bracket-team.winner .bracket-score { background: var(--success); color: white; }
+
+.fast-team-row { display: flex; align-items: center; justify-content: space-between; padding: 3px; border-bottom: 1px solid #f1f5f9; gap: 3px; }
+.fast-team-row select { width: 150px; font-size: 11px; padding: 2px; border-radius: 4px; border: 1px solid #cbd5e1; outline:none; font-weight:bold;}
+.fast-team-row .fast-slot { width: 100px; font-size: 11px; font-weight: bold; color: #1e3a8a; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 2px 0;}
+.fast-btn-adv { background: #10b981; color: white; border: none; border-radius: 4px; padding: 3px 6px; cursor: pointer; font-size: 10px; font-weight: bold;}
+.fast-btn-adv:hover { background: #059669; }
+
+        @media (max-width: 900px) { 
+            .layout { flex-direction: column; padding: 10px; margin: 10px auto;} 
+            .sidebar { width: 100%; position: static; max-height: none; padding: 15px; box-sizing: border-box;} 
+            .controls-buttons { justify-content: stretch; }
+        }
+/* Tahminleri Gör Butonu */
+.prediction-expand-btn {
+    cursor: pointer;
+    background: #f1f5f9;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    padding: 4px 8px;
+    font-size: 11px;
+    font-weight: bold;
+    color: #64748b;
+    text-align: center;
+    margin-top: 8px;
+    transition: all 0.2s;
+}
+.prediction-expand-btn:hover { background: #e2e8f0; color: #1e293b; }
+
+/* Gizli Liste Alanı */
+.predictions-collapsible {
+    display: none; /* Başlangıçta gizli */
+    max-height: 200px;
+    overflow-y: auto;
+    margin-top: 5px;
+}
+    </style>
+
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
+</head>
+<body>
+
+    <div id="adminBanner">
+        YÖNETİCİ MODU AKTİF
+        <button class="btn-admin-settings" onclick="openAdminSettings()">Ayarlar</button>
+        <button onclick="exitAdminMode()">Çıkış</button>
+    </div>
+
+    <header>
+        <h1>🏆 Dünya Kupası 2026</h1>
+        <div class="subtitle">Skor: 5P | Maç Sonucu: 3P | Şampiyon: +15P</div>
+    </header>
+
+    <div class="layout">
+        
+        
+<div class="sidebar">
+    <select id="groupSelect" onchange="renderGroupPanel()"></select>
+    <select id="teamSelect" onchange="filterByTeam()"></select>
+
+            <table class="standings-table">
+                <thead><tr><th style="text-align:left;">Takım</th><th>O</th><th>AV</th><th>P</th></tr></thead>
+                <tbody id="standingsBody"></tbody>
+            </table>
+            <h4 style="margin-bottom: 10px; color: var(--secondary); font-size: 14px; border-bottom: 2px solid #e5e7eb; padding-bottom: 5px;" id="groupMatchTitle">Grup Maçları</h4>
+            <div class="group-matches-list" id="groupMatchesList"></div>
+
+            <div id="viewedUserChampionBox"></div>
+
+            <div class="action-bar" id="actionBar">
+                <div class="champion-selector">
+                    <span style="font-size: 24px;">🏆</span>
+                    <div style="flex:1;">
+                        <div style="font-size: 12px; color: #b45309; font-weight: bold; margin-bottom: 4px;">Şampiyon Kim Olur? (+15P)</div>
+                        <select id="userChampionSelect">
+                            <option value="">-- Favori Takımını Seç --</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="save-row">
+                    <input type="text" id="username" class="user-input" placeholder="İsminizi girin...">
+                    <input type="password" id="userPassword" class="user-input" placeholder="Kendinize bir şifre oluşturun...">
+                </div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="top-controls">
+                <select id="viewUserSelect" class="user-view-select" onchange="loadUserPredictions()">
+                    <option value="ALL">🌍 -- Tüm Tahminleri Gör --</option>
+                    <option value="NEW">➕ Yeni Tahmin Ekle</option>
+                </select>
+                
+                <div class="controls-buttons">
+                    <button class="save-btn" id="mainSaveBtn" onclick="savePredictions()">💾 Kaydet</button>
+                    <button class="delete-btn" id="deleteUserBtn" onclick="deleteUser()">🗑️ Sil</button>
+                    
+                    <button class="btn-blue" onclick="showBracket()">Eşleşmeler</button>
+                    <button class="btn-gold" onclick="showLeaderboard()">Tablo 🏆</button>
+                    <button class="btn-admin" onclick="showAdminLogin()">Admin</button>
+                </div>
+            </div>
+
+            <div class="tabs" id="dayTabs"></div>
+            <div class="locked-notice" id="lockedNotice">Bu maç günü için tahmin alımları kapatılmıştır. Sadece görüntüleyebilirsiniz.</div>
+            <div class="match-grid" id="matchesGrid"></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="fastModeOverlay">
+        <div class="custom-modal" style="max-width: 98%; width: 1600px; height: 95vh; display:flex; flex-direction:column; padding: 20px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 2px solid #e5e7eb; padding-bottom: 10px; margin-bottom: 10px;">
+               <h2 style="margin:0; color: #6b21a8;">⚡ Hızlı Turnuva Ağacı Tahmini</h2>
+               <div style="display: flex; gap: 10px;">
+                  <button class="btn-admin" onclick="saveFastMode()">💾 Ağacı Kaydet</button>
+                  <button class="btn-admin" style="background:#dc2626;" onclick="document.getElementById('fastModeOverlay').style.display='none'">Kapat</button>
+               </div>
+            </div>
+            <p style="font-size: 13px; color: #475569; margin-top: 0;"><b>Nasıl Oynanır?</b> Skor girmene gerek yok! Önce <b>Son 32</b> sütunundan gruplardan çıkacak 32 takımı seç. Ardından takımların yanındaki <b>İLERLET</b> butonlarına basarak turnuva ağacını finale kadar doldur. Şampiyonu belirle ve kaydet.</p>
+            <div id="fastBracketContent" style="flex:1; overflow: auto; background:#f8fafc; border:2px solid #e5e7eb; border-radius:12px; padding:15px;">
+               </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="leaderboardOverlay">
+        <div class="custom-modal" style="text-align: center;">
+            <span class="close-btn" onclick="document.getElementById('leaderboardOverlay').style.display='none'">&times;</span>
+            <h2 style="margin-top:0;">🏆 Puan Tablosu</h2>
+            <ul class="leaderboard-list" id="leaderboardList"></ul>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="adminLoginOverlay">
+        <div class="custom-modal" style="text-align: center; max-width: 300px;">
+            <span class="close-btn" onclick="document.getElementById('adminLoginOverlay').style.display='none'">&times;</span>
+            <h2 style="margin-top:0; color: var(--secondary);">Yönetici</h2>
+            <input type="password" id="adminPassInput" placeholder="Şifre" style="padding: 10px; width: 80%; border-radius: 6px; border: 2px solid #cbd5e1; margin-bottom: 15px; text-align: center; font-size: 18px;">
+            <br>
+            <button class="btn-admin" style="width: 85%;" onclick="enterAdminMode()">Giriş Yap</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="userLoginOverlay">
+        <div class="custom-modal" style="text-align: center; max-width: 300px;">
+            <span class="close-btn" onclick="cancelUserLogin()">&times;</span>
+            <h2 style="margin-top:0; color: var(--secondary);">Giriş</h2>
+            <p id="loginUserNameText" style="font-weight:bold; color: #475569; margin-bottom: 15px;"></p>
+            <input type="password" id="userPassInput" placeholder="Şifrenizi Girin" style="padding: 10px; width: 80%; border-radius: 6px; border: 2px solid #cbd5e1; margin-bottom: 15px; text-align: center; font-size: 18px;">
+            <br>
+            <button class="btn-blue" style="width: 85%;" onclick="submitUserLogin()">Giriş Yap</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="bracketOverlay">
+        <div class="custom-modal" style="max-width: 95%; width: 1600px; background: #f8fafc; padding: 20px; border: 2px solid #e5e7eb;">
+            <span class="close-btn" onclick="document.getElementById('bracketOverlay').style.display='none'">&times;</span>
+            <h2 style="color: var(--secondary); margin-top: 0; text-align: center; border-bottom: 2px solid #cbd5e1; padding-bottom: 15px; font-size: 20px; font-weight: 900;">Gerçekleşen Eşleşmeler</h2>
+            <div id="bracketContent"></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="adminSettingsOverlay">
+        <div class="custom-modal">
+            <span class="close-btn" onclick="document.getElementById('adminSettingsOverlay').style.display='none'">&times;</span>
+            <h2 style="margin-top:0; color: var(--primary); border-bottom: 2px solid #e5e7eb; padding-bottom: 10px;">⚙️ Admin Ayarları</h2>
+            <div class="admin-grid">
+                <div class="admin-setting-row"><label>1. Maçlar</label><select id="setDay1"><option value="true">Açık</option><option value="false">Kapalı</option></select></div>
+                <div class="admin-setting-row"><label>2. Maçlar</label><select id="setDay2"><option value="true">Açık</option><option value="false">Kapalı</option></select></div>
+                <div class="admin-setting-row"><label>3. Maçlar</label><select id="setDay3"><option value="true">Açık</option><option value="false">Kapalı</option></select></div>
+                <div class="admin-setting-row"><label>Son 32</label><select id="setDay4"><option value="true">Açık</option><option value="false">Kapalı</option></select></div>
+                <div class="admin-setting-row"><label>Son 16</label><select id="setDay5"><option value="true">Açık</option><option value="false">Kapalı</option></select></div>
+                <div class="admin-setting-row"><label>Çeyrek F.</label><select id="setDay6"><option value="true">Açık</option><option value="false">Kapalı</option></select></div>
+                <div class="admin-setting-row"><label>Yarı F.</label><select id="setDay7"><option value="true">Açık</option><option value="false">Kapalı</option></select></div>
+                <div class="admin-setting-row"><label>Final</label><select id="setDay8"><option value="true">Açık</option><option value="false">Kapalı</option></select></div>
+            </div>
+            <div style="margin-top: 15px; background: #fffbeb; padding: 15px; border-radius: 8px; border: 1px solid #fde68a;">
+                <label style="font-weight: bold; color: #b45309; display: block; margin-bottom: 8px;">Gerçek Turnuva Şampiyonu</label>
+                <select id="realChampionSelect" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #fbbf24; outline: none;">
+                    <option value="">-- Henüz Belli Değil --</option>
+                </select>
+            </div>
+            <button class="btn-admin" style="width: 100%; margin-top: 20px;" onclick="saveAdminSettings()">Ayarları Kaydet</button>
+        </div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBSpEouY4KqlNqYSv84HSHKJCLUYtWE-LM",
+            authDomain: "worldcup26-d7417.firebaseapp.com",
+            projectId: "worldcup26-d7417",
+            storageBucket: "worldcup26-d7417.firebasestorage.app",
+            messagingSenderId: "57982379586",
+            appId: "1:57982379586:web:3ee81922ddd9abda14afdb"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        let matchdayStatus = { 1: true, 2: false, 3: false, 4: false, 5: false, 6: false, 7: false, 8: false };
+        let currentDay = 1;
+        let isAdminMode = false;
+        let currentViewingUser = "ALL"; 
+        let pendingLoginUser = "";
+        let currentAuthenticatedUser = "";
+
+        const groupsList = ["A Grubu", "B Grubu", "C Grubu", "D Grubu", "E Grubu", "F Grubu", "G Grubu", "H Grubu", "I Grubu", "J Grubu", "K Grubu", "L Grubu"];
+        let allTeamsList = [];
+        let nextMatchMap = {};
+
+        const matches = [
+            { id: "m1", day: 1, date: "11 Haz", group: "A Grubu", home: "Meksika", away: "Güney Afrika" },
+            { id: "m2", day: 1, date: "11 Haz", group: "A Grubu", home: "Güney Kore", away: "Çekya" },
+            { id: "m3", day: 1, date: "12 Haz", group: "B Grubu", home: "Kanada", away: "Bosna-Hersek" },
+            { id: "m4", day: 1, date: "12 Haz", group: "D Grubu", home: "ABD", away: "Paraguay" },
+            { id: "m5", day: 1, date: "13 Haz", group: "B Grubu", home: "Katar", away: "İsviçre" },
+            { id: "m6", day: 1, date: "13 Haz", group: "C Grubu", home: "Brezilya", away: "Fas" },
+            { id: "m7", day: 1, date: "13 Haz", group: "C Grubu", home: "Haiti", away: "İskoçya" },
+            { id: "m8", day: 1, date: "13 Haz", group: "D Grubu", home: "Türkiye", away: "Avustralya" },
+            { id: "m9", day: 1, date: "14 Haz", group: "E Grubu", home: "Almanya", away: "Curaçao" },
+            { id: "m10", day: 1, date: "14 Haz", group: "F Grubu", home: "Hollanda", away: "Japonya" },
+            { id: "m11", day: 1, date: "14 Haz", group: "E Grubu", home: "Fildişi Sahili", away: "Ekvador" },
+            { id: "m12", day: 1, date: "14 Haz", group: "F Grubu", home: "İsveç", away: "Tunus" },
+            { id: "m13", day: 1, date: "15 Haz", group: "H Grubu", home: "İspanya", away: "Yeşil Burun Adaları" },
+            { id: "m14", day: 1, date: "15 Haz", group: "G Grubu", home: "Belçika", away: "Mısır" },
+            { id: "m15", day: 1, date: "15 Haz", group: "H Grubu", home: "Suudi Arabistan", away: "Uruguay" },
+            { id: "m16", day: 1, date: "16 Haz", group: "G Grubu", home: "İran", away: "Yeni Zelanda" },
+            { id: "m17", day: 1, date: "16 Haz", group: "I Grubu", home: "Fransa", away: "Senegal" },
+            { id: "m18", day: 1, date: "16 Haz", group: "I Grubu", home: "Irak", away: "Norveç" },
+            { id: "m19", day: 1, date: "16 Haz", group: "J Grubu", home: "Arjantin", away: "Cezayir" },
+            { id: "m20", day: 1, date: "17 Haz", group: "J Grubu", home: "Avusturya", away: "Ürdün" },
+            { id: "m21", day: 1, date: "17 Haz", group: "K Grubu", home: "Portekiz", away: "Demokratik Kongo Cum." },
+            { id: "m22", day: 1, date: "17 Haz", group: "L Grubu", home: "İngiltere", away: "Hırvatistan" },
+            { id: "m23", day: 1, date: "18 Haz", group: "L Grubu", home: "Gana", away: "Panama" },
+            { id: "m24", day: 1, date: "18 Haz", group: "K Grubu", home: "Özbekistan", away: "Kolombiya" },
+            { id: "m25", day: 2, date: "18 Haz", group: "A Grubu", home: "Çekya", away: "Güney Afrika" },
+            { id: "m26", day: 2, date: "18 Haz", group: "B Grubu", home: "İsviçre", away: "Bosna-Hersek" },
+            { id: "m27", day: 2, date: "18 Haz", group: "B Grubu", home: "Kanada", away: "Katar" },
+            { id: "m28", day: 2, date: "18 Haz", group: "A Grubu", home: "Meksika", away: "Güney Kore" },
+            { id: "m29", day: 2, date: "19 Haz", group: "C Grubu", home: "Brezilya", away: "Haiti" },
+            { id: "m30", day: 2, date: "19 Haz", group: "C Grubu", home: "İskoçya", away: "Fas" },
+            { id: "m31", day: 2, date: "19 Haz", group: "D Grubu", home: "ABD", away: "Avustralya" },
+            { id: "m32", day: 2, date: "19 Haz", group: "D Grubu", home: "Türkiye", away: "Paraguay" },
+            { id: "m33", day: 2, date: "20 Haz", group: "F Grubu", home: "Hollanda", away: "İsveç" },
+            { id: "m34", day: 2, date: "20 Haz", group: "E Grubu", home: "Almanya", away: "Fildişi Sahili" },
+            { id: "m35", day: 2, date: "20 Haz", group: "E Grubu", home: "Ekvador", away: "Curaçao" },
+            { id: "m36", day: 2, date: "20 Haz", group: "F Grubu", home: "Tunus", away: "Japonya" },
+            { id: "m37", day: 2, date: "21 Haz", group: "H Grubu", home: "İspanya", away: "Suudi Arabistan" },
+            { id: "m38", day: 2, date: "21 Haz", group: "G Grubu", home: "Belçika", away: "İran" },
+            { id: "m39", day: 2, date: "21 Haz", group: "H Grubu", home: "Uruguay", away: "Yeşil Burun Adaları" },
+            { id: "m40", day: 2, date: "21 Haz", group: "G Grubu", home: "Yeni Zelanda", away: "Mısır" },
+            { id: "m41", day: 2, date: "22 Haz", group: "J Grubu", home: "Arjantin", away: "Avusturya" },
+            { id: "m42", day: 2, date: "22 Haz", group: "I Grubu", home: "Fransa", away: "Irak" },
+            { id: "m43", day: 2, date: "22 Haz", group: "I Grubu", home: "Norveç", away: "Senegal" },
+            { id: "m44", day: 2, date: "22 Haz", group: "J Grubu", home: "Ürdün", away: "Cezayir" },
+            { id: "m45", day: 2, date: "23 Haz", group: "K Grubu", home: "Portekiz", away: "Özbekistan" },
+            { id: "m46", day: 2, date: "23 Haz", group: "L Grubu", home: "İngiltere", away: "Gana" },
+            { id: "m47", day: 2, date: "23 Haz", group: "L Grubu", home: "Panama", away: "Hırvatistan" },
+            { id: "m48", day: 2, date: "23 Haz", group: "K Grubu", home: "Kolombiya", away: "Demokratik Kongo Cum." },
+            { id: "m49", day: 3, date: "24 Haz", group: "A Grubu", home: "Güney Afrika", away: "Güney Kore" },
+            { id: "m50", day: 3, date: "24 Haz", group: "A Grubu", home: "Çekya", away: "Meksika" },
+            { id: "m51", day: 3, date: "24 Haz", group: "B Grubu", home: "Bosna-Hersek", away: "Katar" },
+            { id: "m52", day: 3, date: "24 Haz", group: "B Grubu", home: "İsviçre", away: "Kanada" },
+            { id: "m53", day: 3, date: "24 Haz", group: "C Grubu", home: "Fas", away: "Haiti" },
+            { id: "m54", day: 3, date: "24 Haz", group: "C Grubu", home: "İskoçya", away: "Brezilya" },
+            { id: "m55", day: 3, date: "24 Haz", group: "D Grubu", home: "Avustralya", away: "Paraguay" },
+            { id: "m56", day: 3, date: "24 Haz", group: "D Grubu", home: "ABD", away: "Türkiye" },
+            { id: "m57", day: 3, date: "25 Haz", group: "E Grubu", home: "Ekvador", away: "Almanya" },
+            { id: "m58", day: 3, date: "25 Haz", group: "E Grubu", home: "Curaçao", away: "Fildişi Sahili" },
+            { id: "m59", day: 3, date: "25 Haz", group: "F Grubu", home: "Japonya", away: "İsveç" },
+            { id: "m60", day: 3, date: "25 Haz", group: "F Grubu", home: "Tunus", away: "Hollanda" },
+            { id: "m61", day: 3, date: "26 Haz", group: "G Grubu", home: "Mısır", away: "İran" },
+            { id: "m62", day: 3, date: "26 Haz", group: "G Grubu", home: "Yeni Zelanda", away: "Belçika" },
+            { id: "m63", day: 3, date: "26 Haz", group: "H Grubu", home: "Yeşil Burun Adaları", away: "Suudi Arabistan" },
+            { id: "m64", day: 3, date: "26 Haz", group: "H Grubu", home: "Uruguay", away: "İspanya" },
+            { id: "m65", day: 3, date: "26 Haz", group: "I Grubu", home: "Norveç", away: "Fransa" },
+            { id: "m66", day: 3, date: "26 Haz", group: "I Grubu", home: "Senegal", away: "Irak" },
+            { id: "m67", day: 3, date: "27 Haz", group: "J Grubu", home: "Cezayir", away: "Avusturya" },
+            { id: "m68", day: 3, date: "27 Haz", group: "J Grubu", home: "Ürdün", away: "Arjantin" },
+            { id: "m69", day: 3, date: "27 Haz", group: "K Grubu", home: "Kolombiya", away: "Portekiz" },
+            { id: "m70", day: 3, date: "27 Haz", group: "K Grubu", home: "Demokratik Kongo Cum.", away: "Özbekistan" },
+            { id: "m71", day: 3, date: "27 Haz", group: "L Grubu", home: "Panama", away: "İngiltere" },
+            { id: "m72", day: 3, date: "27 Haz", group: "L Grubu", home: "Hırvatistan", away: "Gana" },
+            { id: "m73", day: 4, date: "28 Haz", group: "M73 (Son 32)", home: "A Grubu 2.'si", away: "B Grubu 2.'si" },
+            { id: "m74", day: 4, date: "29 Haz", group: "M74 (Son 32)", home: "E Grubu 1.'si", away: "A/B/C/D/F En İyi 3.'sü" },
+            { id: "m75", day: 4, date: "29 Haz", group: "M75 (Son 32)", home: "F Grubu 1.'si", away: "C Grubu 2.'si" },
+            { id: "m76", day: 4, date: "29 Haz", group: "M76 (Son 32)", home: "C Grubu 1.'si", away: "F Grubu 2.'si" },
+            { id: "m77", day: 4, date: "30 Haz", group: "M77 (Son 32)", home: "I Grubu 1.'si", away: "C/D/F/G/H En İyi 3.'sü" },
+            { id: "m78", day: 4, date: "30 Haz", group: "M78 (Son 32)", home: "E Grubu 2.'si", away: "I Grubu 2.'si" },
+            { id: "m79", day: 4, date: "30 Haz", group: "M79 (Son 32)", home: "A Grubu 1.'si", away: "C/E/F/H/I En İyi 3.'sü" },
+            { id: "m80", day: 4, date: "1 Tem", group: "M80 (Son 32)", home: "L Grubu 1.'si", away: "E/H/I/J/K En İyi 3.'sü" },
+            { id: "m81", day: 4, date: "1 Tem", group: "M81 (Son 32)", home: "D Grubu 1.'si", away: "B/E/F/I/J En İyi 3.'sü" },
+            { id: "m82", day: 4, date: "1 Tem", group: "M82 (Son 32)", home: "G Grubu 1.'si", away: "A/E/H/I/J En İyi 3.'sü" },
+            { id: "m83", day: 4, date: "2 Tem", group: "M83 (Son 32)", home: "K Grubu 2.'si", away: "L Grubu 2.'si" },
+            { id: "m84", day: 4, date: "2 Tem", group: "M84 (Son 32)", home: "H Grubu 1.'si", away: "J Grubu 2.'si" },
+            { id: "m85", day: 4, date: "2 Tem", group: "M85 (Son 32)", home: "B Grubu 1.'si", away: "E/F/G/I/J En İyi 3.'sü" },
+            { id: "m86", day: 4, date: "3 Tem", group: "M86 (Son 32)", home: "J Grubu 1.'si", away: "H Grubu 2.'si" },
+            { id: "m87", day: 4, date: "3 Tem", group: "M87 (Son 32)", home: "K Grubu 1.'si", away: "D/E/I/J/L En İyi 3.'sü" },
+            { id: "m88", day: 4, date: "3 Tem", group: "M88 (Son 32)", home: "D Grubu 2.'si", away: "G Grubu 2.'si" },
+            { id: "m89", day: 5, date: "4-7 Tem", group: "M89 (Son 16)", home: "81. Maç Galibi", away: "82. Maç Galibi" },
+            { id: "m90", day: 5, date: "4-7 Tem", group: "M90 (Son 16)", home: "74. Maç Galibi", away: "77. Maç Galibi" },
+            { id: "m91", day: 5, date: "4-7 Tem", group: "M91 (Son 16)", home: "73. Maç Galibi", away: "75. Maç Galibi" },
+            { id: "m92", day: 5, date: "4-7 Tem", group: "M92 (Son 16)", home: "76. Maç Galibi", away: "78. Maç Galibi" },
+            { id: "m93", day: 5, date: "4-7 Tem", group: "M93 (Son 16)", home: "79. Maç Galibi", away: "80. Maç Galibi" },
+            { id: "m94", day: 5, date: "4-7 Tem", group: "M94 (Son 16)", home: "83. Maç Galibi", away: "84. Maç Galibi" },
+            { id: "m95", day: 5, date: "4-7 Tem", group: "M95 (Son 16)", home: "85. Maç Galibi", away: "86. Maç Galibi" },
+            { id: "m96", day: 5, date: "4-7 Tem", group: "M96 (Son 16)", home: "87. Maç Galibi", away: "88. Maç Galibi" },
+            { id: "m97", day: 6, date: "9-11 Tem", group: "M97 (Çeyrek F.)", home: "89. Maç Galibi", away: "90. Maç Galibi" },
+            { id: "m98", day: 6, date: "9-11 Tem", group: "M98 (Çeyrek F.)", home: "91. Maç Galibi", away: "92. Maç Galibi" },
+            { id: "m99", day: 6, date: "9-11 Tem", group: "M99 (Çeyrek F.)", home: "93. Maç Galibi", away: "94. Maç Galibi" },
+            { id: "m100", day: 6, date: "9-11 Tem", group: "M100 (Çeyrek F.)", home: "95. Maç Galibi", away: "96. Maç Galibi" },
+            { id: "m101", day: 7, date: "14 Tem", group: "M101 (Yarı F.)", home: "97. Maç Galibi", away: "98. Maç Galibi" },
+            { id: "m102", day: 7, date: "15 Tem", group: "M102 (Yarı F.)", home: "99. Maç Galibi", away: "100. Maç Galibi" },
+            { id: "m103", day: 8, date: "18 Tem", group: "Üçüncülük Maçı", home: "Yarı F. Kaybeden 1", away: "Yarı F. Kaybeden 2" },
+            { id: "m104", day: 8, date: "19 Tem", group: "BÜYÜK FİNAL", home: "101. Maç Galibi", away: "102. Maç Galibi" }
+        ];
+
+        let savedUsers = {};
+        let realResults = {};
+
+        function init() {
+            extractTeams();
+            initSelects();
+            buildNextMatchMap();
+            initFirebaseListeners();
+            renderTabs();
+        }
+
+        function extractTeams() {
+            let tSet = new Set();
+            matches.filter(m => m.day <= 3).forEach(m => { tSet.add(m.home); tSet.add(m.away); });
+            allTeamsList = Array.from(tSet).sort();
+        }
+
+        function initSelects() {
+            const grpSel = document.getElementById('groupSelect');
+            groupsList.forEach(g => { let opt = document.createElement('option'); opt.value = g; opt.innerText = g; if(g === "D Grubu") opt.selected = true; grpSel.appendChild(opt); });
+            
+            let optBest3 = document.createElement('option');
+            optBest3.value = "En İyi 3.ler";
+            optBest3.innerText = "⭐ En İyi 3.'ler Sıralaması";
+            optBest3.style.fontWeight = "bold";
+            optBest3.style.color = "#8b0000";
+            grpSel.appendChild(optBest3);
+
+            const usrChamp = document.getElementById('userChampionSelect');
+            const admChamp = document.getElementById('realChampionSelect');
+            allTeamsList.forEach(t => { 
+                usrChamp.innerHTML += `<option value="${t}">${t}</option>`;
+                admChamp.innerHTML += `<option value="${t}">${t}</option>`;
+            });
+// Takım filtresini doldur
+const teamSel = document.getElementById('teamSelect');
+allTeamsList.forEach(t => {
+    let opt = document.createElement('option');
+    opt.value = t;
+    opt.innerText = t;
+    teamSel.appendChild(opt);
+teamSel.value = "Türkiye";
+});        
+}
+function filterByTeam() {
+    const teamSel = document.getElementById('teamSelect');
+    const selectedTeam = teamSel.value;
+    if (!selectedTeam) return;
+
+    // Seçilen takımın grubunu bul
+    const teamMatch = matches.find(m => 
+        (m.day <= 3) && (m.home === selectedTeam || m.away === selectedTeam)
+    );
+    if (teamMatch) {
+        document.getElementById('groupSelect').value = teamMatch.group;
+        renderGroupPanel();
+    }
+}
+        // --- HIZLI AĞAÇ İÇİN MAÇ BAĞLANTILARI HARİTASI ---
+        function getDepId(str) {
+            if(str && str.includes("Galibi")) return "m" + str.split(".")[0];
+            return null;
+        }
+
+        function buildNextMatchMap() {
+            matches.forEach(m => {
+                let hDep = getDepId(m.home);
+                if(hDep) { if(!nextMatchMap[hDep]) nextMatchMap[hDep] = []; nextMatchMap[hDep].push({id: m.id, slot: 'h'}); }
+                let aDep = getDepId(m.away);
+                if(aDep) { if(!nextMatchMap[aDep]) nextMatchMap[aDep] = []; nextMatchMap[aDep].push({id: m.id, slot: 'a'}); }
+            });
+            nextMatchMap['m104'] = [{id: 'champ', slot: 'h'}];
+        }
+// YENİ: Sadece kurala uyan (olasılığı olan) takımları getiren fonksiyon
+        function getAllowedTeams(desc) {
+            let allowedGroups = [];
+            if (desc.includes("/")) {
+                // Örn: "A/B/C/D/F En İyi 3.'sü" metnini parçalar -> ["A", "B", "C", "D", "F"]
+                let parts = desc.split(" ")[0].split("/");
+                allowedGroups = parts.map(p => p + " Grubu");
+            } else {
+                // Örn: "A Grubu 2.'si" metnini parçalar -> ["A"]
+                let groupLetter = desc.split(" ")[0];
+                allowedGroups = [groupLetter + " Grubu"];
+            }
+
+            let teams = new Set();
+            // İzin verilen gruplardaki takımları topla
+            matches.filter(m => m.day <= 3 && allowedGroups.includes(m.group)).forEach(m => {
+                teams.add(m.home);
+                teams.add(m.away);
+            });
+            return Array.from(teams).sort();
+        }
+        // --- GERÇEKLEŞEN HIZLI AĞAÇ VERİLERİNİ ÇIKARMA ---
+        function getRealTeamInSlot(matchId, side) {
+            let m = matches.find(x => x.id === matchId);
+            if(!m) return null;
+            let depName = side === 'h' ? m.home : m.away;
+            let depId = getDepId(depName);
+            if(!depId) {
+                let dynamicNames = getDynamicBracketNames();
+                return dynamicNames[depName] || null;
+            } else {
+                if(!realResults[depId]) return null;
+                let rh = realResults[depId].home, ra = realResults[depId].away;
+                if(rh > ra) return getRealTeamInSlot(depId, 'h');
+                if(ra > rh) return getRealTeamInSlot(depId, 'a');
+                return null;
+            }
+        }
+
+        function extractRealFastData() {
+            let real = { r32: [], r16: [], r8: [], r4: [], r2: [], champ: "" };
+            for(let i=73; i<=88; i++) {
+                let h = getRealTeamInSlot("m"+i, 'h'); if(h) real.r32.push(h);
+                let a = getRealTeamInSlot("m"+i, 'a'); if(a) real.r32.push(a);
+            }
+            for(let i=89; i<=96; i++) {
+                let h = getRealTeamInSlot("m"+i, 'h'); if(h) real.r16.push(h);
+                let a = getRealTeamInSlot("m"+i, 'a'); if(a) real.r16.push(a);
+            }
+            for(let i=97; i<=100; i++) {
+                let h = getRealTeamInSlot("m"+i, 'h'); if(h) real.r8.push(h);
+                let a = getRealTeamInSlot("m"+i, 'a'); if(a) real.r8.push(a);
+            }
+            for(let i=101; i<=102; i++) {
+                let h = getRealTeamInSlot("m"+i, 'h'); if(h) real.r4.push(h);
+                let a = getRealTeamInSlot("m"+i, 'a'); if(a) real.r4.push(a);
+            }
+            let fH = getRealTeamInSlot("m104", 'h'); if(fH) real.r2.push(fH);
+            let fA = getRealTeamInSlot("m104", 'a'); if(fA) real.r2.push(fA);
+
+            if(realResults['m104']) {
+                let rh = realResults['m104'].home, ra = realResults['m104'].away;
+                if(rh > ra) real.champ = fH;
+                if(ra > rh) real.champ = fA;
+            }
+            return real;
+        }
+
+        function calculateFastPoints(userFast, realFast) {
+            if(!userFast) return 0;
+            let pts = 0;
+            userFast.r32.forEach(t => { if(realFast.r32.includes(t)) pts += 2; });
+            userFast.r16.forEach(t => { if(realFast.r16.includes(t)) pts += 3; });
+            userFast.r8.forEach(t => { if(realFast.r8.includes(t)) pts += 4; });
+            userFast.r4.forEach(t => { if(realFast.r4.includes(t)) pts += 5; });
+            userFast.r2.forEach(t => { if(realFast.r2.includes(t)) pts += 6; });
+            if(userFast.champ && userFast.champ === realFast.champ) pts += 8;
+            return pts;
+        }
+        // ------------------------------------------------
+
+        function initFirebaseListeners() {
+            db.collection("appData").doc("admin").onSnapshot((doc) => {
+                if (doc.exists) {
+                    let data = doc.data();
+                    realResults = data.realResults || {};
+                    matchdayStatus = data.matchdayStatus || matchdayStatus;
+                }
+                renderMatches(currentDay);
+                renderGroupPanel();
+                renderTabs(); 
+            });
+
+            db.collection("users").onSnapshot((snapshot) => {
+                savedUsers = {};
+                snapshot.forEach((doc) => {
+                    savedUsers[doc.id] = doc.data(); 
+                });
+                initUserSelect();
+                if(currentViewingUser && savedUsers[currentViewingUser]) {
+                    loadUserPredictions(true); 
+                } else if(currentViewingUser === "ALL") {
+                    renderMatches(currentDay);
+                }
+            });
+        }
+
+        function initUserSelect() {
+            const select = document.getElementById('viewUserSelect');
+            let currentVal = select.value; 
+            select.innerHTML = '<option value="ALL">🌍 -- Tüm Tahminleri Gör --</option>';
+            select.innerHTML += '<option value="NEW">➕ Yeni Tahmin Ekle</option>';
+            for(let u in savedUsers) select.innerHTML += `<option value="${u}">👤 ${u} Tahminleri</option>`;
+            if (currentVal && (savedUsers[currentVal] || currentVal === "ALL" || currentVal === "NEW")) {
+                select.value = currentVal;
+            }
+        }
+
+        function renderGroupPanel() {
+            const groupName = document.getElementById('groupSelect').value;
+            const matchListEl = document.getElementById('groupMatchesList'); matchListEl.innerHTML = "";
+            const tbody = document.getElementById('standingsBody'); tbody.innerHTML = "";
+            const gTitle = document.getElementById('groupMatchTitle');
+
+            if (groupName === "En İyi 3.ler") {
+                gTitle.innerText = "En İyi 3.ler Sıralaması";
+                let allThirds = [];
+                groupsList.forEach(g => {
+                    let gMatches = matches.filter(m => m.group === g);
+                    let tData = {};
+                    gMatches.forEach(m => {
+                        if(!tData[m.home]) tData[m.home] = { name: m.home, p:0, w:0, d:0, l:0, gf:0, ga:0, gd:0, played:0, group: g };
+                        if(!tData[m.away]) tData[m.away] = { name: m.away, p:0, w:0, d:0, l:0, gf:0, ga:0, gd:0, played:0, group: g };
+                    });
+                    gMatches.forEach(m => {
+                        if(realResults[m.id]) {
+                            const rh = realResults[m.id].home, ra = realResults[m.id].away;
+                            tData[m.home].played++; tData[m.away].played++;
+                            tData[m.home].gf+=rh; tData[m.away].gf+=ra;
+                            tData[m.home].ga+=ra; tData[m.away].ga+=rh;
+                            if(rh>ra){tData[m.home].w++; tData[m.home].p+=3; tData[m.away].l++;}
+                            else if(rh<ra){tData[m.away].w++; tData[m.away].p+=3; tData[m.home].l++;}
+                            else{tData[m.home].d++; tData[m.away].d++; tData[m.home].p+=1; tData[m.away].p+=1;}
+                        }
+                    });
+                    let st = Object.values(tData);
+                    st.forEach(t => t.gd = t.gf - t.ga);
+                    st.sort((a,b) => b.p - a.p || b.gd - a.gd || b.gf - a.gf);
+                    if(st.length >= 3) allThirds.push(st[2]);
+                });
+                allThirds.sort((a,b) => b.p - a.p || b.gd - a.gd || b.gf - a.gf);
+                
+                allThirds.forEach((t, i) => { 
+                    let bg = i < 8 ? "background:#d1fae5;" : "background:#fee2e2;";
+                    tbody.innerHTML += `<tr style="${bg}"><td class="team-name">${i+1}. ${t.name} <span style="font-size:10px;color:#64748b;">(${t.group.charAt(0)})</span></td><td>${t.played}</td><td>${t.gd > 0 ? '+'+t.gd : t.gd}</td><td><b>${t.p}</b></td></tr>`; 
+                });
+                matchListEl.innerHTML = `<div style="padding:10px; text-align:center; color:#64748b; font-size:12px; background:#f8fafc; border-radius:8px;">En iyi 8 takım bir üst tura çıkar. Yeşil renkliler tur atlayanlardır.</div>`;
+                return;
+            }
+
+            gTitle.innerText = "Grup Maçları";
+            const groupMatches = matches.filter(m => m.group === groupName);
+            let teamsData = {};
+            
+            groupMatches.forEach(m => {
+                if(!teamsData[m.home]) teamsData[m.home] = { name: m.home, p:0, w:0, d:0, l:0, gf:0, ga:0, gd:0, played:0 };
+                if(!teamsData[m.away]) teamsData[m.away] = { name: m.away, p:0, w:0, d:0, l:0, gf:0, ga:0, gd:0, played:0 };
+            });
+
+            groupMatches.forEach(m => {
+                let resStr = "v";
+                if(realResults[m.id]) {
+                    const rh = realResults[m.id].home; const ra = realResults[m.id].away;
+                    resStr = `<span class="g-score">${rh} - ${ra}</span>`;
+                    teamsData[m.home].played++; teamsData[m.away].played++;
+                    teamsData[m.home].gf += rh; teamsData[m.away].gf += ra;
+                    teamsData[m.home].ga += ra; teamsData[m.away].ga += rh;
+                    if(rh > ra) { teamsData[m.home].w++; teamsData[m.home].p+=3; teamsData[m.away].l++; }
+                    else if(rh < ra) { teamsData[m.away].w++; teamsData[m.away].p+=3; teamsData[m.home].l++; }
+                    else { teamsData[m.home].d++; teamsData[m.away].d++; teamsData[m.home].p+=1; teamsData[m.away].p+=1; }
+                }
+                matchListEl.innerHTML += `<div class="g-match-item"><span>${m.home} ${resStr} ${m.away}</span><span style="color:#9ca3af; font-size:11px;">M${m.day}</span></div>`;
+            });
+
+            let standingsArray = Object.values(teamsData);
+            standingsArray.forEach(t => t.gd = t.gf - t.ga);
+            standingsArray.sort((a,b) => { if(b.p !== a.p) return b.p - a.p; if(b.gd !== a.gd) return b.gd - a.gd; return b.gf - a.gf; });
+
+            standingsArray.forEach((t, i) => { 
+                let bgClass = (i===0 || i===1) ? 'style="background:#f0fdf4;"' : '';
+                tbody.innerHTML += `<tr ${bgClass}><td class="team-name">${i+1}. ${t.name}</td><td>${t.played}</td><td>${t.gd > 0 ? '+'+t.gd : t.gd}</td><td><b>${t.p}</b></td></tr>`; 
+            });
+        }
+
+        function getDynamicBracketNames() {
+            let map = {};
+            groupsList.forEach(g => {
+                let gMatches = matches.filter(m => m.group === g);
+                let tData = {};
+                gMatches.forEach(m => {
+                    if(!tData[m.home]) tData[m.home] = { name: m.home, p:0, gd:0, gf:0 };
+                    if(!tData[m.away]) tData[m.away] = { name: m.away, p:0, gd:0, gf:0 };
+                });
+                gMatches.forEach(m => {
+                    if(realResults[m.id]) {
+                        const rh = realResults[m.id].home, ra = realResults[m.id].away;
+                        tData[m.home].gf+=rh; tData[m.away].gf+=ra;
+                        tData[m.home].gd+=(rh-ra); tData[m.away].gd+=(ra-rh);
+                        if(rh>ra) tData[m.home].p+=3; else if(rh<ra) tData[m.away].p+=3; else { tData[m.home].p+=1; tData[m.away].p+=1; }
+                    }
+                });
+                let st = Object.values(tData);
+                st.sort((a,b) => b.p - a.p || b.gd - a.gd || b.gf - a.gf);
+                
+                let gLetter = g.charAt(0);
+                if(st.length > 0 && st[0].p > 0) map[`${gLetter} Grubu 1.'si`] = st[0].name;
+                if(st.length > 1 && st[1].p > 0) map[`${gLetter} Grubu 2.'si`] = st[1].name;
+            });
+            return map;
+        }
+
+        function loadUserPredictions(skipAuth = false) {
+            const select = document.getElementById('viewUserSelect');
+            const viewMode = select.value;
+            const actionBar = document.getElementById('actionBar');
+            const champBox = document.getElementById('viewedUserChampionBox');
+            const lockedNotice = document.getElementById('lockedNotice');
+            const mainSaveBtn = document.getElementById('mainSaveBtn');
+            const deleteUserBtn = document.getElementById('deleteUserBtn');
+
+            if (viewMode === "ALL") {
+                currentViewingUser = "ALL";
+                actionBar.style.display = "none";
+                champBox.style.display = "none";
+                lockedNotice.style.display = "none";
+                mainSaveBtn.style.display = isAdminMode ? "block" : "none";
+                if(deleteUserBtn) deleteUserBtn.style.display = "none"; 
+                renderMatches(currentDay);
+            } else if (viewMode === "NEW") {
+                currentViewingUser = "NEW";
+document.getElementById('username').value = ''; 
+                document.getElementById('userPassword').value = '';
+                document.getElementById('userChampionSelect').value = '';
+                actionBar.style.display = "flex";
+                champBox.style.display = "none";
+                lockedNotice.style.display = matchdayStatus[currentDay] ? "none" : "block";
+                mainSaveBtn.style.display = matchdayStatus[currentDay] ? "block" : "none";
+                if(deleteUserBtn) deleteUserBtn.style.display = "none"; 
+                renderMatches(currentDay);
+            } else {
+                if (!skipAuth && currentAuthenticatedUser !== viewMode && !isAdminMode) {
+                    document.getElementById('loginUserNameText').innerText = viewMode;
+                    document.getElementById('userPassInput').value = '';
+                    document.getElementById('userLoginOverlay').style.display = 'flex';
+                    pendingLoginUser = viewMode;
+                    return;
+                }
+                currentViewingUser = viewMode;
+                actionBar.style.display = "none";
+                lockedNotice.style.display = (currentAuthenticatedUser !== viewMode && !isAdminMode) ? "block" : (matchdayStatus[currentDay] ? "none" : "block");
+                mainSaveBtn.style.display = (currentAuthenticatedUser === viewMode || isAdminMode) && matchdayStatus[currentDay] ? "block" : "none";
+                if(deleteUserBtn) deleteUserBtn.style.display = isAdminMode ? "block" : "none";
+
+                if (savedUsers[viewMode]) {
+                    let totalPts = 0;
+                    for(let mId in savedUsers[viewMode]) {
+                        if(realResults[mId] && mId !== "password" && mId !== "champion" && mId !== "fastMode" && mId !== "fastTreeValues") {
+                            let p = savedUsers[viewMode][mId];
+                            let r = realResults[mId];
+                            totalPts += getMatchPoints(p.home, p.away, r.home, r.away);
+                        }
+                    }
+                    if(savedUsers[viewMode].champion && realResults.champion && savedUsers[viewMode].champion === realResults.champion) {
+                        totalPts += 15;
+                    }
+                    
+                    // HIZLI TAHMİN PUANLARINI EKLEME
+                    let realFast = extractRealFastData();
+                    let fastPts = calculateFastPoints(savedUsers[viewMode].fastMode, realFast);
+                    totalPts += fastPts;
+
+                    let champText = savedUsers[viewMode].champion ? savedUsers[viewMode].champion : "Seçilmedi";
+                    let fastInfo = savedUsers[viewMode].fastMode ? `<div style="font-size:12px; margin-top:5px; color:#1e3a8a;">⚡ Hızlı Tahmin Puanı: <b>+${fastPts}</b></div>` : `<div style="font-size:12px; margin-top:5px; color:#ef4444;"></div>`;
+
+                    champBox.innerHTML = `🏆 ${viewMode} Şampiyon Tahmini: <br><b style="font-size:18px;">${champText}</b><br><div style="margin-top:10px; font-size:14px; color:#059669; font-weight:900; background:#d1fae5; padding:5px; border-radius:6px; display:inline-block;">⭐ Toplam Puan: ${totalPts}</div>${fastInfo}`;
+                    champBox.style.display = "block";
+                } else {
+                    champBox.style.display = "none";
+                }
+                renderMatches(currentDay);
+            }
+        }
+
+        function deleteUser() {
+            if(!isAdminMode) return;
+            let userToDelete = document.getElementById('viewUserSelect').value;
+            if(userToDelete === "ALL" || userToDelete === "NEW" || !userToDelete) return;
+
+            if(confirm(`"${userToDelete}" isimli kullanıcının tüm tahminleri kalıcı olarak silinecek. Emin misiniz?`)) {
+                db.collection("users").doc(userToDelete).delete()
+                .then(() => {
+                    alert("Kullanıcı başarıyla silindi!");
+                    document.getElementById('viewUserSelect').value = "ALL";
+                    loadUserPredictions(true);
+                })
+                .catch((error) => {
+                    alert("Silinirken hata oluştu: " + error.message);
+                });
+            }
+        }
+
+        function submitUserLogin() {
+            const pass = document.getElementById('userPassInput').value;
+            if(savedUsers[pendingLoginUser] && savedUsers[pendingLoginUser].password === pass) {
+                currentAuthenticatedUser = pendingLoginUser;
+                document.getElementById('userLoginOverlay').style.display = 'none';
+                loadUserPredictions(true);
+            } else {
+                alert("Hatalı şifre!");
+            }
+        }
+
+        function cancelUserLogin() {
+            document.getElementById('userLoginOverlay').style.display = 'none';
+            document.getElementById('viewUserSelect').value = currentViewingUser || "ALL";
+        }
+
+        function getMatchPoints(predH, predA, realH, realA) {
+            if(predH === "" || predA === "" || realH === undefined || realA === undefined || predH === undefined || predA === undefined) return 0;
+            let ph = parseInt(predH), pa = parseInt(predA), rh = parseInt(realH), ra = parseInt(realA);
+            if(ph === rh && pa === ra) return 5;
+            let pOut = ph > pa ? 1 : (ph < pa ? 2 : 0);
+            let rOut = rh > ra ? 1 : (rh < ra ? 2 : 0);
+            if(pOut === rOut) return 3;
+            return 0;
+        }
+
+        function renderTabs() {
+            const tabsContainer = document.getElementById('dayTabs'); tabsContainer.innerHTML = '';
+            const dayNames = {1:"1. Maç", 2:"2. Maç", 3:"3. Maç", 4:"Son 32", 5:"Son 16", 6:"Çeyrek F.", 7:"Yarı F.", 8:"Final"};
+            for (let i = 1; i <= 8; i++) {
+                const btn = document.createElement('button'); 
+                btn.className = `tab-btn ${currentDay === i ? 'active' : ''}`;
+                let lockIcon = matchdayStatus[i] ? "" : " 🔒";
+                btn.innerText = dayNames[i] + lockIcon;
+                btn.onclick = () => { currentDay = i; renderTabs(); renderMatches(i); };
+                tabsContainer.appendChild(btn);
+            }
+        }
+let allExpanded = false; // Sayfanın genel durumunu tutar
+
+function toggleMatchPredictions(clickedBtn, targetId) {
+    // 1. Tüm tahmin listelerini ve tüm butonları seçiyoruz
+    const allCollapsibles = document.querySelectorAll('.predictions-collapsible');
+    const allButtons = document.querySelectorAll('.prediction-expand-btn');
+    
+    // 2. Durumu tersine çeviriyoruz (Biri açıksa hepsini kapat, kapalıysa hepsini aç)
+    allExpanded = !allExpanded;
+
+    // 3. Tüm listelerin görünürlüğünü güncelle
+    allCollapsibles.forEach(content => {
+        content.style.display = allExpanded ? "block" : "none";
+    });
+
+    // 4. Sayfadaki TÜM butonların üzerindeki yazıyı aynı anda güncelle
+    allButtons.forEach(btn => {
+        btn.innerText = allExpanded ? "- Tahminleri Gizle" : "+ Tahminleri Gör";
+    });
+}        function renderMatches(day) {
+            const grid = document.getElementById('matchesGrid'); grid.innerHTML = '';
+            const dayMatches = matches.filter(m => m.day === day);
+            let dynamicNames = getDynamicBracketNames(); 
+            
+            let isLocked = !matchdayStatus[day];
+            if (!isAdminMode && currentViewingUser !== "NEW" && currentViewingUser !== currentAuthenticatedUser) isLocked = true;
+            if (currentViewingUser === "ALL" && !isAdminMode) isLocked = true;
+
+            dayMatches.forEach(match => {
+                let pHome = "", pAway = "";
+                let dataSrc = null;
+
+                if (isAdminMode) dataSrc = realResults;
+                else if (currentViewingUser !== "NEW" && currentViewingUser !== "ALL") dataSrc = savedUsers[currentViewingUser];
+
+                if (dataSrc && dataSrc[match.id]) {
+                    pHome = dataSrc[match.id].home;
+                    pAway = dataSrc[match.id].away;
+                }
+
+                let displayHome = dynamicNames[match.home] || match.home;
+                let displayAway = dynamicNames[match.away] || match.away;
+
+                let matchMiddleHTML = "";
+
+                if (currentViewingUser === "ALL") {
+                    let inputsLocked = !isAdminMode ? 'disabled' : '';
+                    let rH = realResults[match.id] ? realResults[match.id].home : "";
+                    let rA = realResults[match.id] ? realResults[match.id].away : "";
+                    
+                    let matchHeaderAndScore = `
+                        <div class="match-teams" style="margin-top: 5px; margin-bottom: 5px;">
+                            <div class="team home">${displayHome}</div>
+                            <div class="score-inputs">
+                                <input type="number" min="0" max="20" id="home_${match.id}" value="${rH}" ${inputsLocked}>
+                                <span class="vs">-</span>
+                                <input type="number" min="0" max="20" id="away_${match.id}" value="${rA}" ${inputsLocked}>
+                            </div>
+                            <div class="team away">${displayAway}</div>
+                        </div>`;
+
+                    let predictionsList = "";
+                    for (let u in savedUsers) {
+                        if (savedUsers[u][match.id]) {
+                            let p = savedUsers[u][match.id];
+                            let ptsHTML = "";
+                            if (realResults[match.id]) {
+                                let r = realResults[match.id];
+                                let pts = getMatchPoints(p.home, p.away, r.home, r.away);
+                                let ptsClass = pts === 5 ? 'pts-5' : (pts === 3 ? 'pts-3' : 'pts-0');
+                                ptsHTML = `<span class="${ptsClass}" style="font-size:11px;">+${pts}p</span>`;
+                            }
+                            predictionsList += `
+                            <div style="display:flex; justify-content:space-between; align-items:center; padding:4px 0; border-bottom:1px solid #f1f5f9; font-size:11px;">
+                                <span style="color:#334155; font-weight:bold; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:85px;">👤 ${u}</span>
+                                <div style="display:flex; align-items:center; gap:8px;">
+                                    <span style="font-weight:900; color:#0f172a;">${p.home} - ${p.away}</span>
+                                    <div style="width:30px; text-align:right;">${ptsHTML}</div>
+                                </div>
+                            </div>`;
+                        }
+                    }
+                    if(predictionsList === "") predictionsList = `<div style="text-align:center; color:#94a3b8; font-size:12px; padding:10px 0;">Henüz kimse tahmin yapmadı.</div>`;
+
+                    matchMiddleHTML = `
+    ${matchHeaderAndScore}
+    <div class="prediction-expand-btn" onclick="toggleMatchPredictions(this, 'preds_${match.id}')">
+        + Tahminleri Gör
+    </div>
+    
+    <div id="preds_${match.id}" class="predictions-collapsible" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:3px 10px;">
+        ${predictionsList}
+    </div>
+`;
+                } else {
+                    let resultHTML = "";
+                    if (!isAdminMode && currentViewingUser !== "NEW") {
+                        if (realResults[match.id]) {
+                            const rH = realResults[match.id].home;
+                            const rA = realResults[match.id].away;
+                            const pts = getMatchPoints(pHome, pAway, rH, rA);
+                            let ptsClass = pts === 5 ? 'pts-5' : (pts === 3 ? 'pts-3' : 'pts-0');
+                            resultHTML = `
+                            <div class="result-tag">
+                                <span style="color:#64748b; font-weight:normal;">Gerçekleşen: <b style="color:#000;">${rH} - ${rA}</b></span>
+                                <span class="${ptsClass}">+${pts} Puan</span>
+                            </div>`;
+                        } else {
+                            resultHTML = `<div class="result-tag" style="justify-content:center; color:#94a3b8; font-weight:normal;">Maç henüz oynanmadı</div>`;
+                        }
+                    }
+
+                    matchMiddleHTML = `
+                        <div class="match-teams">
+                            <div class="team home">${displayHome}</div>
+                            <div class="score-inputs">
+                                <input type="number" min="0" max="20" id="home_${match.id}" value="${pHome}" ${isLocked ? 'disabled' : ''}>
+                                <span class="vs">-</span>
+                                <input type="number" min="0" max="20" id="away_${match.id}" value="${pAway}" ${isLocked ? 'disabled' : ''}>
+                            </div>
+                            <div class="team away">${displayAway}</div>
+                        </div>
+                        ${resultHTML}
+                    `;
+                }
+
+                const card = document.createElement('div'); card.className = 'match-card';
+                card.innerHTML = `
+                    <div class="match-header"><span>${match.group}</span><span>${match.date}</span></div>
+                    ${matchMiddleHTML}
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // --- HIZLI TAHMİN (ETKİLEŞİMLİ AĞAÇ) FONKSİYONLARI ---
+        function openFastMode() {
+            let viewUser = document.getElementById('viewUserSelect').value;
+            if(!currentAuthenticatedUser && viewUser !== "NEW") {
+                alert("Lütfen önce listeden 'Yeni Tahmin Ekle' diyerek bir isim girin veya giriş yapın.");
+                return;
+            }
+
+            let html = '<div class="bracket-container" style="height:auto;">';
+            const rounds = [
+                { day: 4, name: "Son 32" },
+                { day: 5, name: "Son 16" },
+                { day: 6, name: "Çeyrek F." },
+                { day: 7, name: "Yarı F." },
+                { day: 8, name: "Final" }
+            ];
+
+            let optHTML = '<option value="">-- Takım Seç --</option>' + allTeamsList.map(t => `<option value="${t}">${t}</option>`).join('');
+
+            rounds.forEach(r => {
+                // DÜZELTME 1: Üçüncülük maçını (m103) ağaçtan filtreleyerek gizledik
+                const rMatches = matches.filter(m => m.day === r.day && m.id !== "m103");
+                
+                html += `<div class="bracket-column"><div class="bracket-round-title">${r.name}</div><div class="bracket-matches-wrapper">`;
+                rMatches.forEach(m => {
+                    let isR32 = r.day === 4;
+                    
+                    // DÜZELTME 2: Sadece o eşleşmeye gelebilecek takımları listeledik
+                    let hOptHTML = "", aOptHTML = "";
+                    if (isR32) {
+                        let hTeams = getAllowedTeams(m.home);
+                        let aTeams = getAllowedTeams(m.away);
+                        hOptHTML = '<option value="">-- Seç --</option>' + hTeams.map(t => `<option value="${t}">${t}</option>`).join('');
+                        aOptHTML = '<option value="">-- Seç --</option>' + aTeams.map(t => `<option value="${t}">${t}</option>`).join('');
+                    }
+
+                    html += `<div class="bracket-match" id="fm_box_${m.id}" style="padding:4px;">`;
+                    
+                    // Home
+                    html += `<div class="fast-team-row">`;
+                    if(isR32) html += `<select id="fms_${m.id}_h" class="r32-select" onchange="validateR32Selections(this)">${hOptHTML}</select>`;
+                    else html += `<div class="fast-slot" id="fms_${m.id}_h" onclick="advanceFastTeam('${m.id}', 'h')">...</div>`;
+                    html += `<button class="fast-btn-adv" onclick="advanceFastTeam('${m.id}', 'h')">▶</button>`;
+                    html += `</div>`;
+
+                    // Away
+                    html += `<div class="fast-team-row" style="border:none;">`;
+                    if(isR32) html += `<select id="fms_${m.id}_a" class="r32-select" onchange="validateR32Selections(this)">${aOptHTML}</select>`;
+                    else html += `<div class="fast-slot" id="fms_${m.id}_a" onclick="advanceFastTeam('${m.id}', 'a')">...</div>`;
+                    html += `<button class="fast-btn-adv" onclick="advanceFastTeam('${m.id}', 'a')">▶</button>`;
+                    html += `</div>`;
+                    
+                    html += `</div>`;
+                });
+                html += `</div></div>`;
+            });
+
+            // Şampiyon
+            html += `<div class="bracket-column" style="justify-content:center;">
+                      <div class="bracket-round-title" style="border-bottom:none;">ŞAMPİYON</div>
+                      <div class="bracket-match" style="background:#fffbeb; border:2px solid #fbbf24; text-align:center; padding:15px; margin-top:10px;">
+                          <div id="fms_champ" style="font-size:16px; font-weight:900; color:#b45309;">...</div>
+                      </div>
+                   </div>`;
+            
+            html += '</div>';
+
+            document.getElementById('fastBracketContent').innerHTML = html;
+
+            // Eğer kullanıcının zaten kayıtlı ağacı varsa onu doldur
+            let targetUser = currentAuthenticatedUser || document.getElementById('username').value.trim();
+            if(targetUser && savedUsers[targetUser] && savedUsers[targetUser].fastTreeValues) {
+                let treeVals = savedUsers[targetUser].fastTreeValues;
+                for(let id in treeVals) {
+                    let el = document.getElementById(id);
+                    if(el) {
+                        if(el.tagName === "SELECT") el.value = treeVals[id];
+                        else el.innerText = treeVals[id];
+                    }
+                }
+            }
+
+            document.getElementById('fastModeOverlay').style.display = 'flex';
+        }
+function validateR32Selections(currentSelect) {
+    const selectedTeam = currentSelect.value;
+    if (!selectedTeam) return;
+
+    // Tüm Son 32 seçim kutularını alıyoruz
+    const allSelects = document.querySelectorAll('.r32-select');
+    
+    let isDuplicate = false;
+    allSelects.forEach(sel => {
+        // Kendisi hariç, aynı takımı seçmiş başka bir kutu var mı bakıyoruz
+        if (sel !== currentSelect && sel.value === selectedTeam) {
+            isDuplicate = true;
+        }
+    });
+
+    if (isDuplicate) {
+        alert("⚠️ Hata: " + selectedTeam + " takımını başka bir eşleşmede seçtiniz! Bir takım turnuva ağacında sadece bir kez yer alabilir.");
+        currentSelect.value = ""; // Seçimi sıfırla
+    }
+}
+        function advanceFastTeam(matchId, side) {
+            let teamName = "";
+            let isR32 = matchId.startsWith("m") && parseInt(matchId.replace("m","")) <= 88;
+            if(isR32) {
+                teamName = document.getElementById(`fms_${matchId}_${side}`).value;
+            } else {
+                teamName = document.getElementById(`fms_${matchId}_${side}`).innerText;
+            }
+           if(!teamName || teamName === "..." || teamName === "-- Takım Seç --") return;
+
+            let nextTargets = nextMatchMap[matchId];
+            if(nextTargets) {
+                nextTargets.forEach(t => {
+                    if(t.id === 'champ') {
+                        document.getElementById(`fms_champ`).innerText = teamName;
+                    } else {
+                        document.getElementById(`fms_${t.id}_${t.slot}`).innerText = teamName;
+                        wipeDownstream(t.id);
+                    }
+                });
+            }
+        }
+
+        function wipeDownstream(startMatchId) {
+            let targets = nextMatchMap[startMatchId];
+            if(!targets) return;
+            targets.forEach(t => {
+                if(t.id === 'champ') document.getElementById('fms_champ').innerText = "...";
+                else {
+                    document.getElementById(`fms_${t.id}_${t.slot}`).innerText = "...";
+                    wipeDownstream(t.id);
+                }
+            });
+        }
+
+        function saveFastMode() {
+            let fastData = { r32: [], r16: [], r8: [], r4: [], r2: [], champ: "" };
+            let treeValues = {};
+
+            // Son 32 Doğrulaması ve Çıkarımı
+            for(let i=73; i<=88; i++) {
+                let h = document.getElementById(`fms_m${i}_h`).value;
+                let a = document.getElementById(`fms_m${i}_a`).value;
+                if(!h || !a) return alert(`Lütfen Son 32 turundaki tüm takımları seçin!`);
+                fastData.r32.push(h, a);
+                treeValues[`fms_m${i}_h`] = h; treeValues[`fms_m${i}_a`] = a;
+            }
+
+            for(let i=89; i<=96; i++) {
+                let h = document.getElementById(`fms_m${i}_h`).innerText; let a = document.getElementById(`fms_m${i}_a`).innerText;
+                if(h !== "Seçim Bekleniyor") fastData.r16.push(h); if(a !== "Seçim Bekleniyor") fastData.r16.push(a);
+                treeValues[`fms_m${i}_h`] = h; treeValues[`fms_m${i}_a`] = a;
+            }
+            for(let i=97; i<=100; i++) {
+                let h = document.getElementById(`fms_m${i}_h`).innerText; let a = document.getElementById(`fms_m${i}_a`).innerText;
+                if(h !== "Seçim Bekleniyor") fastData.r8.push(h); if(a !== "Seçim Bekleniyor") fastData.r8.push(a);
+                treeValues[`fms_m${i}_h`] = h; treeValues[`fms_m${i}_a`] = a;
+            }
+            for(let i=101; i<=102; i++) {
+                let h = document.getElementById(`fms_m${i}_h`).innerText; let a = document.getElementById(`fms_m${i}_a`).innerText;
+                if(h !== "Seçim Bekleniyor") fastData.r4.push(h); if(a !== "Seçim Bekleniyor") fastData.r4.push(a);
+                treeValues[`fms_m${i}_h`] = h; treeValues[`fms_m${i}_a`] = a;
+            }
+            let fH = document.getElementById(`fms_m104_h`).innerText; let fA = document.getElementById(`fms_m104_a`).innerText;
+            if(fH !== "Seçim Bekleniyor") fastData.r2.push(fH); if(fA !== "Seçim Bekleniyor") fastData.r2.push(fA);
+            treeValues[`fms_m104_h`] = fH; treeValues[`fms_m104_a`] = fA;
+
+            let champ = document.getElementById(`fms_champ`).innerText;
+            if(champ !== "Seçim Bekleniyor") fastData.champ = champ;
+            treeValues[`fms_champ`] = champ;
+
+            let username = currentAuthenticatedUser || document.getElementById('username').value.trim();
+            if(!username) return alert("Lütfen ana ekranda isim girip giriş yapın veya yeni kayıt oluşturun.");
+
+            let viewMode = document.getElementById('viewUserSelect').value;
+            if(!currentAuthenticatedUser && viewMode === "NEW") {
+                 let pass = document.getElementById('userPassword').value.trim();
+                 if(!pass) return alert("Lütfen ana ekrandaki şifre kutusunu da doldurun!");
+                 let userObj = savedUsers[username] || { password: pass };
+                 userObj.fastMode = fastData;
+                 userObj.fastTreeValues = treeValues;
+                 db.collection("users").doc(username).set(userObj, {merge:true}).then(()=>{
+                     alert("Hızlı Tahmin ve Kullanıcı Başarıyla Kaydedildi!");
+                     currentAuthenticatedUser = username;
+                     document.getElementById('viewUserSelect').value = username;
+                     loadUserPredictions(true);
+                     document.getElementById('fastModeOverlay').style.display='none';
+                 });
+            } else {
+                 db.collection("users").doc(username).set({ fastMode: fastData, fastTreeValues: treeValues }, {merge:true}).then(()=>{
+                     alert("Hızlı Tahmin Başarıyla Güncellendi!");
+                     loadUserPredictions(true);
+                     document.getElementById('fastModeOverlay').style.display='none';
+                 });
+            }
+        }
+
+        // --- GERÇEK TURNUVA EŞLEŞMELERİ GÖRÜNÜMÜ ---
+        function showBracket() {
+            const rounds = [
+                { day: 4, name: "Son 32" },
+                { day: 5, name: "Son 16" },
+                { day: 6, name: "Çeyrek F." },
+                { day: 7, name: "Yarı F." },
+                { day: 8, name: "Final" }
+            ];
+            
+            let dynamicNames = getDynamicBracketNames();
+            let html = '<div class="bracket-container">';
+            
+            rounds.forEach(r => {
+                const rMatches = matches.filter(m => m.day === r.day && m.id !== "m103");
+                html += `<div class="bracket-column">
+                            <div class="bracket-round-title">${r.name}</div>
+                            <div class="bracket-matches-wrapper">`;
+                
+                rMatches.forEach(m => {
+                    let hTeam = dynamicNames[m.home] || m.home;
+                    let aTeam = dynamicNames[m.away] || m.away;
+                    let hScore = "-", aScore = "-";
+                    let hWin = false, aWin = false;
+                    
+                    if(realResults[m.id]) {
+                        hScore = realResults[m.id].home;
+                        aScore = realResults[m.id].away;
+                        if(hScore > aScore) hWin = true;
+                        if(aScore > hScore) aWin = true;
+                    }
+                    
+                    html += `<div class="bracket-match">
+                                <div class="bracket-team ${hWin ? 'winner' : ''}">
+                                    <span>${hTeam}</span>
+                                    <span class="bracket-score">${hScore}</span>
+                                </div>
+                                <div class="bracket-team ${aWin ? 'winner' : ''}">
+                                    <span>${aTeam}</span>
+                                    <span class="bracket-score">${aScore}</span>
+                                </div>
+                             </div>`;
+                });
+                
+                html += `   </div>
+                          </div>`;
+            });
+            let championName = "......";
+    let finalMatch = realResults["m104"]; 
+    
+    if (finalMatch) {
+        const m = matches.find(match => match.id === "m104");
+        if (Number(finalMatch.home) > Number(finalMatch.away)) {
+            championName = dynamicNames[m.home] || m.home;
+        } else if (Number(finalMatch.away) > Number(finalMatch.home)) {
+            championName = dynamicNames[m.away] || m.away;
+        } else {
+            championName = "Final Oynanıyor...";
+        }
+    }
+
+    html += `<div class="bracket-column" style="justify-content:center;">
+                <div class="bracket-round-title" style="border-bottom:none;">ŞAMPİYON</div>
+                <div class="bracket-match" style="background:linear-gradient(145deg, #fbbf24, #f59e0b); border:2px solid #d97706; text-align:center; padding:15px; margin-top:10px; box-shadow: 0 4px 15px rgba(217, 119, 6, 0.3);">
+                    <div style="font-size:24px; margin-bottom:5px;">🏆</div>
+                    <div style="font-size:16px; font-weight:900; color:#451a03; text-transform:uppercase;">${championName}</div>
+                </div>
+             </div>`;
+            html += '</div>';
+            document.getElementById('bracketContent').innerHTML = html;
+            document.getElementById('bracketOverlay').style.display = 'flex';
+        }
+
+        function showLeaderboard() {
+            let realFast = extractRealFastData();
+            let standings = [];
+            for(let user in savedUsers) {
+                let totalPts = 0;
+                // Klasik Maç Puanları
+                for(let mId in savedUsers[user]) {
+                    if(realResults[mId] && mId !== "password" && mId !== "champion" && mId !== "fastMode" && mId !== "fastTreeValues") {
+                        let p = savedUsers[user][mId];
+                        let r = realResults[mId];
+                        totalPts += getMatchPoints(p.home, p.away, r.home, r.away);
+                    }
+                }
+                if(savedUsers[user].champion && realResults.champion && savedUsers[user].champion === realResults.champion) {
+                    totalPts += 15;
+                }
+                // Hızlı Mod Puanları
+                if(savedUsers[user].fastMode) {
+                    totalPts += calculateFastPoints(savedUsers[user].fastMode, realFast);
+                }
+
+                standings.push({name: user, points: totalPts});
+            }
+            standings.sort((a,b) => b.points - a.points);
+            
+            const list = document.getElementById('leaderboardList');
+            list.innerHTML = "";
+            if(standings.length === 0) { list.innerHTML = "<li>Henüz kayıt yok.</li>"; }
+            else {
+                standings.forEach((s, i) => {
+                    let medal = i === 0 ? "🥇" : (i === 1 ? "🥈" : (i === 2 ? "🥉" : `${i+1}.`));
+                    list.innerHTML += `<li><span>${medal} ${s.name}</span> <b>${s.points} p</b></li>`;
+                });
+            }
+            document.getElementById('leaderboardOverlay').style.display = 'flex';
+        }
+
+        function showAdminLogin() { document.getElementById('adminLoginOverlay').style.display = 'flex'; document.getElementById('adminPassInput').value = ''; }
+        function enterAdminMode() {
+            let girilenSifre = document.getElementById('adminPassInput').value;
+            // Şifre "3435"ün Base64 hali
+            if(btoa(girilenSifre) === "MzQzNQ==") {
+                isAdminMode = true;
+                document.getElementById('adminLoginOverlay').style.display = 'none';
+                document.getElementById('adminBanner').style.display = 'block';
+                document.getElementById('viewUserSelect').value = "ALL";
+                loadUserPredictions(true);
+            } else { alert("Yanlış şifre!"); }
+        }
+        function exitAdminMode() { isAdminMode = false; document.getElementById('adminBanner').style.display = 'none'; loadUserPredictions(true); }
+        function openAdminSettings() {
+            for(let i=1; i<=8; i++) { if(document.getElementById('setDay'+i)) document.getElementById('setDay'+i).value = matchdayStatus[i] ? "true" : "false"; }
+            if(realResults.champion) document.getElementById('realChampionSelect').value = realResults.champion;
+            document.getElementById('adminSettingsOverlay').style.display = 'flex';
+        }
+
+        function saveAdminSettings() {
+            for(let i=1; i<=8; i++) { matchdayStatus[i] = document.getElementById('setDay'+i).value === "true"; }
+            const champ = document.getElementById('realChampionSelect').value;
+            if(champ) realResults.champion = champ; else delete realResults.champion;
+
+            db.collection("appData").doc("admin").set({ realResults: realResults, matchdayStatus: matchdayStatus }, { merge: true })
+            .then(() => { document.getElementById('adminSettingsOverlay').style.display = 'none'; alert("Ayarlar güncellendi!"); })
+            .catch((error) => alert("Hata: " + error.message));
+        }
+
+        function savePredictions() {
+            if(isAdminMode) {
+                const dayMatches = matches.filter(m => m.day === currentDay);
+                dayMatches.forEach(match => {
+                    const h = document.getElementById(`home_${match.id}`).value;
+                    const a = document.getElementById(`away_${match.id}`).value;
+                    if(h !== "" && a !== "") realResults[match.id] = { home: parseInt(h), away: parseInt(a) };
+                    else if(h === "" && a === "") delete realResults[match.id]; 
+                });
+                db.collection("appData").doc("admin").set({ realResults: realResults }, { merge: true })
+                .then(() => alert("Gerçek maç sonuçları kaydedildi!"))
+                .catch(err => alert("Hata: " + err));
+            } else {
+                let username = "", password = "", champ = "";
+                let viewMode = document.getElementById('viewUserSelect').value;
+
+                if (viewMode === "NEW") {
+                    username = document.getElementById('username').value.trim();
+                    password = document.getElementById('userPassword').value.trim();
+                    champ = document.getElementById('userChampionSelect').value;
+                    
+                    if(!username) return alert("Lütfen isminizi girin.");
+                    if(!password) return alert("Lütfen şifre belirleyin.");
+                    if(savedUsers[username]) return alert("Bu isim kullanılıyor.");
+                } else { username = currentAuthenticatedUser; }
+
+                if(!matchdayStatus[currentDay]) return alert("Bu güne ait tahmin alımı kilitli.");
+                
+                let userObj = savedUsers[username] || {};
+                if (viewMode === "NEW") { userObj.password = password; if(champ) userObj.champion = champ; }
+                
+                const dayMatches = matches.filter(m => m.day === currentDay);
+                dayMatches.forEach(match => {
+                    const h = document.getElementById(`home_${match.id}`).value;
+                    const a = document.getElementById(`away_${match.id}`).value;
+                    if(h !== "" && a !== "") userObj[match.id] = { home: parseInt(h), away: parseInt(a) };
+                });
+                
+                db.collection("users").doc(username).set(userObj, { merge: true })
+                .then(() => {
+                    alert("Kayıt başarılı!");
+                    currentAuthenticatedUser = username;
+                    document.getElementById('viewUserSelect').value = username; 
+                    loadUserPredictions(true); 
+                })
+                .catch(err => alert("Kayıt hatası: " + err));
+            }
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
