@@ -917,23 +917,34 @@ document.getElementById('username').value = '';
                     return;
                 }
                 currentViewingUser = viewMode;
-                actionBar.style.display = "none";
-                lockedNotice.style.display = (currentAuthenticatedUser !== viewMode && !isAdminMode) ? "block" : (matchdayStatus[currentDay] ? "none" : "block");
-                mainSaveBtn.style.display = (currentAuthenticatedUser === viewMode || isAdminMode) && matchdayStatus[currentDay] ? "block" : "none";
-                if(deleteUserBtn) deleteUserBtn.style.display = isAdminMode ? "block" : "none";
+                
+  if(currentAuthenticatedUser === viewMode && championOpen) {
+            actionBar.style.display = "flex";
+            document.querySelector('.save-row').style.display = 'none';
+            if(savedUsers[viewMode] && savedUsers[viewMode].champion) {
+                document.getElementById('userChampionSelect').value = savedUsers[viewMode].champion;
+            }
+        } else {
+            actionBar.style.display = "none";
+        }
 
-                if (savedUsers[viewMode]) {
-                    let totalPts = 0;
-                    for(let mId in savedUsers[viewMode]) {
-                        if(realResults[mId] && mId !== "password" && mId !== "champion" && mId !== "fastMode" && mId !== "fastTreeValues") {
-                            let p = savedUsers[viewMode][mId];
-                            let r = realResults[mId];
-                            totalPts += getMatchPoints(p.home, p.away, r.home, r.away);
-                        }
-                    }
-                    if(savedUsers[viewMode].champion && realResults.champion && savedUsers[viewMode].champion === realResults.champion) {
-                        totalPts += 15;
-                    }
+        lockedNotice.style.display = (currentAuthenticatedUser !== viewMode && !isAdminMode) ? "block" : (matchdayStatus[currentDay] ? "none" : "block");
+        mainSaveBtn.style.display = (currentAuthenticatedUser === viewMode || isAdminMode) && matchdayStatus[currentDay] ? "block" : "none";
+        if(deleteUserBtn) deleteUserBtn.style.display = isAdminMode ? "block" : "none";
+
+        if (savedUsers[viewMode]) {
+            let totalPts = 0;
+            for(let mId in savedUsers[viewMode]) {
+                if(realResults[mId] && mId !== "password" && mId !== "champion" && mId !== "fastMode" && mId !== "fastTreeValues") {
+                    let p = savedUsers[viewMode][mId];
+                    let r = realResults[mId];
+                    totalPts += getMatchPoints(p.home, p.away, r.home, r.away);
+                }
+            }
+            if(savedUsers[viewMode].champion && realResults.champion && savedUsers[viewMode].champion === realResults.champion) {
+                totalPts += 15;
+            }
+
                     
                     // HIZLI TAHMİN PUANLARINI EKLEME
                     let realFast = extractRealFastData();
@@ -1514,6 +1525,14 @@ function validateR32Selections(currentSelect) {
                     if(!password) return alert("Lütfen şifre belirleyin.");
                     if(savedUsers[username]) return alert("Bu isim kullanılıyor.");
                 } else { username = currentAuthenticatedUser; }
+
+let existingChamp = document.getElementById('userChampionSelect').value;
+if(existingChamp && championOpen) {
+    let existingObj = savedUsers[username] || {};
+    existingObj.champion = existingChamp;
+    db.collection("users").doc(username).set({ champion: existingChamp }, { merge: true });
+}
+
 
                 if(!matchdayStatus[currentDay]) return alert("Bu güne ait tahmin alımı kilitli.");
                 
