@@ -52,6 +52,7 @@
         .controls-buttons { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; width: 100%; justify-content: space-between;}
         
         .btn-gold { background: linear-gradient(45deg, #ffd700, #ff8c00); color: #000; padding: 10px 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.1); flex:1; text-align:center;}
+.btn-green { background: linear-gradient(45deg, #e31010, #e31010); color: white; padding: 10px 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.1); flex:1; text-align:center;}
         .btn-blue { background: linear-gradient(45deg, #2563eb, #1d4ed8); color: white; padding: 10px 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.1); flex:1; text-align:center;}
         .btn-purple { background: linear-gradient(45deg, #9333ea, #6b21a8); color: white; padding: 10px 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.1); flex:1; text-align:center;}
         .btn-admin { background-color: #10b981; color: white; padding: 10px 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
@@ -153,6 +154,57 @@
     overflow-y: auto;
     margin-top: 5px;
 }
+/* === HERO ACTION BAR === */
+.hero-action-bar {
+    max-width: 1300px;
+    margin: 0 auto;
+    padding: 20px 20px 0;
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+.hero-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 28px;
+    border: none;
+    border-radius: 12px;
+    font-weight: 900;
+    font-size: 16px;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+    transition: all 0.3s;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.hero-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.2); }
+.hero-btn:active { transform: translateY(0); }
+.hero-btn-new {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    animation: heroPulse 2.5s infinite;
+    font-size: 17px;
+    padding: 16px 32px;
+}
+.hero-btn-fast {
+    background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+    color: white;
+}
+.hero-btn-table {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: #000;
+}
+@keyframes heroPulse {
+    0%, 100% { box-shadow: 0 4px 15px rgba(16,185,129,0.3); }
+    50% { box-shadow: 0 4px 30px rgba(16,185,129,0.6); }
+}
+@media (max-width: 900px) {
+    .hero-action-bar { padding: 15px 10px 0; gap: 8px; }
+    .hero-btn { padding: 12px 16px; font-size: 13px; flex: 1; justify-content: center; min-width: 0; }
+    .hero-btn-new { padding: 14px 20px; font-size: 14px; }
+}
     </style>
 
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
@@ -167,7 +219,7 @@
     </div>
 
     <header>
-        <h1>🏆 Dünya Kupası 2026</h1>
+        <h1>🏆 Dünya Kupası 2026          Erdinç Tetik tarafından...</h1>
         <div class="subtitle">Skor: 5P | Maç Sonucu: 3P | Şampiyon: +15P</div>
     </header>
 
@@ -214,7 +266,7 @@
                 <div class="controls-buttons">
                     <button class="save-btn" id="mainSaveBtn" onclick="savePredictions()">💾 Kaydet</button>
                     <button class="delete-btn" id="deleteUserBtn" onclick="deleteUser()">🗑️ Sil</button>
-                    
+                    <button class="btn-green" onclick="heroNewPrediction()">➕ Yeni Tahmin Ekle</button>
                     <button class="btn-blue" onclick="showBracket()">Eşleşmeler</button>
                     <button class="btn-gold" onclick="showLeaderboard()">Tablo 🏆</button>
                     <button class="btn-admin" onclick="showAdminLogin()">Admin</button>
@@ -1377,6 +1429,14 @@ function validateR32Selections(currentSelect) {
                 })
                 .catch(err => alert("Kayıt hatası: " + err));
             }
+        }
+
+        function heroNewPrediction() {
+            document.getElementById('viewUserSelect').value = "NEW";
+            loadUserPredictions();
+            setTimeout(function() {
+                document.querySelector('.main-content').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 100);
         }
 
         window.onload = init;
