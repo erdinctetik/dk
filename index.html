@@ -205,6 +205,12 @@
     .hero-btn { padding: 12px 16px; font-size: 13px; flex: 1; justify-content: center; min-width: 0; }
     .hero-btn-new { padding: 14px 20px; font-size: 14px; }
 }
+/* === DUYURU ALANI === */
+.announcement-bar { max-width:1300px; margin:15px auto 0; padding:0 20px; }
+.announcement-box { background:linear-gradient(135deg,#fef3c7,#fde68a); border:2px solid #f59e0b; border-radius:12px; padding:15px 20px; display:flex; align-items:flex-start; gap:12px; box-shadow:0 2px 8px rgba(245,158,11,0.15); }
+.announcement-box .ann-icon { font-size:24px; flex-shrink:0; }
+.announcement-box .ann-content { flex:1; font-size:14px; color:#92400e; font-weight:600; line-height:1.5; }
+.champion-locked-msg { background:#fef2f2; border:1px solid #fecaca; border-radius:8px; padding:8px 12px; text-align:center; font-size:12px; color:#dc2626; font-weight:bold; }
     </style>
 
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
@@ -220,8 +226,14 @@
 
     <header>
         <h1>🏆 Dünya Kupası 2026 </h1>
-        <div class="subtitle">Skor: 5P | Maç Sonucu: 3P | Şampiyon: +15P      -  10 Haziran saat 17:00'de 1. maçlar girişi kapanacak.</div>
+        <div class="subtitle">Skor: 5P | Maç Sonucu: 3P | Şampiyon: +15P  </div>
     </header>
+    <div class="announcement-bar" id="announcementBar" style="display:none;">
+        <div class="announcement-box">
+            <span class="ann-icon">📢</span>
+            <div class="ann-content" id="announcementText"></div>
+        </div>
+    </div>
 
     <div class="layout">
         
@@ -344,6 +356,11 @@
                 <div class="admin-setting-row"><label>Çeyrek F.</label><select id="setDay6"><option value="true">Açık</option><option value="false">Kapalı</option></select></div>
                 <div class="admin-setting-row"><label>Yarı F.</label><select id="setDay7"><option value="true">Açık</option><option value="false">Kapalı</option></select></div>
                 <div class="admin-setting-row"><label>Final</label><select id="setDay8"><option value="true">Açık</option><option value="false">Kapalı</option></select></div>
+                <div class="admin-setting-row" style="grid-column: 1 / -1; background:#fffbeb; border-color:#fbbf24;"><label style="color:#b45309;">🏆 Şampiyon Seçimi</label><select id="setChampionOpen"><option value="true">Açık</option><option value="false">Kapalı</option></select></div>
+            </div>
+            <div style="margin-top: 15px; background: #f0f9ff; padding: 15px; border-radius: 8px; border: 1px solid #bae6fd;">
+                <label style="font-weight: bold; color: #0369a1; display: block; margin-bottom: 8px;">📢 Duyuru Metni</label>
+                <textarea id="adminAnnouncementText" rows="3" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #7dd3fc; font-size: 14px; resize: vertical; outline: none; box-sizing: border-box;" placeholder="Boş bırakırsanız duyuru gizlenir"></textarea>
             </div>
             <div style="margin-top: 15px; background: #fffbeb; padding: 15px; border-radius: 8px; border: 1px solid #fde68a;">
                 <label style="font-weight: bold; color: #b45309; display: block; margin-bottom: 8px;">Gerçek Turnuva Şampiyonu</label>
@@ -368,6 +385,8 @@
         const db = firebase.firestore();
 
         let matchdayStatus = { 1: true, 2: false, 3: false, 4: false, 5: false, 6: false, 7: false, 8: false };
+        let championOpen = true;
+        let announcementText = "";
         let currentDay = 1;
         let isAdminMode = false;
         let currentViewingUser = "ALL"; 
@@ -645,6 +664,10 @@ function filterByTeam() {
                     let data = doc.data();
                     realResults = data.realResults || {};
                     matchdayStatus = data.matchdayStatus || matchdayStatus;
+                    championOpen = data.championOpen !== undefined ? data.championOpen : true;
+                    announcementText = data.announcementText || "";
+                    updateAnnouncementDisplay();
+                    updateChampionLock();
                 }
                 renderMatches(currentDay);
                 renderGroupPanel();
@@ -665,6 +688,32 @@ function filterByTeam() {
             });
         }
 
+        function updateAnnouncementDisplay() {
+            let bar = document.getElementById('announcementBar');
+            let txt = document.getElementById('announcementText');
+            if(announcementText && announcementText.trim() !== "") {
+                txt.innerHTML = announcementText.replace(/\n/g, '<br>');
+                bar.style.display = 'block';
+            } else { bar.style.display = 'none'; }
+        }
+        function updateChampionLock() {
+            let champSel = document.getElementById('userChampionSelect');
+            let champContainer = document.querySelector('.champion-selector');
+            if(!championOpen) {
+                champSel.disabled = true;
+                if(!document.getElementById('champLockedMsg')) {
+                    let msg = document.createElement('div');
+                    msg.id = 'champLockedMsg';
+                    msg.className = 'champion-locked-msg';
+                    msg.innerHTML = '🔒 Şampiyon seçimi şu anda kapalıdır.';
+                    champContainer.parentNode.insertBefore(msg, champContainer.nextSibling);
+                }
+            } else {
+                champSel.disabled = false;
+                let msg = document.getElementById('champLockedMsg');
+                if(msg) msg.remove();
+            }
+        }
         function initUserSelect() {
             const select = document.getElementById('viewUserSelect');
             let currentVal = select.value; 
@@ -1369,15 +1418,19 @@ function validateR32Selections(currentSelect) {
         function openAdminSettings() {
             for(let i=1; i<=8; i++) { if(document.getElementById('setDay'+i)) document.getElementById('setDay'+i).value = matchdayStatus[i] ? "true" : "false"; }
             if(realResults.champion) document.getElementById('realChampionSelect').value = realResults.champion;
+            document.getElementById('setChampionOpen').value = championOpen ? "true" : "false";
+            document.getElementById('adminAnnouncementText').value = announcementText || "";
             document.getElementById('adminSettingsOverlay').style.display = 'flex';
         }
 
         function saveAdminSettings() {
             for(let i=1; i<=8; i++) { matchdayStatus[i] = document.getElementById('setDay'+i).value === "true"; }
+            championOpen = document.getElementById('setChampionOpen').value === "true";
+            announcementText = document.getElementById('adminAnnouncementText').value.trim();
             const champ = document.getElementById('realChampionSelect').value;
             if(champ) realResults.champion = champ; else delete realResults.champion;
 
-            db.collection("appData").doc("admin").set({ realResults: realResults, matchdayStatus: matchdayStatus }, { merge: true })
+            db.collection("appData").doc("admin").set({ realResults: realResults, matchdayStatus: matchdayStatus, championOpen: championOpen, announcementText: announcementText }, { merge: true })
             .then(() => { document.getElementById('adminSettingsOverlay').style.display = 'none'; alert("Ayarlar güncellendi!"); })
             .catch((error) => alert("Hata: " + error.message));
         }
@@ -1411,7 +1464,7 @@ function validateR32Selections(currentSelect) {
                 if(!matchdayStatus[currentDay]) return alert("Bu güne ait tahmin alımı kilitli.");
                 
                 let userObj = savedUsers[username] || {};
-                if (viewMode === "NEW") { userObj.password = password; if(champ) userObj.champion = champ; }
+                if (viewMode === "NEW") { userObj.password = password; if(champ && championOpen) userObj.champion = champ; }
                 
                 const dayMatches = matches.filter(m => m.day === currentDay);
                 dayMatches.forEach(match => {
