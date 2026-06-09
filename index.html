@@ -50,7 +50,6 @@
         .top-controls { background: var(--card-bg); padding: 15px 20px; border-radius: 12px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
         .user-view-select { padding: 10px; border-radius: 8px; border: 2px solid var(--border-color); font-weight: bold; outline: none; background-color: #f8fafc; width: 100%;}
         .controls-buttons { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; width: 100%; justify-content: space-between;}
-        
         .btn-gold { background: linear-gradient(45deg, #ffd700, #ff8c00); color: #000; padding: 10px 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.1); flex:1; text-align:center;}
 .btn-green { background: linear-gradient(45deg, #e31010, #e31010); color: white; padding: 10px 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.1); flex:1; text-align:center;}
         .btn-blue { background: linear-gradient(45deg, #2563eb, #1d4ed8); color: white; padding: 10px 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.1); flex:1; text-align:center;}
@@ -280,12 +279,14 @@
                 </select>
                 
                 <div class="controls-buttons">
+
                     <button class="save-btn" id="mainSaveBtn" onclick="savePredictions()">💾 Kaydet</button>
                     <button class="delete-btn" id="deleteUserBtn" onclick="deleteUser()">🗑️ Sil</button>
                     <button class="btn-green" onclick="heroNewPrediction()">➕ Yeni Tahmin Ekle</button>
                     <button class="btn-blue" onclick="showBracket()">Eşleşmeler</button>
-                    <button class="btn-gold" onclick="showLeaderboard()">Tablo 🏆</button>
-                    <button class="btn-admin" onclick="showAdminLogin()">Admin</button>
+                    <button class="btn-gold" onclick="showLeaderboard()">Sıralama 🏆</button>               
+<button class="btn-purple" onclick="showReports()">📊 Raporlar</button>
+<button class="btn-admin" onclick="showAdminLogin()">Admin</button>
                 </div>
             </div>
 
@@ -314,11 +315,24 @@
     <div class="modal-overlay" id="leaderboardOverlay">
         <div class="custom-modal" style="text-align: center;">
             <span class="close-btn" onclick="document.getElementById('leaderboardOverlay').style.display='none'">&times;</span>
-            <h2 style="margin-top:0;">🏆 Puan Tablosu</h2>
+            <h2 style="margin-top:0;">🏆 Puan Tablosu 🆚</h2>
             <ul class="leaderboard-list" id="leaderboardList"></ul>
         </div>
     </div>
-
+<div class="modal-overlay" id="compareOverlay" style="z-index:10001;">
+    <div class="custom-modal" style="text-align:center;max-width:500px;">
+        <span class="close-btn" onclick="document.getElementById('compareOverlay').style.display='none'">&times;</span>
+        <h2 style="margin-top:0;">🆚 Karşılaştırma</h2>
+        <div id="compareContent"></div>
+    </div>
+</div>
+<div class="modal-overlay" id="reportsOverlay">
+    <div class="custom-modal" style="text-align:left;">
+        <span class="close-btn" onclick="document.getElementById('reportsOverlay').style.display='none'">&times;</span>
+        <h2>📊 Genel Raporlar</h2>
+        <div id="reportsContent"></div>
+    </div>
+</div>
     <div class="modal-overlay" id="adminLoginOverlay">
         <div class="custom-modal" style="text-align: center; max-width: 300px;">
             <span class="close-btn" onclick="document.getElementById('adminLoginOverlay').style.display='none'">&times;</span>
@@ -635,8 +649,290 @@ function filterByTeam() {
                 return null;
             }
         }
+function showReports() {
 
-        function extractRealFastData() {
+    let scoreCounts = {};
+    let teamStats = {};
+    let champCounts = {};
+    let userStats = {};
+    let matchPredictions = {}; // maç bazlı tahminler
+
+    // TÜM KULLANICILARI GEZ
+    for(let user in savedUsers) {
+        let data = savedUsers[user];
+        let matchCount = 0;
+
+        for(let mId in data) {
+            if(mId.startsWith("m") && data[mId].home !== undefined && data[mId].away !== undefined) {
+
+                let p = data[mId];
+                let hg = parseInt(p.home);
+                let ag = parseInt(p.away);
+                let scoreKey = hg + "-" + ag;
+
+                // ✅ SKOR İSTATİSTİĞİ
+                if(!scoreCounts[scoreKey]) scoreCounts[scoreKey] = 0;
+                scoreCounts[scoreKey]++;
+
+                // ✅ MAÇ BAZLI TAHMİNLER (en gollü, en farklı için)
+                if(!matchPredictions[mId]) matchPredictions[mId] = [];
+                matchPredictions[mId].push({
+                    user: user,
+                    home: hg,
+                    away: ag,
+                    total: hg + ag,
+                    diff: Math.abs(hg - ag)
+                });
+
+                // ✅ TAKIM İSTATİSTİĞİ
+                let match = matches.find(x => x.id === mId);
+                if(match) {
+                    if(!teamStats[match.home]) teamStats[match.home] = { gf:0, ga:0, count:0, w:0, d:0, l:0, pts:0 };
+                    if(!teamStats[match.away]) teamStats[match.away] = { gf:0, ga:0, count:0, w:0, d:0, l:0, pts:0 };
+
+                    teamStats[match.home].gf += hg;
+                    teamStats[match.home].ga += ag;
+                    teamStats[match.home].count++;
+
+                    teamStats[match.away].gf += ag;
+                    teamStats[match.away].ga += hg;
+                    teamStats[match.away].count++;
+
+                    if(hg > ag) {
+                        teamStats[match.home].w++; teamStats[match.home].pts += 3;
+                        teamStats[match.away].l++;
+                    } else if(hg < ag) {
+                        teamStats[match.away].w++; teamStats[match.away].pts += 3;
+                        teamStats[match.home].l++;
+                    } else {
+                        teamStats[match.home].d++; teamStats[match.home].pts += 1;
+                        teamStats[match.away].d++; teamStats[match.away].pts += 1;
+                    }
+                }
+                matchCount++;
+            }
+        }
+
+        // ✅ ŞAMPİYON İSTATİSTİĞİ
+        if(data.champion) {
+            if(!champCounts[data.champion]) champCounts[data.champion] = [];
+            champCounts[data.champion].push(user);
+        }
+
+        // ✅ USER İSTATİSTİĞİ
+        userStats[user] = {
+            matchCount: matchCount,
+            champion: data.champion || "-"
+        };
+    }
+
+    // ===========================
+    // 📊 HTML OLUŞTUR
+    // ===========================
+
+    let html = "";
+    let totalUsers = Object.keys(savedUsers).length;
+
+    // ==================
+    // 🏆 ŞAMPİYON TERCİHLERİ
+    // ==================
+    html += `<h3>🏆 Şampiyon Tercihleri</h3>`;
+    let sortedChamps = Object.entries(champCounts).sort((a,b) => b[1].length - a[1].length);
+    sortedChamps.forEach(([team, users], i) => {
+        let pct = Math.round((users.length / totalUsers) * 100);
+        let medal = i === 0 ? "🥇" : (i === 1 ? "🥈" : (i === 2 ? "🥉" : (i+1)+"."));
+        let barColor = i === 0 ? '#f59e0b' : (i === 1 ? '#94a3b8' : (i === 2 ? '#d97706' : '#cbd5e1'));
+        html += `<div style="margin-bottom:10px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">
+                <span style="font-weight:900;font-size:13px;">${medal} ${team}</span>
+                <span style="font-weight:bold;color:#334155;font-size:12px;">${users.length} kişi (${pct}%)</span>
+            </div>
+            <div style="background:#e5e7eb;border-radius:6px;height:16px;overflow:hidden;">
+                <div style="background:${barColor};height:100%;width:${pct}%;border-radius:6px;"></div>
+            </div>
+            <div style="font-size:10px;color:#94a3b8;margin-top:2px;">👤 ${users.join(', ')}</div>
+        </div>`;
+    });
+
+    // Şampiyon seçmeyenler
+    let noChampUsers = [];
+    for(let u in savedUsers) { if(!savedUsers[u].champion) noChampUsers.push(u); }
+    if(noChampUsers.length > 0) {
+        html += `<div style="padding:8px;background:#fef2f2;border-radius:6px;font-size:11px;color:#dc2626;margin-top:5px;">
+            ⚠️ Seçmeyenler (${noChampUsers.length}): <b>${noChampUsers.join(', ')}</b>
+        </div>`;
+    }
+
+    // ==================
+    // 📈 EN ÇOK GİRİLEN SKORLAR + EN GOLLÜ + EN FARKLI
+    // ==================
+    html += `<hr><h3>📈 En Çok Girilen Skorlar</h3>`;
+    html += `<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:12px;margin-top:8px;">`;
+    html += `<thead><tr style="background:#1e3a8a;color:white;">
+        <th style="padding:6px;border:1px solid #cbd5e1;text-align:center;">#</th>
+        <th style="padding:6px;border:1px solid #cbd5e1;text-align:center;">Skor</th>
+        <th style="padding:6px;border:1px solid #cbd5e1;text-align:center;">Sayı</th>
+        <th style="padding:6px;border:1px solid #cbd5e1;text-align:center;">Oran</th>
+    </tr></thead><tbody>`;
+    let totalScores = Object.values(scoreCounts).reduce((a,b) => a+b, 0);
+    Object.entries(scoreCounts).sort((a,b) => b[1]-a[1]).slice(0,15).forEach(([score, count], i) => {
+        let pct = ((count / totalScores) * 100).toFixed(1).replace('.', ',');
+        let bg = i % 2 === 0 ? '#ffffff' : '#f8fafc';
+        if(i === 0) bg = '#fef9c3';
+        html += `<tr style="background:${bg};">
+            <td style="padding:5px;border:1px solid #e2e8f0;text-align:center;font-weight:bold;">${i+1}</td>
+            <td style="padding:5px;border:1px solid #e2e8f0;text-align:center;font-weight:900;font-size:14px;">${score}</td>
+            <td style="padding:5px;border:1px solid #e2e8f0;text-align:center;">${count}</td>
+            <td style="padding:5px;border:1px solid #e2e8f0;text-align:center;color:#6b7280;">%${pct}</td>
+        </tr>`;
+    });
+    html += `</tbody></table></div>`;
+
+    // ✅ EN GOLLÜ MAÇ TAHMİNİ
+    let enGollu = null;
+    for(let mId in matchPredictions) {
+        matchPredictions[mId].forEach(pred => {
+            if(!enGollu || pred.total > enGollu.total) {
+                let m = matches.find(x => x.id === mId);
+                enGollu = { ...pred, matchId: mId, matchName: m ? m.home + " vs " + m.away : mId };
+            }
+        });
+    }
+
+    // ✅ EN FARKLI MAÇ TAHMİNİ
+    let enFarkli = null;
+    for(let mId in matchPredictions) {
+        matchPredictions[mId].forEach(pred => {
+            if(!enFarkli || pred.diff > enFarkli.diff) {
+                let m = matches.find(x => x.id === mId);
+                enFarkli = { ...pred, matchId: mId, matchName: m ? m.home + " vs " + m.away : mId };
+            }
+        });
+    }
+
+    // ✅ EN ÇOK GOLSÜZ TAHMİN YAPAN
+    let golsuzCounts = {};
+    for(let mId in matchPredictions) {
+        matchPredictions[mId].forEach(pred => {
+            if(pred.home === 0 && pred.away === 0) {
+                if(!golsuzCounts[pred.user]) golsuzCounts[pred.user] = 0;
+                golsuzCounts[pred.user]++;
+            }
+        });
+    }
+    let enGolsuz = Object.entries(golsuzCounts).sort((a,b) => b[1]-a[1]);
+
+    html += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;">`;
+
+    if(enGollu) {
+        html += `<div style="background:#d1fae5;border:1px solid #10b981;border-radius:8px;padding:12px;text-align:center;">
+            <div style="font-size:11px;color:#065f46;font-weight:bold;">⚽ En Gollü Tahmin</div>
+            <div style="font-size:22px;font-weight:900;color:#059669;margin:5px 0;">${enGollu.home} - ${enGollu.away}</div>
+            <div style="font-size:11px;color:#065f46;">${enGollu.matchName}</div>
+            <div style="font-size:11px;color:#064e3b;margin-top:3px;">👤 <b>${enGollu.user}</b> (${enGollu.total} gol)</div>
+        </div>`;
+    }
+
+    if(enFarkli) {
+        html += `<div style="background:#fee2e2;border:1px solid #ef4444;border-radius:8px;padding:12px;text-align:center;">
+            <div style="font-size:11px;color:#991b1b;font-weight:bold;">💥 En Farklı Tahmin</div>
+            <div style="font-size:22px;font-weight:900;color:#dc2626;margin:5px 0;">${enFarkli.home} - ${enFarkli.away}</div>
+            <div style="font-size:11px;color:#991b1b;">${enFarkli.matchName}</div>
+            <div style="font-size:11px;color:#7f1d1d;margin-top:3px;">👤 <b>${enFarkli.user}</b> (${enFarkli.diff} fark)</div>
+        </div>`;
+    }
+
+    html += `</div>`;
+
+    if(enGolsuz.length > 0) {
+        html += `<div style="margin-top:10px;padding:8px 12px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;font-size:11px;color:#475569;">
+            🚫 <b>En çok 0-0 tahmini yapan:</b> ${enGolsuz.slice(0,5).map(([u,c]) => u + " (" + c + ")").join(', ')}
+        </div>`;
+    }
+
+    // ==================
+    // ⚽ TAKIM ANALİZİ TABLOSU
+    // ==================
+    html += `<hr><h3>⚽ Takım Analizi (Kullanıcı Tahminlerine Göre)</h3>`;
+    html += `<div style="overflow-x:auto;">`;
+    html += `<table style="width:100%;border-collapse:collapse;font-size:12px;margin-top:10px;">`;
+    html += `<thead><tr style="background:#1e3a8a;color:white;">
+        <th style="padding:8px 6px;text-align:left;border:1px solid #cbd5e1;">#</th>
+        <th style="padding:8px 6px;text-align:left;border:1px solid #cbd5e1;">Takım</th>
+        <th style="padding:8px 6px;text-align:center;border:1px solid #cbd5e1;">THS</th>
+        <th style="padding:8px 6px;text-align:center;border:1px solid #cbd5e1;">G</th>
+        <th style="padding:8px 6px;text-align:center;border:1px solid #cbd5e1;">B</th>
+        <th style="padding:8px 6px;text-align:center;border:1px solid #cbd5e1;">M</th>
+        <th style="padding:8px 6px;text-align:center;border:1px solid #cbd5e1;">AG</th>
+        <th style="padding:8px 6px;text-align:center;border:1px solid #cbd5e1;">YG</th>
+        <th style="padding:8px 6px;text-align:center;border:1px solid #cbd5e1;">AV</th>
+        <th style="padding:8px 6px;text-align:center;border:1px solid #cbd5e1;font-weight:900;">P</th>
+        <th style="padding:8px 6px;text-align:center;border:1px solid #cbd5e1;">AG/T</th>
+        <th style="padding:8px 6px;text-align:center;border:1px solid #cbd5e1;">YG/T</th>
+        <th style="padding:8px 6px;text-align:center;border:1px solid #cbd5e1;">P/T</th>
+    </tr></thead><tbody>`;
+
+    let sortedTeams = Object.entries(teamStats).sort((a,b) => {
+        if(b[1].pts !== a[1].pts) return b[1].pts - a[1].pts;
+        let avA = a[1].gf - a[1].ga;
+        let avB = b[1].gf - b[1].ga;
+        if(avB !== avA) return avB - avA;
+        return b[1].gf - a[1].gf;
+    });
+
+    sortedTeams.forEach(([team, s], i) => {
+        let av = s.gf - s.ga;
+        let avStr = av > 0 ? '+'+av : av;
+        let bg = i % 2 === 0 ? '#ffffff' : '#f8fafc';
+        if(i === 0) bg = '#fef9c3';
+        if(i === 1) bg = '#f0fdf4';
+        if(i === 2) bg = '#fff7ed';
+
+        let agOrt = (s.gf / s.count).toFixed(2).replace('.', ',');
+        let ygOrt = (s.ga / s.count).toFixed(2).replace('.', ',');
+        let pOrt = (s.pts / s.count).toFixed(2).replace('.', ',');
+
+        html += `<tr style="background:${bg};">
+            <td style="padding:6px;border:1px solid #e2e8f0;text-align:center;font-weight:bold;">${i+1}</td>
+            <td style="padding:6px;border:1px solid #e2e8f0;font-weight:bold;">${team}</td>
+            <td style="padding:6px;border:1px solid #e2e8f0;text-align:center;">${s.count}</td>
+            <td style="padding:6px;border:1px solid #e2e8f0;text-align:center;color:#059669;font-weight:bold;">${s.w}</td>
+            <td style="padding:6px;border:1px solid #e2e8f0;text-align:center;color:#d97706;">${s.d}</td>
+            <td style="padding:6px;border:1px solid #e2e8f0;text-align:center;color:#dc2626;">${s.l}</td>
+            <td style="padding:6px;border:1px solid #e2e8f0;text-align:center;">${s.gf}</td>
+            <td style="padding:6px;border:1px solid #e2e8f0;text-align:center;">${s.ga}</td>
+            <td style="padding:6px;border:1px solid #e2e8f0;text-align:center;font-weight:bold;">${avStr}</td>
+            <td style="padding:6px;border:1px solid #e2e8f0;text-align:center;font-weight:900;font-size:14px;color:#1e3a8a;">${s.pts}</td>
+            <td style="padding:6px;border:1px solid #e2e8f0;text-align:center;color:#6b7280;font-size:11px;">${agOrt}</td>
+            <td style="padding:6px;border:1px solid #e2e8f0;text-align:center;color:#6b7280;font-size:11px;">${ygOrt}</td>
+            <td style="padding:6px;border:1px solid #e2e8f0;text-align:center;color:#6b7280;font-size:11px;font-weight:bold;">${pOrt}</td>
+        </tr>`;
+    });
+    html += `</tbody></table></div>`;
+
+    // ==================
+    // 👤 KULLANICI ÖZETİ
+    // ==================
+    html += `<hr><h3>👤 Kullanıcı Özeti</h3>`;
+    html += `<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:12px;margin-top:8px;">`;
+    html += `<thead><tr style="background:#1e3a8a;color:white;">
+        <th style="padding:6px;border:1px solid #cbd5e1;text-align:left;">Kullanıcı</th>
+        <th style="padding:6px;border:1px solid #cbd5e1;text-align:center;">Tahmin</th>
+        <th style="padding:6px;border:1px solid #cbd5e1;text-align:center;">Şampiyon</th>
+    </tr></thead><tbody>`;
+    Object.entries(userStats).sort((a,b) => b[1].matchCount - a[1].matchCount).forEach(([user, s], i) => {
+        let bg = i % 2 === 0 ? '#ffffff' : '#f8fafc';
+        html += `<tr style="background:${bg};">
+            <td style="padding:5px;border:1px solid #e2e8f0;font-weight:bold;">👤 ${user}</td>
+            <td style="padding:5px;border:1px solid #e2e8f0;text-align:center;">${s.matchCount}</td>
+            <td style="padding:5px;border:1px solid #e2e8f0;text-align:center;">${s.champion}</td>
+        </tr>`;
+    });
+    html += `</tbody></table></div>`;
+
+    document.getElementById('reportsContent').innerHTML = html;
+    document.getElementById('reportsOverlay').style.display = 'flex';
+}        function extractRealFastData() {
             let real = { r32: [], r16: [], r8: [], r4: [], r2: [], champ: "" };
             for(let i=73; i<=88; i++) {
                 let h = getRealTeamInSlot("m"+i, 'h'); if(h) real.r32.push(h);
@@ -1079,7 +1375,60 @@ function toggleMatchPredictions(clickedBtn, targetId) {
                             </div>
                             <div class="team away">${displayAway}</div>
                         </div>`;
+// ✅ TAHMİN ORAN ÇUBUĞU
+                    let homeWin = 0, draw = 0, awayWin = 0, totalPreds = 0;
+                    for(let u in savedUsers) {
+                        if(savedUsers[u][match.id]) {
+                            let ph = parseInt(savedUsers[u][match.id].home);
+                            let pa = parseInt(savedUsers[u][match.id].away);
+                            if(ph > pa) homeWin++;
+                            else if(ph === pa) draw++;
+                            else awayWin++;
+                            totalPreds++;
+                        }
+                    }
+                    let statsBarHTML = "";
+                    if(totalPreds > 0) {
+                        let hPct = Math.round((homeWin / totalPreds) * 100);
+                        let dPct = Math.round((draw / totalPreds) * 100);
+                        let aPct = 100 - hPct - dPct;
 
+                        // Zorluk etiketi (sadece sonuç varsa)
+                        let diffHTML = "";
+                        if(realResults[match.id]) {
+                            let rH = realResults[match.id].home;
+                            let rA = realResults[match.id].away;
+                            let correctCount = 0;
+                            for(let u in savedUsers) {
+                                if(savedUsers[u][match.id]) {
+                                    let pts = getMatchPoints(savedUsers[u][match.id].home, savedUsers[u][match.id].away, rH, rA);
+                                    if(pts > 0) correctCount++;
+                                }
+                            }
+                            let correctPct = Math.round((correctCount / totalPreds) * 100);
+                            let diffLabel, diffColor;
+                            if(correctPct >= 60) { diffLabel = "Kolay"; diffColor = "#059669"; }
+                            else if(correctPct >= 30) { diffLabel = "Orta"; diffColor = "#d97706"; }
+                            else if(correctPct >= 10) { diffLabel = "Zor"; diffColor = "#ea580c"; }
+                            else { diffLabel = "İmkansız!"; diffColor = "#dc2626"; }
+                            diffHTML = `<div style="text-align:center;font-size:9px;margin-top:2px;"><b style="color:${diffColor};">${diffLabel}</b> <span style="color:#111827;">(%${correctPct} bildi)</span></div>`;
+                        }
+
+                        statsBarHTML = `
+                        <div style="margin-top:2px;">
+                            <div style="display:flex;justify-content:space-between;font-size:10px;color:#94a3b8;margin-bottom:2px;">
+                                <span style="color:#059669;font-weight:bold;">${hPct}%</span>
+                                <span style="color:#dc2626;">${dPct}%</span>
+                                <span style="color:#2563eb;font-weight:bold;">${aPct}%</span>
+                            </div>
+                            <div style="display:flex;height:5px;border-radius:3px;overflow:hidden;background:#f1f5f9;">
+                                <div style="width:${hPct}%;background:#059669;"></div>
+                                <div style="width:${dPct}%;background:#dc2626;"></div>
+                                <div style="width:${aPct}%;background:#2563eb;"></div>
+                            </div>
+                            ${diffHTML}
+                        </div>`;
+                    }
                     let predictionsList = "";
                     for (let u in savedUsers) {
                         if (savedUsers[u][match.id]) {
@@ -1105,7 +1454,8 @@ function toggleMatchPredictions(clickedBtn, targetId) {
 
                     matchMiddleHTML = `
     ${matchHeaderAndScore}
-    <div class="prediction-expand-btn" onclick="toggleMatchPredictions(this, 'preds_${match.id}')">
+    ${statsBarHTML}
+    <div class="prediction-expand-btn"" onclick="toggleMatchPredictions(this, 'preds_${match.id}')">
         + Tahminleri Gör
     </div>
     
@@ -1131,6 +1481,38 @@ function toggleMatchPredictions(clickedBtn, targetId) {
                         }
                     }
 
+                    // ✅ TAHMİN ORAN ÇUBUĞU (bireysel görünüm)
+                    let homeWin2 = 0, draw2 = 0, awayWin2 = 0, totalPreds2 = 0;
+                    for(let u in savedUsers) {
+                        if(savedUsers[u][match.id]) {
+                            let ph2 = parseInt(savedUsers[u][match.id].home);
+                            let pa2 = parseInt(savedUsers[u][match.id].away);
+                            if(ph2 > pa2) homeWin2++;
+                            else if(ph2 === pa2) draw2++;
+                            else awayWin2++;
+                            totalPreds2++;
+                        }
+                    }
+                    let statsBarHTML2 = "";
+                    if(totalPreds2 > 0 && currentViewingUser !== "NEW") {
+                        let hPct2 = Math.round((homeWin2 / totalPreds2) * 100);
+                        let dPct2 = Math.round((draw2 / totalPreds2) * 100);
+                        let aPct2 = 100 - hPct2 - dPct2;
+                        statsBarHTML2 = `
+                        <div style="margin-top:2px;">
+                            <div style="display:flex;justify-content:space-between;font-size:10px;color:#94a3b8;margin-bottom:2px;">
+                                <span style="color:#059669;font-weight:bold;">${hPct2}%</span>
+                                <span style="color:#dc2626;">${dPct2}%</span>
+                                <span style="color:#2563eb;font-weight:bold;">${aPct2}%</span>
+                            </div>
+                            <div style="display:flex;height:5px;border-radius:3px;overflow:hidden;background:#f1f5f9;">
+                                <div style="width:${hPct2}%;background:#059669;"></div>
+                                <div style="width:${dPct2}%;background:#dc2626;"></div>
+                                <div style="width:${aPct2}%;background:#2563eb;"></div>
+                            </div>
+                        </div>`;
+                    }
+
                     matchMiddleHTML = `
                         <div class="match-teams">
                             <div class="team home">${displayHome}</div>
@@ -1141,6 +1523,7 @@ function toggleMatchPredictions(clickedBtn, targetId) {
                             </div>
                             <div class="team away">${displayAway}</div>
                         </div>
+                        ${statsBarHTML2}
                         ${resultHTML}
                     `;
                 }
@@ -1429,41 +1812,215 @@ function validateR32Selections(currentSelect) {
         }
 
         function showLeaderboard() {
-            let realFast = extractRealFastData();
-            let standings = [];
-            for(let user in savedUsers) {
-                let totalPts = 0;
-                // Klasik Maç Puanları
-                for(let mId in savedUsers[user]) {
-                    if(realResults[mId] && mId !== "password" && mId !== "champion" && mId !== "fastMode" && mId !== "fastTreeValues") {
-                        let p = savedUsers[user][mId];
-                        let r = realResults[mId];
-                        totalPts += getMatchPoints(p.home, p.away, r.home, r.away);
-                    }
-                }
-                if(savedUsers[user].champion && realResults.champion && savedUsers[user].champion === realResults.champion) {
-                    totalPts += 15;
-                }
-                // Hızlı Mod Puanları
-                if(savedUsers[user].fastMode) {
-                    totalPts += calculateFastPoints(savedUsers[user].fastMode, realFast);
-                }
+    let realFast = extractRealFastData();
+    let standings = [];
 
-                standings.push({name: user, points: totalPts});
+    for(let user in savedUsers) {
+        let totalPts = 0, skorBildi = 0, sonucBildi = 0, yanlis = 0, topTahmin = 0;
+
+        for(let mId in savedUsers[user]) {
+            if(realResults[mId] && mId.startsWith("m")) {
+                let p = savedUsers[user][mId];
+                if(p.home === undefined || p.away === undefined) continue;
+                let r = realResults[mId];
+                let pts = getMatchPoints(p.home, p.away, r.home, r.away);
+                totalPts += pts;
+                topTahmin++;
+                if(pts === 5) skorBildi++;
+                else if(pts === 3) sonucBildi++;
+                else yanlis++;
             }
-            standings.sort((a,b) => b.points - a.points);
-            
-            const list = document.getElementById('leaderboardList');
-            list.innerHTML = "";
-            if(standings.length === 0) { list.innerHTML = "<li>Henüz kayıt yok.</li>"; }
-            else {
-                standings.forEach((s, i) => {
-                    let medal = i === 0 ? "🥇" : (i === 1 ? "🥈" : (i === 2 ? "🥉" : `${i+1}.`));
-                    list.innerHTML += `<li><span>${medal} ${s.name}</span> <b>${s.points} p</b></li>`;
-                });
-            }
-            document.getElementById('leaderboardOverlay').style.display = 'flex';
         }
+
+        if(savedUsers[user].champion && realResults.champion && savedUsers[user].champion === realResults.champion) {
+            totalPts += 15;
+        }
+        if(savedUsers[user].fastMode) {
+            totalPts += calculateFastPoints(savedUsers[user].fastMode, realFast);
+        }
+
+        let isabet = topTahmin > 0 ? Math.round(((skorBildi + sonucBildi) / topTahmin) * 100) : 0;
+        standings.push({ name: user, points: totalPts, skorBildi, sonucBildi, yanlis, topTahmin, isabet });
+    }
+
+    // Sıralama: Puan > Skor Bildi > Sonuç Bildi
+    standings.sort((a, b) => {
+        if(b.points !== a.points) return b.points - a.points;
+        if(b.skorBildi !== a.skorBildi) return b.skorBildi - a.skorBildi;
+        return b.sonucBildi - a.sonucBildi;
+    });
+
+    const list = document.getElementById('leaderboardList');
+    list.innerHTML = "";
+
+    if(standings.length === 0) {
+        list.innerHTML = "<li>Henüz kayıt yok.</li>";
+    } else {
+        // Karşılaştır butonu
+        list.innerHTML = `<button id="compareBtn" class="btn-purple" style="width:100%;margin-bottom:12px;padding:10px;font-size:13px;border-radius:8px;" onclick="showCompare()">🆚 2-4 Kişi Seç ve Karşılaştır</button>`;
+
+        // Tablo
+        list.innerHTML += `<div style="overflow-x:auto;">
+        <table style="width:100%;border-collapse:collapse;font-size:12px;">
+            <thead><tr style="background:#1e3a8a;color:white;">
+                <th style="padding:7px 4px;border:1px solid #cbd5e1;text-align:center;width:30px;">Vs</th>
+                <th style="padding:7px 4px;border:1px solid #cbd5e1;text-align:center;width:20px;">#</th>
+                <th style="padding:7px 4px;border:1px solid #cbd5e1;text-align:left;">İsim</th>
+                <th style="padding:7px 4px;border:1px solid #cbd5e1;text-align:center;">🎯Skor</th>
+                <th style="padding:7px 4px;border:1px solid #cbd5e1;text-align:center;">✅Sonuç</th>
+                <th style="padding:7px 4px;border:1px solid #cbd5e1;text-align:center;">❌Yanlış</th>
+                <th style="padding:7px 4px;border:1px solid #cbd5e1;text-align:center;">%</th>
+                <th style="padding:7px 4px;border:1px solid #cbd5e1;text-align:center;font-weight:900;">Puan</th>
+            </tr></thead>
+            <tbody id="leaderboardTableBody"></tbody>
+        </table></div>`;
+
+        // Alt bilgi
+        list.innerHTML += `<div style="margin-top:10px;font-size:10px;color:#94a3b8;text-align:center;">🎯 Skor Bildi &nbsp; ✅ Sonuç Bildi &nbsp; ❌ Yanlış &nbsp; % İsabet &nbsp; P Puan</div>`;
+
+        let tbody = document.getElementById('leaderboardTableBody');
+        standings.forEach((s, i) => {
+            let medal = i === 0 ? "🥇" : (i === 1 ? "🥈" : (i === 2 ? "🥉" : ""));
+            let bg = i % 2 === 0 ? '#ffffff' : '#f8fafc';
+            if(i === 0) bg = '#fef9c3';
+            if(i === 1) bg = '#f0fdf4';
+            if(i === 2) bg = '#fff7ed';
+
+            let tr = document.createElement('tr');
+            tr.style.background = bg;
+            tr.innerHTML = `
+                <td style="padding:5px 3px;border:1px solid #e2e8f0;text-align:center;">
+                    <input type="checkbox" class="compare-check" value="${s.name}" onchange="limitCompareCheck()" style="width:15px;height:15px;cursor:pointer;">
+                </td>
+                <td style="padding:5px 3px;border:1px solid #e2e8f0;text-align:center;font-weight:bold;font-size:11px;">${medal || (i+1)+'.'}</td>
+                <td style="padding:5px 3px;border:1px solid #e2e8f0;font-weight:bold;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:90px;">${s.name}</td>
+                <td style="padding:5px 3px;border:1px solid #e2e8f0;text-align:center;color:#059669;font-weight:bold;">${s.skorBildi}</td>
+                <td style="padding:5px 3px;border:1px solid #e2e8f0;text-align:center;color:#d97706;font-weight:bold;">${s.sonucBildi}</td>
+                <td style="padding:5px 3px;border:1px solid #e2e8f0;text-align:center;color:#dc2626;">${s.yanlis}</td>
+                <td style="padding:5px 3px;border:1px solid #e2e8f0;text-align:center;color:#6b7280;font-size:11px;">${s.isabet}%</td>
+                <td style="padding:5px 3px;border:1px solid #e2e8f0;text-align:center;font-weight:900;font-size:14px;color:#1e3a8a;">${s.points}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    document.getElementById('leaderboardOverlay').style.display = 'flex';
+}
+function showCompare() {
+    let checks = document.querySelectorAll('.compare-check:checked');
+    
+if(checks.length < 2 || checks.length > 4) {
+    alert("Lütfen 2-4 kullanıcı seçin!");
+    return;
+}
+
+
+    let users = [];
+    checks.forEach(cb => users.push(cb.value));
+    let realFast = extractRealFastData();
+
+    function getUserStats(username) {
+        let data = savedUsers[username];
+        let stats = { puan:0, skorBildi:0, sonucBildi:0, yanlis:0, tahmin:0, champion: data.champion || "-" };
+        for(let mId in data) {
+            if(mId.startsWith("m") && data[mId].home !== undefined && data[mId].away !== undefined && realResults[mId]) {
+                let pts = getMatchPoints(data[mId].home, data[mId].away, realResults[mId].home, realResults[mId].away);
+                stats.puan += pts;
+                stats.tahmin++;
+                if(pts === 5) stats.skorBildi++;
+                else if(pts === 3) stats.sonucBildi++;
+                else stats.yanlis++;
+            }
+        }
+        if(data.champion && realResults.champion && data.champion === realResults.champion) stats.puan += 15;
+        stats.isabet = stats.tahmin > 0 ? Math.round(((stats.skorBildi + stats.sonucBildi) / stats.tahmin) * 100) : 0;
+        return stats;
+    }
+
+    let allStats = users.map(u => ({ name: u, ...getUserStats(u) }));
+
+    function best(field, higher) {
+        let vals = allStats.map(s => s[field]);
+        let target = higher ? Math.max(...vals) : Math.min(...vals);
+        return target;
+    }
+
+    function cellStyle(val, field, higher) {
+        let b = best(field, higher);
+        if(val === b) return 'color:#059669;font-weight:900;';
+        return '';
+    }
+
+    // Header
+    let html = `<table style="width:100%;border-collapse:collapse;font-size:13px;margin-top:10px;">`;
+    html += `<thead><tr style="background:#1e3a8a;color:white;"><th style="padding:8px;border:1px solid #cbd5e1;"></th>`;
+    allStats.forEach(s => {
+        html += `<th style="padding:8px;border:1px solid #cbd5e1;font-size:12px;">${s.name}</th>`;
+    });
+    html += `</tr></thead><tbody>`;
+
+    // Satırlar
+    let rows = [
+        { label: "⭐ Puan", field: "puan", higher: true },
+        { label: "🎯 Skor Bildi", field: "skorBildi", higher: true },
+        { label: "✅ Sonuç Bildi", field: "sonucBildi", higher: true },
+        { label: "❌ Yanlış", field: "yanlis", higher: false },
+        { label: "📊 İsabet%", field: "isabet", higher: true },
+    ];
+
+    rows.forEach((row, ri) => {
+        let bg = ri % 2 === 0 ? '' : 'background:#f8fafc;';
+        html += `<tr style="${bg}"><td style="padding:6px;border:1px solid #e2e8f0;font-weight:bold;">${row.label}</td>`;
+        allStats.forEach(s => {
+            let val = row.field === "isabet" ? s[row.field] + "%" : s[row.field];
+            html += `<td style="padding:6px;border:1px solid #e2e8f0;text-align:center;${cellStyle(s[row.field], row.field, row.higher)}">${val}</td>`;
+        });
+        html += `</tr>`;
+    });
+
+    // Şampiyon satırı
+    html += `<tr><td style="padding:6px;border:1px solid #e2e8f0;font-weight:bold;">🏆 Şampiyon</td>`;
+    allStats.forEach(s => {
+        html += `<td style="padding:6px;border:1px solid #e2e8f0;text-align:center;font-size:11px;">${s.champion}</td>`;
+    });
+    html += `</tr></tbody></table>`;
+
+    // Kafa kafaya (sadece 2 kişiyse göster)
+    if(users.length === 2) {
+        let u1Wins = 0, u2Wins = 0, ties = 0;
+        for(let mId in realResults) {
+            if(mId.startsWith("m") && savedUsers[users[0]][mId] && savedUsers[users[1]][mId]) {
+                let pts1 = getMatchPoints(savedUsers[users[0]][mId].home, savedUsers[users[0]][mId].away, realResults[mId].home, realResults[mId].away);
+                let pts2 = getMatchPoints(savedUsers[users[1]][mId].home, savedUsers[users[1]][mId].away, realResults[mId].home, realResults[mId].away);
+                if(pts1 > pts2) u1Wins++;
+                else if(pts2 > pts1) u2Wins++;
+                else ties++;
+            }
+        }
+        html += `<div style="margin-top:15px;padding:12px;background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;">
+            <div style="font-weight:bold;font-size:12px;color:#0369a1;margin-bottom:8px;">⚔️ Kafa Kafaya</div>
+            <div style="display:flex;justify-content:space-around;text-align:center;font-size:13px;">
+                <div><div style="font-size:22px;font-weight:900;color:#059669;">${u1Wins}</div><div style="font-size:10px;color:#64748b;">${users[0]}</div></div>
+                <div><div style="font-size:22px;font-weight:900;color:#d97706;">${ties}</div><div style="font-size:10px;color:#64748b;">Berabere</div></div>
+                <div><div style="font-size:22px;font-weight:900;color:#2563eb;">${u2Wins}</div><div style="font-size:10px;color:#64748b;">${users[1]}</div></div>
+            </div>
+        </div>`;
+    }
+
+    document.getElementById('compareContent').innerHTML = html;
+    document.getElementById('compareOverlay').style.display = 'flex';
+}
+function limitCompareCheck() {
+    let checks = document.querySelectorAll('.compare-check:checked');
+    let allChecks = document.querySelectorAll('.compare-check');
+    if(checks.length >= 4) {
+        allChecks.forEach(cb => {
+            if(!cb.checked) cb.disabled = true;
+        });
+    } else {
+        allChecks.forEach(cb => cb.disabled = false);
+    }
+}
 
         function showAdminLogin() { document.getElementById('adminLoginOverlay').style.display = 'flex'; document.getElementById('adminPassInput').value = ''; }
         function enterAdminMode() {
