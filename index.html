@@ -520,9 +520,9 @@
 { id: "m11", day: 1, date: "15 Haz 02:00", group: "E Grubu", home: "Fildişi Sahili", away: "Ekvador" },
 { id: "m12", day: 1, date: "15 Haz 05:00", group: "F Grubu", home: "İsveç", away: "Tunus" },
 { id: "m13", day: 1, date: "15 Haz 19:00", group: "H Grubu", home: "İspanya", away: "Yeşil Burun Adaları" },
-{ id: "m14", day: 1, date: "15 Haz 22:00", group: "G Grubu", home: "Belçika", away: "Mısır" },
+{ id: "m14", day: 1, date: "15 Haz 01:00", group: "G Grubu", home: "Belçika", away: "Mısır" },
 { id: "m15", day: 1, date: "16 Haz 01:00", group: "H Grubu", home: "Suudi Arabistan", away: "Uruguay" },
-{ id: "m16", day: 1, date: "16 Haz 04:00", group: "G Grubu", home: "İran", away: "Yeni Zelanda" },
+{ id: "m16", day: 1, date: "16 Haz 07:00", group: "G Grubu", home: "İran", away: "Yeni Zelanda" },
 { id: "m17", day: 1, date: "16 Haz 22:00", group: "I Grubu", home: "Fransa", away: "Senegal" },
 { id: "m18", day: 1, date: "17 Haz 01:00", group: "I Grubu", home: "Irak", away: "Norveç" },
 { id: "m19", day: 1, date: "17 Haz 04:00", group: "J Grubu", home: "Arjantin", away: "Cezayir" },
@@ -1545,7 +1545,7 @@ updateLockedNotice();
         }
         let lockIcon = isOpen ? " 🔓" : " 🔒";
         btn.innerText = dayNames[i] + lockIcon;
-        btn.onclick = () => { currentDay = i; renderTabs(); renderMatches(i); startCountdown(); updateLockedNotice(); };
+        btn.onclick = () => { currentDay = i; renderTabs(); renderMatches(i); startCountdown(); updateLockedNotice(); updateSaveButton(); };
         tabsContainer.appendChild(btn);
     }
 }
@@ -1585,7 +1585,19 @@ function updateLockedNotice() {
     }
 }
 let allExpanded = false; // Sayfanın genel durumunu tutar
+function updateSaveButton() {
+    let mainSaveBtn = document.getElementById('mainSaveBtn');
+    if(!mainSaveBtn) return;
+    let isOpen = matchdayStatus[currentDay];
 
+    if(currentViewingUser === "ALL") {
+        mainSaveBtn.style.display = isAdminMode ? "block" : "none";
+    } else if(currentViewingUser === "NEW") {
+        mainSaveBtn.style.display = isOpen ? "block" : "none";
+    } else {
+        mainSaveBtn.style.display = (currentAuthenticatedUser === currentViewingUser || isAdminMode) && isOpen ? "block" : "none";
+    }
+}
 function toggleMatchPredictions(clickedBtn, targetId) {
     // 1. Tüm tahmin listelerini ve tüm butonları seçiyoruz
     const allCollapsibles = document.querySelectorAll('.predictions-collapsible');
