@@ -322,7 +322,7 @@
         <div class="main-content">
             <div class="top-controls">
                 <select id="viewUserSelect" class="user-view-select" onchange="loadUserPredictions()">
-                    <option value="ALL">🌍 -- Tüm Tahminleri Gör --</option>
+                    <option value="ALL">🌍 -- Kullanıcı Girişi / Tüm Tahminleri Gör --</option>
                     <option value="NEW">➕ Yeni Kullanıcı</option>
                 </select>
                 
@@ -1289,7 +1289,7 @@ function extractRealFastData() {
         function initUserSelect() {
             const select = document.getElementById('viewUserSelect');
             let currentVal = select.value; 
-            select.innerHTML = '<option value="ALL">🌍 -- Tüm Tahminleri Gör --</option>';
+            select.innerHTML = '<option value="ALL">🌍 --Kullanıcı Girişi / Tüm Tahminleri Gör --</option>';
             select.innerHTML += '<option value="NEW">➕ Yeni Kullanıcı</option>';
             for(let u in savedUsers) select.innerHTML += `<option value="${u}">👤 ${u} Tahminleri</option>`;
             if (currentVal && (savedUsers[currentVal] || currentVal === "ALL" || currentVal === "NEW")) {
