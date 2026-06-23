@@ -262,6 +262,116 @@
 .race-bar-name:hover { text-decoration:underline; }
 .race-tracker { display:none; padding:6px 12px; background:#1e3a8a; color:white; border-radius:8px; margin-bottom:10px; font-size:12px; text-align:center; }
 .race-tracker b { font-size:14px; }
+/* ÜST KOMPAKT ALAN */
+#viewedUserChampionBox {
+    padding: 8px 12px 6px 12px !important;
+    margin-top: 10px !important;
+    margin-bottom: 8px !important;
+    border-radius: 10px !important;
+    font-size: 13px;
+    line-height: 1.25;
+}
+
+#viewedUserChampionBox br { display:none; }
+
+#viewedUserChampionBox b {
+    font-size: 15px !important;
+    display: inline;
+}
+
+#viewedUserChampionBox > div {
+    margin-top: 4px !important;
+    padding: 3px 8px !important;
+    font-size: 12px !important;
+}
+
+/* Kullanıcı şampiyon seçim kutusu kompakt */
+.action-bar {
+    padding: 10px !important;
+    margin-top: 10px !important;
+    gap: 8px !important;
+    border-radius: 10px !important;
+}
+
+.action-bar .champion-selector {
+    padding: 7px 9px !important;
+    gap: 7px !important;
+    border-radius: 8px !important;
+}
+
+.action-bar .champion-selector span {
+    font-size: 18px !important;
+}
+
+.action-bar .champion-selector > div > div:first-child {
+    font-size: 11px !important;
+    margin-bottom: 2px !important;
+}
+
+.action-bar .champion-selector select {
+    padding: 5px !important;
+    font-size: 12px !important;
+}
+
+.champion-locked-msg {
+    padding: 5px 8px !important;
+    font-size: 11px !important;
+    border-radius: 6px !important;
+}
+
+.action-bar .save-row {
+    gap: 6px !important;
+}
+
+.action-bar .save-row .user-input {
+    padding: 6px 8px !important;
+    font-size: 12px !important;
+    border-radius: 6px !important;
+}
+/* MAÇ TAKVİMİ TUR PUANLARI */
+.user-day-points {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    justify-content: center;
+    margin: -10px auto 15px auto;
+    max-width: 100%;
+    font-size: 11px;
+    color: #475569;
+    padding: 0 10px;
+}
+.user-day-points .udp-pt {
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-weight: 700;
+    line-height: 1.4;
+}
+.user-day-points .udp-5 { background:#d1fae5; color:#059669; border-color:#a7f3d0; }
+.user-day-points .udp-3 { background:#fef3c7; color:#d97706; border-color:#fde68a; }
+.user-day-points .udp-0 { background:#fee2e2; color:#dc2626; border-color:#fecaca; }
+.user-day-points .udp-na { background:#f8fafc; color:#94a3b8; border-color:#e2e8f0; }
+.user-day-points .udp-summary {
+    background: linear-gradient(135deg, #dbeafe, #e0f2fe);
+    border: 1px solid #93c5fd;
+    border-radius: 4px;
+    padding: 1px 8px;
+    font-weight: 900;
+    color: #1e3a8a;
+    margin-left: 4px;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+.user-day-points .udp-summary .udp-rank {
+    background: #fde68a;
+    color: #92400e;
+    border-radius: 3px;
+    padding: 0 5px;
+    font-size: 10px;
+}
     </style>
 
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
@@ -290,35 +400,68 @@
         
         
 <div class="sidebar">
-    <select id="groupSelect" onchange="renderGroupPanel()"></select>
-    <select id="teamSelect" onchange="filterByTeam()"></select>
 
-            <table class="standings-table">
-                <thead><tr><th style="text-align:left;">Takım</th><th>O</th><th>AV</th><th>P</th></tr></thead>
-                <tbody id="standingsBody"></tbody>
-            </table>
-            <h4 style="margin-bottom: 10px; color: var(--secondary); font-size: 14px; border-bottom: 2px solid #e5e7eb; padding-bottom: 5px;" id="groupMatchTitle">Grup Maçları</h4>
-            <div class="group-matches-list" id="groupMatchesList"></div>
+    <!-- 1. Seçilen kullanıcının şampiyon / puan bilgisi -->
+    <div id="viewedUserChampionBox"></div>
 
-            <div id="viewedUserChampionBox"></div>
-
-            <div class="action-bar" id="actionBar">
-                <div class="champion-selector">
-                    <span style="font-size: 24px;">🏆</span>
-                    <div style="flex:1;">
-                        <div style="font-size: 12px; color: #b45309; font-weight: bold; margin-bottom: 4px;">Şampiyon Kim Olur? (+15P)</div>
-                        <select id="userChampionSelect">
-                            <option value="">-- Favori Takımını Seç --</option>
-                        </select>
-                    </div>
+    <!-- 2. Şampiyon seçim alanı -->
+    <div class="action-bar" id="actionBar">
+        <div class="champion-selector">
+            <span style="font-size: 24px;">🏆</span>
+            <div style="flex:1;">
+                <div style="font-size: 12px; color: #b45309; font-weight: bold; margin-bottom: 4px;">
+                    Şampiyon Kim Olur? (+15P)
                 </div>
-                <div class="save-row">
-                    <input type="text" id="username" class="user-input" placeholder="İsminizi girin...">
-                    <input type="password" id="userPassword" class="user-input" placeholder="Kendinize bir şifre oluşturun...">
-                </div>
+                <select id="userChampionSelect">
+                    <option value="">-- Favori Takımını Seç --</option>
+                </select>
             </div>
         </div>
 
+        <div class="champion-selector" id="secondChampionBox" style="background:#f0fdf4;border-color:#bbf7d0;display:none;">
+            <span style="font-size: 24px;">🥈</span>
+            <div style="flex:1;">
+                <div style="font-size: 12px; color: #059669; font-weight: bold; margin-bottom: 4px;">
+                    2. Şampiyon Adayı (+7P)
+                </div>
+                <select id="userSecondChampionSelect">
+                    <option value="">-- Yedek Şampiyon Adayını Seç --</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="save-row">
+            <input type="text" id="username" class="user-input" placeholder="İsminizi girin...">
+            <input type="password" id="userPassword" class="user-input" placeholder="Kendinize bir şifre oluşturun...">
+        </div>
+    </div>
+
+    <!-- 3. Grup seçimi -->
+    <select id="groupSelect" onchange="renderGroupPanel()"></select>
+
+    <!-- 4. Takım seçimi -->
+    <select id="teamSelect" onchange="filterByTeam()"></select>
+
+    <!-- 5. Puan durumu -->
+    <table class="standings-table">
+        <thead>
+            <tr>
+                <th style="text-align:left;">Takım</th>
+                <th>O</th>
+                <th>AV</th>
+                <th>P</th>
+            </tr>
+        </thead>
+        <tbody id="standingsBody"></tbody>
+    </table>
+
+    <!-- 6. Grup maçları -->
+    <h4 style="margin-bottom: 10px; color: var(--secondary); font-size: 14px; border-bottom: 2px solid #e5e7eb; padding-bottom: 5px;" id="groupMatchTitle">
+        Grup Maçları
+    </h4>
+    <div class="group-matches-list" id="groupMatchesList"></div>
+
+</div>
         <div class="main-content">
             <div class="top-controls">
                 <select id="viewUserSelect" class="user-view-select" onchange="loadUserPredictions()">
@@ -451,6 +594,7 @@
                 <div class="admin-setting-row"><label>Yarı F.</label><select id="setDay7"><option value="true">Açık</option><option value="false">Kapalı</option></select></div>
                 <div class="admin-setting-row"><label>Final</label><select id="setDay8"><option value="true">Açık</option><option value="false">Kapalı</option></select></div>
                 <div class="admin-setting-row" style="grid-column:1/-1;background:#fffbeb;border-color:#fbbf24;"><label style="color:#b45309;">🏆 Şampiyon Seçimi</label><select id="setChampionOpen"><option value="true">Açık</option><option value="false">Kapalı</option></select></div>
+                <div class="admin-setting-row" style="grid-column:1/-1;background:#f0fdf4;border-color:#86efac;"><label style="color:#059669;">🥈 2. Şampiyon Adayı (+7)</label><select id="setSecondChampionOpen"><option value="true">Açık</option><option value="false">Kapalı</option></select></div>
             </div>
             <div style="margin-top:15px;background:#f0f9ff;padding:15px;border-radius:8px;border:1px solid #bae6fd;">
                 <label style="font-weight:bold;color:#0369a1;display:block;margin-bottom:8px;">📢 Duyuru Metni</label>
@@ -469,6 +613,13 @@
                     <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 8px;background:#f8fafc;border-radius:6px;border:1px solid #e2e8f0;"><label style="font-weight:bold;color:#334155;font-size:11px;">Final</label><input type="datetime-local" id="setDeadline8" style="padding:3px;border-radius:4px;border:1px solid #cbd5e1;font-size:11px;"></div>
                 </div>
             </div>
+<div style="margin-top:15px;background:#f8fafc;padding:15px;border-radius:8px;border:1px solid #cbd5e1;">
+    <label style="font-weight:bold;color:#334155;display:block;margin-bottom:8px;">👁️ Tur Bazlı Görünürlük Ayarları</label>
+    <div style="font-size:11px;color:#64748b;margin-bottom:10px;">
+        Kullanıcılar için <b>1. Maçlar / 2. Maçlar / Son 32</b> gibi tur bazında <b>diğer kişilerin skorları</b> ve <b>tahmin oranları</b> açık/kapalı yapılır. Admin her zaman görür.
+    </div>
+    <div id="dayVisibilitySettingsBox"></div>
+</div>
             <div style="margin-top: 15px; background: #fffbeb; padding: 15px; border-radius: 8px; border: 1px solid #fde68a;">
                 <label style="font-weight: bold; color: #b45309; display: block; margin-bottom: 8px;">Gerçek Turnuva Şampiyonu</label>
                 <select id="realChampionSelect" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #fbbf24; outline: none;">
@@ -493,9 +644,11 @@
 
         let matchdayStatus = { 1: true, 2: false, 3: false, 4: false, 5: false, 6: false, 7: false, 8: false };
         let championOpen = true;
+        let secondChampionOpen = false; // 2. şampiyon adayı (+7)
         let announcementText = "";
         let matchdayDeadlines = {};
-        let countdownInterval = null;
+let dayVisibilitySettings = {}; // Tur bazlı skor/oran görünürlük ayarları
+let countdownInterval = null;
         let currentDay = 1;
         let isAdminMode = false;
         let currentViewingUser = "ALL"; 
@@ -555,51 +708,53 @@
 { id: "m46", day: 2, date: "23 Haz 23:00", group: "L Grubu", home: "İngiltere", away: "Gana" },
 { id: "m47", day: 2, date: "24 Haz 02:00", group: "L Grubu", home: "Panama", away: "Hırvatistan" },
 { id: "m48", day: 2, date: "24 Haz 05:00", group: "K Grubu", home: "Kolombiya", away: "Demokratik Kongo Cum." },
-{ id: "m49", day: 3, date: "25 Haz 01:00", group: "A Grubu", home: "Güney Afrika", away: "Güney Kore" },
-{ id: "m50", day: 3, date: "25 Haz 01:00", group: "A Grubu", home: "Çekya", away: "Meksika" },
-{ id: "m51", day: 3, date: "24 Haz 22:00", group: "B Grubu", home: "Bosna-Hersek", away: "Katar" },
 { id: "m52", day: 3, date: "24 Haz 22:00", group: "B Grubu", home: "İsviçre", away: "Kanada" },
-{ id: "m53", day: 3, date: "25 Haz 04:00", group: "C Grubu", home: "Fas", away: "Haiti" },
-{ id: "m54", day: 3, date: "25 Haz 04:00", group: "C Grubu", home: "İskoçya", away: "Brezilya" },
+{ id: "m51", day: 3, date: "24 Haz 22:00", group: "B Grubu", home: "Bosna-Hersek", away: "Katar" },
+{ id: "m53", day: 3, date: "25 Haz 01:00", group: "C Grubu", home: "Fas", away: "Haiti" },
+{ id: "m54", day: 3, date: "25 Haz 01:00", group: "C Grubu", home: "İskoçya", away: "Brezilya" },
+{ id: "m49", day: 3, date: "25 Haz 04:00", group: "A Grubu", home: "Güney Afrika", away: "Güney Kore" },
+{ id: "m50", day: 3, date: "25 Haz 04:00", group: "A Grubu", home: "Çekya", away: "Meksika" },
+{ id: "m57", day: 3, date: "25 Haz 23:00", group: "E Grubu", home: "Ekvador", away: "Almanya" },
+{ id: "m58", day: 3, date: "25 Haz 23:00", group: "E Grubu", home: "Curaçao", away: "Fildişi Sahili" },
+{ id: "m59", day: 3, date: "26 Haz 02:00", group: "F Grubu", home: "Japonya", away: "İsveç" },
+{ id: "m60", day: 3, date: "26 Haz 02:00", group: "F Grubu", home: "Tunus", away: "Hollanda" },
 { id: "m55", day: 3, date: "26 Haz 05:00", group: "D Grubu", home: "Avustralya", away: "Paraguay" },
 { id: "m56", day: 3, date: "26 Haz 05:00", group: "D Grubu", home: "ABD", away: "Türkiye" },
-{ id: "m57", day: 3, date: "25 Haz 20:00", group: "E Grubu", home: "Ekvador", away: "Almanya" },
-{ id: "m58", day: 3, date: "25 Haz 20:00", group: "E Grubu", home: "Curaçao", away: "Fildişi Sahili" },
-{ id: "m59", day: 3, date: "25 Haz 23:00", group: "F Grubu", home: "Japonya", away: "İsveç" },
-{ id: "m60", day: 3, date: "25 Haz 23:00", group: "F Grubu", home: "Tunus", away: "Hollanda" },
-{ id: "m61", day: 3, date: "27 Haz 01:00", group: "G Grubu", home: "Mısır", away: "İran" },
-{ id: "m62", day: 3, date: "27 Haz 01:00", group: "G Grubu", home: "Yeni Zelanda", away: "Belçika" },
-{ id: "m63", day: 3, date: "26 Haz 22:00", group: "H Grubu", home: "Yeşil Burun Adaları", away: "Suudi Arabistan" },
-{ id: "m64", day: 3, date: "26 Haz 22:00", group: "H Grubu", home: "Uruguay", away: "İspanya" },
-{ id: "m65", day: 3, date: "26 Haz 19:00", group: "I Grubu", home: "Norveç", away: "Fransa" },
-{ id: "m66", day: 3, date: "26 Haz 19:00", group: "I Grubu", home: "Senegal", away: "Irak" },
-{ id: "m67", day: 3, date: "27 Haz 04:00", group: "J Grubu", home: "Cezayir", away: "Avusturya" },
-{ id: "m68", day: 3, date: "27 Haz 04:00", group: "J Grubu", home: "Ürdün", away: "Arjantin" },
-{ id: "m69", day: 3, date: "28 Haz 01:00", group: "K Grubu", home: "Kolombiya", away: "Portekiz" },
-{ id: "m70", day: 3, date: "28 Haz 01:00", group: "K Grubu", home: "Demokratik Kongo Cum.", away: "Özbekistan" },
-{ id: "m71", day: 3, date: "27 Haz 22:00", group: "L Grubu", home: "Panama", away: "İngiltere" },
-{ id: "m72", day: 3, date: "27 Haz 22:00", group: "L Grubu", home: "Hırvatistan", away: "Gana" },
+{ id: "m65", day: 3, date: "26 Haz 22:00", group: "I Grubu", home: "Norveç", away: "Fransa" },
+{ id: "m66", day: 3, date: "26 Haz 22:00", group: "I Grubu", home: "Senegal", away: "Irak" },
+{ id: "m63", day: 3, date: "27 Haz 03:00", group: "H Grubu", home: "Yeşil Burun Adaları", away: "Suudi Arabistan" },
+{ id: "m64", day: 3, date: "27 Haz 03:00", group: "H Grubu", home: "Uruguay", away: "İspanya" },
+{ id: "m61", day: 3, date: "27 Haz 06:00", group: "G Grubu", home: "Mısır", away: "İran" },
+{ id: "m62", day: 3, date: "27 Haz 06:00", group: "G Grubu", home: "Yeni Zelanda", away: "Belçika" },
+{ id: "m71", day: 3, date: "28 Haz 24:00", group: "L Grubu", home: "Panama", away: "İngiltere" },
+{ id: "m72", day: 3, date: "28 Haz 24:00", group: "L Grubu", home: "Hırvatistan", away: "Gana" },
+{ id: "m69", day: 3, date: "28 Haz 02:30", group: "K Grubu", home: "Kolombiya", away: "Portekiz" },
+{ id: "m70", day: 3, date: "28 Haz 02:30", group: "K Grubu", home: "Demokratik Kongo Cum.", away: "Özbekistan" },
+{ id: "m67", day: 3, date: "28 Haz 05:00", group: "J Grubu", home: "Cezayir", away: "Avusturya" },
+{ id: "m68", day: 3, date: "28 Haz 05:00", group: "J Grubu", home: "Ürdün", away: "Arjantin" },
+
             // === SON 32 (home/away değişmedi, sadece saat eklendi) ===
 { id: "m73", day: 4, date: "28 Haz 22:00", group: "M73 (Son 32)", home: "A Grubu 2.'si", away: "B Grubu 2.'si" },
+{ id: "m76", day: 4, date: "29 Haz 20:00", group: "M76 (Son 32)", home: "C Grubu 1.'si", away: "F Grubu 2.'si" },
 { id: "m74", day: 4, date: "29 Haz 23:30", group: "M74 (Son 32)", home: "E Grubu 1.'si", away: "A/B/C/D/F En İyi 3.'sü" },
 { id: "m75", day: 4, date: "30 Haz 04:00", group: "M75 (Son 32)", home: "F Grubu 1.'si", away: "C Grubu 2.'si" },
-{ id: "m76", day: 4, date: "29 Haz 20:00", group: "M76 (Son 32)", home: "C Grubu 1.'si", away: "F Grubu 2.'si" },
-{ id: "m77", day: 4, date: "1 Tem 00:00", group: "M77 (Son 32)", home: "I Grubu 1.'si", away: "C/D/F/G/H En İyi 3.'sü" },
 { id: "m78", day: 4, date: "30 Haz 20:00", group: "M78 (Son 32)", home: "E Grubu 2.'si", away: "I Grubu 2.'si" },
+{ id: "m77", day: 4, date: "1 Tem 00:00", group: "M77 (Son 32)", home: "I Grubu 1.'si", away: "C/D/F/G/H En İyi 3.'sü" },
 { id: "m79", day: 4, date: "1 Tem 04:00", group: "M79 (Son 32)", home: "A Grubu 1.'si", away: "C/E/F/H/I En İyi 3.'sü" },
 { id: "m80", day: 4, date: "1 Tem 19:00", group: "M80 (Son 32)", home: "L Grubu 1.'si", away: "E/H/I/J/K En İyi 3.'sü" },
-{ id: "m81", day: 4, date: "2 Tem 03:00", group: "M81 (Son 32)", home: "D Grubu 1.'si", away: "B/E/F/I/J En İyi 3.'sü" },
 { id: "m82", day: 4, date: "1 Tem 23:00", group: "M82 (Son 32)", home: "G Grubu 1.'si", away: "A/E/H/I/J En İyi 3.'sü" },
-{ id: "m83", day: 4, date: "3 Tem 02:00", group: "M83 (Son 32)", home: "K Grubu 2.'si", away: "L Grubu 2.'si" },
+{ id: "m81", day: 4, date: "2 Tem 03:00", group: "M81 (Son 32)", home: "D Grubu 1.'si", away: "B/E/F/I/J En İyi 3.'sü" },
 { id: "m84", day: 4, date: "2 Tem 22:00", group: "M84 (Son 32)", home: "H Grubu 1.'si", away: "J Grubu 2.'si" },
+{ id: "m83", day: 4, date: "3 Tem 02:00", group: "M83 (Son 32)", home: "K Grubu 2.'si", away: "L Grubu 2.'si" },
 { id: "m85", day: 4, date: "3 Tem 06:00", group: "M85 (Son 32)", home: "B Grubu 1.'si", away: "E/F/G/I/J En İyi 3.'sü" },
+{ id: "m88", day: 4, date: "3 Tem 21:00", group: "M88 (Son 32)", home: "D Grubu 2.'si", away: "G Grubu 2.'si" },
 { id: "m86", day: 4, date: "4 Tem 01:00", group: "M86 (Son 32)", home: "J Grubu 1.'si", away: "H Grubu 2.'si" },
 { id: "m87", day: 4, date: "4 Tem 04:30", group: "M87 (Son 32)", home: "K Grubu 1.'si", away: "D/E/I/J/L En İyi 3.'sü" },
-{ id: "m88", day: 4, date: "3 Tem 21:00", group: "M88 (Son 32)", home: "D Grubu 2.'si", away: "G Grubu 2.'si" },
+
 
 // === SON 16 (eşleşmeler FIFA bracket'ine göre güncellendi) ===
-{ id: "m89", day: 5, date: "5 Tem 00:00", group: "M89 (Son 16)", home: "74. Maç Galibi", away: "77. Maç Galibi" },
 { id: "m90", day: 5, date: "4 Tem 20:00", group: "M90 (Son 16)", home: "73. Maç Galibi", away: "75. Maç Galibi" },
+{ id: "m89", day: 5, date: "5 Tem 00:00", group: "M89 (Son 16)", home: "74. Maç Galibi", away: "77. Maç Galibi" },
 { id: "m91", day: 5, date: "5 Tem 23:00", group: "M91 (Son 16)", home: "76. Maç Galibi", away: "78. Maç Galibi" },
 { id: "m92", day: 5, date: "6 Tem 03:00", group: "M92 (Son 16)", home: "79. Maç Galibi", away: "80. Maç Galibi" },
 { id: "m93", day: 5, date: "6 Tem 22:00", group: "M93 (Son 16)", home: "83. Maç Galibi", away: "84. Maç Galibi" },
@@ -651,9 +806,11 @@
             grpSel.appendChild(optBest3);
 
             const usrChamp = document.getElementById('userChampionSelect');
+            const usrSecondChamp = document.getElementById('userSecondChampionSelect');
             const admChamp = document.getElementById('realChampionSelect');
             allTeamsList.forEach(t => { 
                 usrChamp.innerHTML += `<option value="${t}">${t}</option>`;
+                usrSecondChamp.innerHTML += `<option value="${t}">${t}</option>`;
                 admChamp.innerHTML += `<option value="${t}">${t}</option>`;
             });
 // Takım filtresini doldur
@@ -1033,47 +1190,104 @@ function buildRealResultsReport() {
             </div>`;
         }
     }
-    html += `<hr><h3>🎯 Maç Bazlı Tahmin Başarısı</h3>`;
-    html += `<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:11px;margin-top:8px;">`;
-    html += `<thead><tr style="background:#059669;color:white;">
-        <th style="padding:6px;border:1px solid #cbd5e1;text-align:left;">Maç</th>
-        <th style="padding:6px;border:1px solid #cbd5e1;text-align:center;">Sonuç</th>
-        <th style="padding:6px;border:1px solid #cbd5e1;text-align:center;">🎯 Skor</th>
-        <th style="padding:6px;border:1px solid #cbd5e1;text-align:center;">✅ Sonuç</th>
-        <th style="padding:6px;border:1px solid #cbd5e1;text-align:center;">❌ Yanlış</th>
-        <th style="padding:6px;border:1px solid #cbd5e1;text-align:center;">Zorluk</th>
-    </tr></thead><tbody>`;
+    // TAHMİN BAŞARI ANALİZİ
+    let basariRows = [];
 
     matchDetails.sort((a,b) => parseInt(a.id.replace("m","")) - parseInt(b.id.replace("m",""))).forEach((md, i) => {
         let skorBildi = 0, sonucBildi = 0, yanlis = 0, topTahmin = 0;
+
         for(let u in savedUsers) {
             if(savedUsers[u][md.id]) {
                 let p = savedUsers[u][md.id];
                 let pts = getMatchPoints(p.home, p.away, md.home, md.away);
                 topTahmin++;
+
                 if(pts === 5) skorBildi++;
                 else if(pts === 3) sonucBildi++;
                 else yanlis++;
             }
         }
+
         let correctPct = topTahmin > 0 ? Math.round(((skorBildi + sonucBildi) / topTahmin) * 100) : 0;
         let diffLabel, diffColor;
-        if(correctPct >= 60) { diffLabel = "Kolay"; diffColor = "#059669"; }
-        else if(correctPct >= 30) { diffLabel = "Orta"; diffColor = "#d97706"; }
-        else if(correctPct >= 10) { diffLabel = "Zor"; diffColor = "#ea580c"; }
-        else { diffLabel = "İmkansız!"; diffColor = "#dc2626"; }
+
+        if(correctPct >= 60) {
+            diffLabel = "Kolay";
+            diffColor = "#059669";
+        } else if(correctPct >= 30) {
+            diffLabel = "Orta";
+            diffColor = "#d97706";
+        } else if(correctPct >= 10) {
+            diffLabel = "Zor";
+            diffColor = "#ea580c";
+        } else {
+            diffLabel = "İmkansız!";
+            diffColor = "#dc2626";
+        }
 
         let bg = i % 2 === 0 ? '#ffffff' : '#f8fafc';
-        html += `<tr style="background:${bg};">
+
+        basariRows.push(`<tr style="background:${bg};">
             <td style="padding:5px;border:1px solid #e2e8f0;font-weight:bold;white-space:nowrap;">${md.match.home} - ${md.match.away}</td>
             <td style="padding:5px;border:1px solid #e2e8f0;text-align:center;font-weight:900;">${md.home}-${md.away}</td>
             <td style="padding:5px;border:1px solid #e2e8f0;text-align:center;color:#059669;font-weight:bold;">${skorBildi}</td>
             <td style="padding:5px;border:1px solid #e2e8f0;text-align:center;color:#d97706;">${sonucBildi}</td>
             <td style="padding:5px;border:1px solid #e2e8f0;text-align:center;color:#dc2626;">${yanlis}</td>
             <td style="padding:5px;border:1px solid #e2e8f0;text-align:center;font-weight:bold;color:${diffColor};">${diffLabel} (${correctPct}%)</td>
-        </tr>`;
+        </tr>`);
     });
-    html += `</tbody></table></div>`;
+
+    html += `<hr><h3>🎯 Maç Bazlı Tahmin Başarısı</h3>`;
+    html += `<div style="overflow-x:auto;">
+        <table style="width:100%;border-collapse:collapse;font-size:11px;margin-top:8px;">
+            <thead>
+                <tr style="background:#059669;color:white;">
+                    <th style="padding:6px;border:1px solid #cbd5e1;text-align:left;">Maç</th>
+                    <th style="padding:6px;border:1px solid #cbd5e1;text-align:center;">Sonuç</th>
+                    <th style="padding:6px;border:1px solid #cbd5e1;text-align:center;">🎯 Skor</th>
+                    <th style="padding:6px;border:1px solid #cbd5e1;text-align:center;">✅ Sonuç</th>
+                    <th style="padding:6px;border:1px solid #cbd5e1;text-align:center;">❌ Yanlış</th>
+                    <th style="padding:6px;border:1px solid #cbd5e1;text-align:center;">Zorluk</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${basariRows.slice(0, 6).join('')}
+            </tbody>`;
+
+    if(basariRows.length > 6) {
+        html += `<tbody id="basariMore" style="display:none;">
+            ${basariRows.slice(6).join('')}
+        </tbody>`;
+    }
+
+    html += `</table></div>`;
+
+    if(basariRows.length > 6) {
+        html += `<div style="text-align:center;margin-top:8px;">
+            <div id="basariDots" style="color:#94a3b8;font-size:12px;margin-bottom:5px;">
+                ... ve ${basariRows.length - 6} maç daha
+            </div>
+            <button id="basariToggle"
+                onclick="
+                    let el=document.getElementById('basariMore');
+                    let btn=document.getElementById('basariToggle');
+                    let dots=document.getElementById('basariDots');
+
+                    if(el.style.display==='none') {
+                        el.style.display='table-row-group';
+                        btn.innerText='▲ Gizle';
+                        dots.style.display='none';
+                    } else {
+                        el.style.display='none';
+                        btn.innerText='▼ Devamını Göster (${basariRows.length - 6})';
+                        dots.style.display='block';
+                    }
+                "
+                style="background:#f0fdf4;border:2px solid #10b981;color:#059669;padding:6px 16px;border-radius:8px;font-size:12px;font-weight:bold;cursor:pointer;">
+                ▼ Devamını Göster (${basariRows.length - 6})
+            </button>
+        </div>`;
+    }
 
     // GERÇEK TAKIM ANALİZİ
     html += `<hr><h3>⚽ Takım Analizi (Gerçek Sonuçlara Göre)</h3>`;
@@ -1183,9 +1397,11 @@ function extractRealFastData() {
                     realResults = data.realResults || {};
                     matchdayStatus = data.matchdayStatus || matchdayStatus;
                     championOpen = data.championOpen !== undefined ? data.championOpen : true;
+                    secondChampionOpen = data.secondChampionOpen !== undefined ? data.secondChampionOpen : false;
                     announcementText = data.announcementText || "";
                     matchdayDeadlines = data.matchdayDeadlines || {};
-                    updateAnnouncementDisplay();
+dayVisibilitySettings = data.dayVisibilitySettings || {};
+updateAnnouncementDisplay();
                     updateChampionLock();
                     startCountdown();
                 }
@@ -1219,6 +1435,8 @@ function extractRealFastData() {
         function updateChampionLock() {
             var champSel = document.getElementById('userChampionSelect');
             var champContainer = document.querySelector('.champion-selector');
+            var secondBox = document.getElementById('secondChampionBox');
+            var secondSel = document.getElementById('userSecondChampionSelect');
             if(!championOpen) {
                 champSel.disabled = true;
                 if(!document.getElementById('champLockedMsg')) {
@@ -1233,7 +1451,43 @@ function extractRealFastData() {
                 var msg = document.getElementById('champLockedMsg');
                 if(msg) msg.remove();
             }
+            if(secondBox && secondSel) {
+                secondBox.style.display = secondChampionOpen ? 'flex' : 'none';
+                secondSel.disabled = !secondChampionOpen;
+            }
         }
+function getDayVisibility(day) {
+    let s = dayVisibilitySettings[String(day)] || {};
+    return { scores: s.scores !== false, rates: s.rates !== false };
+}
+function canShowDayScores(day) {
+    if(isAdminMode) return true;
+    return getDayVisibility(day).scores;
+}
+function canShowDayRates(day) {
+    if(isAdminMode) return true;
+    return getDayVisibility(day).rates;
+}
+function renderDayVisibilityAdminControls() {
+    const box = document.getElementById('dayVisibilitySettingsBox');
+    if(!box) return;
+    const dayNames = {1:"1. Maçlar",2:"2. Maçlar",3:"3. Maçlar",4:"Son 32",5:"Son 16",6:"Çeyrek F.",7:"Yarı F.",8:"Final"};
+    let html = `<div style="display:grid;grid-template-columns:1fr 90px 90px;gap:8px;align-items:center;">`;
+    for(let i=1; i<=8; i++) {
+        let v = getDayVisibility(i);
+        html += `<div style="font-weight:bold;color:#334155;font-size:12px;padding:6px 0;">${dayNames[i]}</div>
+            <select id="dayVisScores_${i}" style="padding:5px;border-radius:6px;border:1px solid #cbd5e1;font-size:11px;font-weight:bold;">
+                <option value="true" ${v.scores ? "selected" : ""}>Skor Açık</option>
+                <option value="false" ${!v.scores ? "selected" : ""}>Skor Kapalı</option>
+            </select>
+            <select id="dayVisRates_${i}" style="padding:5px;border-radius:6px;border:1px solid #cbd5e1;font-size:11px;font-weight:bold;">
+                <option value="true" ${v.rates ? "selected" : ""}>Oran Açık</option>
+                <option value="false" ${!v.rates ? "selected" : ""}>Oran Kapalı</option>
+            </select>`;
+    }
+    html += `</div>`;
+    box.innerHTML = html;
+}
         function startCountdown() {
     if(countdownInterval) clearInterval(countdownInterval);
     let bar = document.getElementById('countdownBar');
@@ -1423,6 +1677,7 @@ updateLockedNotice();
 document.getElementById('username').value = ''; 
                 document.getElementById('userPassword').value = '';
                 document.getElementById('userChampionSelect').value = '';
+                document.getElementById('userSecondChampionSelect').value = '';
                 actionBar.style.display = "flex";
                 champBox.style.display = "none";
                 lockedNotice.style.display = matchdayStatus[currentDay] ? "none" : "block";
@@ -1440,11 +1695,14 @@ updateLockedNotice()
                 }
                 currentViewingUser = viewMode;
                 
-  if(currentAuthenticatedUser === viewMode && championOpen) {
+  if(currentAuthenticatedUser === viewMode && (championOpen || secondChampionOpen)) {
             actionBar.style.display = "flex";
             document.querySelector('.save-row').style.display = 'none';
             if(savedUsers[viewMode] && savedUsers[viewMode].champion) {
                 document.getElementById('userChampionSelect').value = savedUsers[viewMode].champion;
+            }
+            if(savedUsers[viewMode] && savedUsers[viewMode].secondChampion) {
+                document.getElementById('userSecondChampionSelect').value = savedUsers[viewMode].secondChampion;
             }
         } else {
             actionBar.style.display = "none";
@@ -1466,6 +1724,9 @@ updateLockedNotice()
             if(savedUsers[viewMode].champion && realResults.champion && savedUsers[viewMode].champion === realResults.champion) {
                 totalPts += 15;
             }
+            if(savedUsers[viewMode].secondChampion && realResults.champion && savedUsers[viewMode].secondChampion === realResults.champion) {
+                totalPts += 7;
+            }
 
                     
                     // HIZLI TAHMİN PUANLARINI EKLEME
@@ -1474,9 +1735,23 @@ updateLockedNotice()
                     totalPts += fastPts;
 
                     let champText = savedUsers[viewMode].champion ? savedUsers[viewMode].champion : "Seçilmedi";
+                    let secondChampText = savedUsers[viewMode].secondChampion ? savedUsers[viewMode].secondChampion : "Seçilmedi";
                     let fastInfo = savedUsers[viewMode].fastMode ? `<div style="font-size:12px; margin-top:5px; color:#1e3a8a;">⚡ Hızlı Tahmin Puanı: <b>+${fastPts}</b></div>` : `<div style="font-size:12px; margin-top:5px; color:#ef4444;"></div>`;
 
-                    champBox.innerHTML = `🏆 ${viewMode} Şampiyon Tahmini: <br><b style="font-size:18px;">${champText}</b><br><div style="margin-top:10px; font-size:14px; color:#059669; font-weight:900; background:#d1fae5; padding:5px; border-radius:6px; display:inline-block;">⭐ Toplam Puan: ${totalPts}</div>${fastInfo}`;
+                    champBox.innerHTML = `
+    <div style="text-align:center;font-size:13px;font-weight:900;color:#92400e;">
+        🏆 ${viewMode} Şampiyon Tahmini: <span style="font-size:14px;">${champText}</span>
+    </div>
+    <div style="text-align:center;font-size:11px;color:#059669;margin-top:3px;">
+        🥈 2. Aday: <b>${secondChampText}</b> (+7P)
+    </div>
+    <div style="text-align:center;margin-top:6px;">
+        <span style="font-size:13px;color:#059669;font-weight:900;background:#d1fae5;padding:3px 10px;border-radius:6px;display:inline-block;">
+            ⭐ Toplam Puan: ${totalPts}
+        </span>
+    </div>
+    ${fastInfo}
+`;
                     champBox.style.display = "block";
                 } else {
                     champBox.style.display = "none";
@@ -1545,8 +1820,84 @@ updateLockedNotice();
         }
         let lockIcon = isOpen ? " 🔓" : " 🔒";
         btn.innerText = dayNames[i] + lockIcon;
-        btn.onclick = () => { currentDay = i; renderTabs(); renderMatches(i); startCountdown(); updateLockedNotice(); updateSaveButton(); };
+        btn.onclick = () => { currentDay = i; renderTabs(); renderMatches(i); startCountdown(); updateLockedNotice(); updateSaveButton(); renderUserDayPoints(); };
         tabsContainer.appendChild(btn);
+    }
+}
+function renderUserDayPoints() {
+    // Önceki bar varsa temizle
+    var old = document.getElementById('userDayPointsBar');
+    if(old) old.remove();
+
+    // Hangi kullanıcı görünüyor?
+    var userToShow = null;
+    if(isAdminMode) return; // admin için göstermeyelim
+    if(currentViewingUser && currentViewingUser !== "ALL" && currentViewingUser !== "NEW") {
+        userToShow = currentViewingUser;
+    } else {
+        return;
+    }
+    if(!savedUsers[userToShow]) return;
+
+    // Bu tur maçlarını sırayla al
+    var dayMatches = matches.filter(function(m){ return m.day === currentDay; });
+    if(dayMatches.length === 0) return;
+
+    var html = '';
+    var hasAnyResult = false;
+
+    var userTotalDay = 0;
+    dayMatches.forEach(function(m) {
+        var userPred = savedUsers[userToShow][m.id];
+        var real = realResults[m.id];
+        if(userPred && real) {
+            hasAnyResult = true;
+            var pts = getMatchPoints(userPred.home, userPred.away, real.home, real.away);
+            userTotalDay += pts;
+            var cls = pts === 5 ? 'udp-5' : (pts === 3 ? 'udp-3' : 'udp-0');
+            html += '<span class="udp-pt ' + cls + '">+' + pts + '</span>';
+        } else {
+            html += '<span class="udp-pt udp-na">·</span>';
+        }
+    });
+
+    // Tüm kullanıcıların bu turdaki puanları
+    var dayStandings = [];
+    for(var u in savedUsers) {
+        var sum = 0;
+        var hasAny = false;
+        dayMatches.forEach(function(m) {
+            if(savedUsers[u][m.id] && realResults[m.id]) {
+                sum += getMatchPoints(savedUsers[u][m.id].home, savedUsers[u][m.id].away, realResults[m.id].home, realResults[m.id].away);
+                hasAny = true;
+            }
+        });
+        if(hasAny) dayStandings.push({ name: u, pts: sum });
+    }
+    dayStandings.sort(function(a,b){
+        if(b.pts !== a.pts) return b.pts - a.pts;
+        return a.name.localeCompare(b.name);
+    });
+
+    var userRank = 0;
+    for(var i = 0; i < dayStandings.length; i++) {
+        if(dayStandings[i].name === userToShow) { userRank = i + 1; break; }
+    }
+
+    var medal = userRank === 1 ? "1" : (userRank === 2 ? "2" : (userRank === 3 ? "3" : userRank + "."));
+
+    html += '<span class="udp-summary">⭐ ' + userTotalDay + 'p <span class="udp-rank">' + medal + '</span></span>';
+
+    if(!hasAnyResult) return;
+
+    var bar = document.createElement('div');
+    bar.id = 'userDayPointsBar';
+    bar.className = 'user-day-points';
+    bar.innerHTML = html;
+
+    var notice = document.getElementById('lockedNotice');
+    if(notice && notice.parentNode) {
+        notice.parentNode.insertBefore(bar, notice.nextSibling);
     }
 }
 function updateLockedNotice() {
@@ -1583,6 +1934,7 @@ function updateLockedNotice() {
         // Henüz hiç açılmamış gün
         lockedNotice.style.display = "none";
     }
+renderUserDayPoints();
 }
 let allExpanded = false; // Sayfanın genel durumunu tutar
 function updateSaveButton() {
@@ -1642,7 +1994,9 @@ function toggleMatchPredictions(clickedBtn, targetId) {
                 let matchMiddleHTML = "";
 
                 if (currentViewingUser === "ALL") {
-                    let inputsLocked = !isAdminMode ? 'disabled' : '';
+    let showScoresForDay = canShowDayScores(match.day);
+    let showRatesForDay = canShowDayRates(match.day);
+    let inputsLocked = !isAdminMode ? 'disabled' : '';
                     let rH = realResults[match.id] ? realResults[match.id].home : "";
                     let rA = realResults[match.id] ? realResults[match.id].away : "";
                     
@@ -1669,7 +2023,7 @@ function toggleMatchPredictions(clickedBtn, targetId) {
                         }
                     }
                     let statsBarHTML = "";
-                    if(totalPreds > 0) {
+                    if(totalPreds > 0 && showRatesForDay) {
                         let hPct = Math.round((homeWin / totalPreds) * 100);
                         let dPct = Math.round((draw / totalPreds) * 100);
                         let aPct = 100 - hPct - dPct;
@@ -1710,39 +2064,41 @@ function toggleMatchPredictions(clickedBtn, targetId) {
                             ${diffHTML}
                         </div>`;
                     }
-                    let predictionsList = "";
-                    for (let u in savedUsers) {
-                        if (savedUsers[u][match.id]) {
-                            let p = savedUsers[u][match.id];
-                            let ptsHTML = "";
-                            if (realResults[match.id]) {
-                                let r = realResults[match.id];
-                                let pts = getMatchPoints(p.home, p.away, r.home, r.away);
-                                let ptsClass = pts === 5 ? 'pts-5' : (pts === 3 ? 'pts-3' : 'pts-0');
-                                ptsHTML = `<span class="${ptsClass}" style="font-size:11px;">+${pts}p</span>`;
-                            }
-                            predictionsList += `
-                            <div style="display:flex; justify-content:space-between; align-items:center; padding:4px 0; border-bottom:1px solid #f1f5f9; font-size:11px;">
-                                <span style="color:#334155; font-weight:bold; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:85px;">👤 ${u}</span>
-                                <div style="display:flex; align-items:center; gap:8px;">
-                                    <span style="font-weight:900; color:#0f172a;">${p.home} - ${p.away}</span>
-                                    <div style="width:30px; text-align:right;">${ptsHTML}</div>
-                                </div>
-                            </div>`;
-                        }
-                    }
-                    if(predictionsList === "") predictionsList = `<div style="text-align:center; color:#94a3b8; font-size:12px; padding:10px 0;">Henüz kimse tahmin yapmadı.</div>`;
-
-                    matchMiddleHTML = `
+                    let predictionsBlockHTML = "";
+if(showScoresForDay) {
+    let predictionsList = "";
+    for (let u in savedUsers) {
+        if (savedUsers[u][match.id]) {
+            let p = savedUsers[u][match.id];
+            let ptsHTML = "";
+            if (realResults[match.id]) {
+                let r = realResults[match.id];
+                let pts = getMatchPoints(p.home, p.away, r.home, r.away);
+                let ptsClass = pts === 5 ? 'pts-5' : (pts === 3 ? 'pts-3' : 'pts-0');
+                ptsHTML = `<span class="${ptsClass}" style="font-size:11px;">+${pts}p</span>`;
+            }
+            predictionsList += `
+            <div style="display:flex; justify-content:space-between; align-items:center; padding:4px 0; border-bottom:1px solid #f1f5f9; font-size:11px;">
+                <span style="color:#334155; font-weight:bold; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:85px;">👤 ${u}</span>
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <span style="font-weight:900; color:#0f172a;">${p.home} - ${p.away}</span>
+                    <div style="width:30px; text-align:right;">${ptsHTML}</div>
+                </div>
+            </div>`;
+        }
+    }
+    if(predictionsList === "") predictionsList = `<div style="text-align:center; color:#94a3b8; font-size:12px; padding:10px 0;">Henüz kimse tahmin yapmadı.</div>`;
+    predictionsBlockHTML = `
+        <div class="prediction-expand-btn" onclick="toggleMatchPredictions(this, 'preds_${match.id}')">+ Tahminleri Gör</div>
+        <div id="preds_${match.id}" class="predictions-collapsible" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:3px 10px;">
+            ${predictionsList}
+        </div>
+    `;
+}
+matchMiddleHTML = `
     ${matchHeaderAndScore}
     ${statsBarHTML}
-    <div class="prediction-expand-btn"" onclick="toggleMatchPredictions(this, 'preds_${match.id}')">
-        + Tahminleri Gör
-    </div>
-    
-    <div id="preds_${match.id}" class="predictions-collapsible" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:3px 10px;">
-        ${predictionsList}
-    </div>
+    ${predictionsBlockHTML}
 `;
                 } else {
                     let resultHTML = "";
@@ -1775,7 +2131,7 @@ function toggleMatchPredictions(clickedBtn, targetId) {
                         }
                     }
                     let statsBarHTML2 = "";
-                    if(totalPreds2 > 0 && currentViewingUser !== "NEW") {
+                    if(totalPreds2 > 0 && currentViewingUser !== "NEW" && canShowDayRates(match.day)) {
                         let hPct2 = Math.round((homeWin2 / totalPreds2) * 100);
                         let dPct2 = Math.round((draw2 / totalPreds2) * 100);
                         let aPct2 = 100 - hPct2 - dPct2;
@@ -2116,6 +2472,9 @@ function validateR32Selections(currentSelect) {
         if(savedUsers[user].champion && realResults.champion && savedUsers[user].champion === realResults.champion) {
             totalPts += 15;
         }
+        if(savedUsers[user].secondChampion && realResults.champion && savedUsers[user].secondChampion === realResults.champion) {
+            totalPts += 7;
+        }
         if(savedUsers[user].fastMode) {
             totalPts += calculateFastPoints(savedUsers[user].fastMode, realFast);
         }
@@ -2414,7 +2773,7 @@ if(checks.length < 2 || checks.length > 4) {
 
     function getUserStats(username) {
         let data = savedUsers[username];
-        let stats = { puan:0, skorBildi:0, sonucBildi:0, yanlis:0, tahmin:0, champion: data.champion || "-" };
+        let stats = { puan:0, skorBildi:0, sonucBildi:0, yanlis:0, tahmin:0, champion: data.champion || "-", secondChampion: data.secondChampion || "-" };
         for(let mId in data) {
             if(mId.startsWith("m") && data[mId].home !== undefined && data[mId].away !== undefined && realResults[mId]) {
                 let pts = getMatchPoints(data[mId].home, data[mId].away, realResults[mId].home, realResults[mId].away);
@@ -2426,6 +2785,7 @@ if(checks.length < 2 || checks.length > 4) {
             }
         }
         if(data.champion && realResults.champion && data.champion === realResults.champion) stats.puan += 15;
+        if(data.secondChampion && realResults.champion && data.secondChampion === realResults.champion) stats.puan += 7;
         stats.isabet = stats.tahmin > 0 ? Math.round(((stats.skorBildi + stats.sonucBildi) / stats.tahmin) * 100) : 0;
         return stats;
     }
@@ -2532,20 +2892,35 @@ function limitCompareCheck() {
             for(let i=1; i<=8; i++) { if(document.getElementById('setDay'+i)) document.getElementById('setDay'+i).value = matchdayStatus[i] ? "true" : "false"; }
             if(realResults.champion) document.getElementById('realChampionSelect').value = realResults.champion;
             document.getElementById('setChampionOpen').value = championOpen ? "true" : "false";
+            document.getElementById('setSecondChampionOpen').value = secondChampionOpen ? "true" : "false";
             document.getElementById('adminAnnouncementText').value = announcementText || "";
             for(var di=1;di<=8;di++){var dlEl=document.getElementById('setDeadline'+di);if(dlEl&&matchdayDeadlines[String(di)])dlEl.value=matchdayDeadlines[String(di)];}
+renderDayVisibilityAdminControls();
             document.getElementById('adminSettingsOverlay').style.display = 'flex';
         }
 
         function saveAdminSettings() {
             for(let i=1; i<=8; i++) { matchdayStatus[i] = document.getElementById('setDay'+i).value === "true"; }
             championOpen = document.getElementById('setChampionOpen').value === "true";
+            secondChampionOpen = document.getElementById('setSecondChampionOpen').value === "true";
             announcementText = document.getElementById('adminAnnouncementText').value.trim();
             for(var di=1;di<=8;di++){var dlEl=document.getElementById('setDeadline'+di);if(dlEl&&dlEl.value)matchdayDeadlines[String(di)]=dlEl.value;else delete matchdayDeadlines[String(di)];}
-            const champ = document.getElementById('realChampionSelect').value;
+dayVisibilitySettings = {};
+for(let vi=1; vi<=8; vi++) {
+    let scoreEl = document.getElementById('dayVisScores_' + vi);
+    let rateEl = document.getElementById('dayVisRates_' + vi);
+    if(scoreEl && rateEl) {
+        let scoresOpen = scoreEl.value === "true";
+        let ratesOpen = rateEl.value === "true";
+        if(!scoresOpen || !ratesOpen) {
+            dayVisibilitySettings[String(vi)] = { scores: scoresOpen, rates: ratesOpen };
+        }
+    }
+}
+const champ = document.getElementById('realChampionSelect').value;
             if(champ) realResults.champion = champ; else delete realResults.champion;
 
-            db.collection("appData").doc("admin").set({ realResults: realResults, matchdayStatus: matchdayStatus, championOpen: championOpen, announcementText: announcementText, matchdayDeadlines: matchdayDeadlines }, { merge: true })
+            db.collection("appData").doc("admin").set({ realResults: realResults, matchdayStatus: matchdayStatus, championOpen: championOpen, secondChampionOpen: secondChampionOpen, announcementText: announcementText, matchdayDeadlines: matchdayDeadlines, dayVisibilitySettings: dayVisibilitySettings }, { merge: true })
             .then(() => { document.getElementById('adminSettingsOverlay').style.display = 'none'; alert("Ayarlar güncellendi!"); })
             .catch((error) => alert("Hata: " + error.message));
         }
@@ -2563,13 +2938,14 @@ function limitCompareCheck() {
                 .then(() => alert("Gerçek maç sonuçları kaydedildi!"))
                 .catch(err => alert("Hata: " + err));
             } else {
-                let username = "", password = "", champ = "";
+                let username = "", password = "", champ = "", secondChamp = "";
                 let viewMode = document.getElementById('viewUserSelect').value;
 
                 if (viewMode === "NEW") {
                     username = document.getElementById('username').value.trim();
                     password = document.getElementById('userPassword').value.trim();
                     champ = document.getElementById('userChampionSelect').value;
+                    secondChamp = document.getElementById('userSecondChampionSelect').value;
                     
                     if(!username) return alert("Lütfen isminizi girin.");
                     if(!password) return alert("Lütfen şifre belirleyin.");
@@ -2577,17 +2953,19 @@ function limitCompareCheck() {
                 } else { username = currentAuthenticatedUser; }
 
 let existingChamp = document.getElementById('userChampionSelect').value;
+let existingSecondChamp = document.getElementById('userSecondChampionSelect').value;
 if(existingChamp && championOpen) {
-    let existingObj = savedUsers[username] || {};
-    existingObj.champion = existingChamp;
     db.collection("users").doc(username).set({ champion: existingChamp }, { merge: true });
+}
+if(existingSecondChamp && secondChampionOpen) {
+    db.collection("users").doc(username).set({ secondChampion: existingSecondChamp }, { merge: true });
 }
 
 
                 if(!matchdayStatus[currentDay]) return alert("Bu güne ait tahmin alımı kilitli.");
                 
                 let userObj = savedUsers[username] || {};
-                if (viewMode === "NEW") { userObj.password = password; if(champ && championOpen) userObj.champion = champ; }
+                if (viewMode === "NEW") { userObj.password = password; if(champ && championOpen) userObj.champion = champ; if(secondChamp && secondChampionOpen) userObj.secondChampion = secondChamp; }
                 
                 const dayMatches = matches.filter(m => m.day === currentDay);
                 dayMatches.forEach(match => {
