@@ -119,6 +119,20 @@
         .bracket-score { background: #e2e8f0; color: #475569; padding: 3px 8px; border-radius: 6px; min-width: 20px; text-align: center; font-size: 13px;}
         .bracket-team.winner .bracket-score { background: var(--success); color: white; }
 
+        /* Gerçekleşen Eşleşmeler - kompakt sığdırma (sadece bracket modalı) */
+        #bracketContent .bracket-container { gap: 6px; padding: 4px; height: calc(80vh - 95px); overflow-x: auto; overflow-y: hidden; justify-content: center; }
+        #bracketContent .bracket-column { min-width: 0; flex: 0 1 155px; }
+        #bracketContent .bracket-matches-wrapper { gap: 5px; }
+        #bracketContent .bracket-round-title { font-size: 10px; height: 18px; line-height: 18px; margin-bottom: 6px; border-bottom-width: 2px; letter-spacing: 0; }
+        #bracketContent .bracket-match { border-radius: 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.06); }
+        #bracketContent .bracket-team { padding: 5px 12px; font-size: 12px; line-height: 1.15; }
+        #bracketContent .bracket-team > span { gap: 4px !important; min-width: 0; }
+        #bracketContent .bracket-team > span > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        #bracketContent .bracket-score { padding: 1px 4px; font-size: 9.5px; min-width: 12px; border-radius: 4px; }
+        #bracketContent .bracket-team.winner { border-left-width: 3px; }
+        #bracketContent .bracket-team img { width: 15px !important; height: 11px !important; }
+        #bracketContent .bracket-match:hover { transform: none; }
+
 .fast-team-row { display: flex; align-items: center; justify-content: space-between; padding: 3px; border-bottom: 1px solid #f1f5f9; gap: 3px; }
 .fast-team-row select { width: 150px; font-size: 11px; padding: 2px; border-radius: 4px; border: 1px solid #cbd5e1; outline:none; font-weight:bold;}
 .fast-team-row .fast-slot { width: 100px; font-size: 11px; font-weight: bold; color: #1e3a8a; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 2px 0;}
@@ -544,6 +558,13 @@
         <div id="compareContent"></div>
     </div>
 </div>
+<div class="modal-overlay" id="unitRankingOverlay" style="z-index:10001;">
+    <div class="custom-modal" style="text-align:left;max-width:560px;">
+        <span class="close-btn" onclick="document.getElementById('unitRankingOverlay').style.display='none'">&times;</span>
+        <h2 style="margin-top:0;text-align:center;">🏢 Ünite Sıralaması</h2>
+        <div id="unitRankingContent"></div>
+    </div>
+</div>
 <div class="modal-overlay" id="reportsOverlay">
     <div class="custom-modal" style="text-align:left;">
         <span class="close-btn" onclick="document.getElementById('reportsOverlay').style.display='none'">&times;</span>
@@ -573,7 +594,7 @@
     </div>
 
     <div class="modal-overlay" id="bracketOverlay">
-        <div class="custom-modal" style="max-width: 95%; width: 1600px; background: #f8fafc; padding: 20px; border: 2px solid #e5e7eb;">
+        <div class="custom-modal" style="max-width: 96%; width: 1200px; background: #f8fafc; padding: 12px; border: 2px solid #e5e7eb;">
             <span class="close-btn" onclick="document.getElementById('bracketOverlay').style.display='none'">&times;</span>
             <h2 style="color: var(--secondary); margin-top: 0; text-align: center; border-bottom: 2px solid #cbd5e1; padding-bottom: 15px; font-size: 20px; font-weight: 900;">Gerçekleşen Eşleşmeler</h2>
             <div id="bracketContent"></div>
@@ -626,6 +647,12 @@
                     <option value="">-- Henüz Belli Değil --</option>
                 </select>
             </div>
+            <div style="margin-top:15px;background:#eef2ff;padding:15px;border-radius:8px;border:1px solid #c7d2fe;">
+                <label style="font-weight:bold;color:#4338ca;display:block;margin-bottom:4px;">🏢 Kişi Üniteleri</label>
+                <div style="font-size:11px;color:#6366f1;margin-bottom:10px;">Her kişinin yanına ünitesini yazın. Aynı ünitedeki kişilerin <b>puan ortalaması</b> alınarak üniteler de yarıştırılır.</div>
+                <datalist id="unitOptions"></datalist>
+                <div id="unitSettingsBox" style="max-height:240px;overflow-y:auto;"></div>
+            </div>
             <button class="btn-admin" style="width: 100%; margin-top: 20px;" onclick="saveAdminSettings()">Ayarları Kaydet</button>
         </div>
     </div>
@@ -648,6 +675,7 @@
         let announcementText = "";
         let matchdayDeadlines = {};
 let dayVisibilitySettings = {}; // Tur bazlı skor/oran görünürlük ayarları
+let userUnits = {}; // Kişi -> Ünite eşlemesi (admin tarafından atanır)
 let countdownInterval = null;
         let currentDay = 1;
         let isAdminMode = false;
@@ -1401,6 +1429,7 @@ function extractRealFastData() {
                     announcementText = data.announcementText || "";
                     matchdayDeadlines = data.matchdayDeadlines || {};
 dayVisibilitySettings = data.dayVisibilitySettings || {};
+userUnits = data.userUnits || {};
 updateAnnouncementDisplay();
                     updateChampionLock();
                     startCountdown();
@@ -1486,6 +1515,30 @@ function renderDayVisibilityAdminControls() {
             </select>`;
     }
     html += `</div>`;
+    box.innerHTML = html;
+}
+function renderUnitAdminControls() {
+    const box = document.getElementById('unitSettingsBox');
+    if(!box) return;
+    let users = Object.keys(savedUsers).sort((a,b) => a.localeCompare(b, 'tr'));
+    // Mevcut ünite adlarını datalist'e doldur (tutarlı yazım için)
+    let dl = document.getElementById('unitOptions');
+    if(dl) {
+        let uniq = Array.from(new Set(Object.values(userUnits).filter(Boolean))).sort((a,b)=>a.localeCompare(b,'tr'));
+        dl.innerHTML = uniq.map(u => `<option value="${u.replace(/"/g,'&quot;')}">`).join('');
+    }
+    if(users.length === 0) {
+        box.innerHTML = '<div style="font-size:12px;color:#94a3b8;text-align:center;padding:10px;">Henüz kayıtlı kullanıcı yok.</div>';
+        return;
+    }
+    let html = '';
+    users.forEach((u, i) => {
+        let val = (userUnits[u] || "").replace(/"/g, '&quot;');
+        html += `<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+            <span style="flex:1;min-width:0;font-size:12px;font-weight:bold;color:#334155;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">👤 ${u}</span>
+            <input list="unitOptions" type="text" id="unitInput_${i}" data-user="${encodeURIComponent(u)}" value="${val}" placeholder="Ünite..." style="flex:1;min-width:0;padding:5px 8px;border-radius:6px;border:1px solid #cbd5e1;font-size:12px;outline:none;">
+        </div>`;
+    });
     box.innerHTML = html;
 }
         function startCountdown() {
@@ -2375,77 +2428,194 @@ function validateR32Selections(currentSelect) {
             }
         }
 
-        // --- GERÇEK TURNUVA EŞLEŞMELERİ GÖRÜNÜMÜ ---
-        function showBracket() {
-            const rounds = [
-                { day: 4, name: "Son 32" },
-                { day: 5, name: "Son 16" },
-                { day: 6, name: "Çeyrek F." },
-                { day: 7, name: "Yarı F." },
-                { day: 8, name: "Final" }
-            ];
-            
-            let dynamicNames = getDynamicBracketNames();
-            let html = '<div class="bracket-container">';
-            
-            rounds.forEach(r => {
-                const rMatches = matches.filter(m => m.day === r.day && m.id !== "m103");
-                html += `<div class="bracket-column">
-                            <div class="bracket-round-title">${r.name}</div>
-                            <div class="bracket-matches-wrapper">`;
-                
-                rMatches.forEach(m => {
-                    let hTeam = dynamicNames[m.home] || m.home;
-                    let aTeam = dynamicNames[m.away] || m.away;
-                    let hScore = "-", aScore = "-";
-                    let hWin = false, aWin = false;
-                    
-                    if(realResults[m.id]) {
-                        hScore = realResults[m.id].home;
-                        aScore = realResults[m.id].away;
-                        if(hScore > aScore) hWin = true;
-                        if(aScore > hScore) aWin = true;
-                    }
-                    
-                    html += `<div class="bracket-match">
-                                <div class="bracket-team ${hWin ? 'winner' : ''}">
-                                    <span>${hTeam}</span>
-                                    <span class="bracket-score">${hScore}</span>
-                                </div>
-                                <div class="bracket-team ${aWin ? 'winner' : ''}">
-                                    <span>${aTeam}</span>
-                                    <span class="bracket-score">${aScore}</span>
-                                </div>
-                             </div>`;
-                });
-                
-                html += `   </div>
-                          </div>`;
-            });
-            let championName = "......";
-    let finalMatch = realResults["m104"]; 
-    
-    if (finalMatch) {
-        const m = matches.find(match => match.id === "m104");
-        if (Number(finalMatch.home) > Number(finalMatch.away)) {
-            championName = dynamicNames[m.home] || m.home;
-        } else if (Number(finalMatch.away) > Number(finalMatch.home)) {
-            championName = dynamicNames[m.away] || m.away;
-        } else {
-            championName = "Final Oynanıyor...";
+        // --- ÜLKE BAYRAKLARI (Türkçe takım adı -> ISO ülke kodu) ---
+        const countryFlags = {
+            "Meksika":"mx","Güney Afrika":"za","Güney Kore":"kr","Çekya":"cz",
+            "Kanada":"ca","Bosna-Hersek":"ba","Katar":"qa","İsviçre":"ch",
+            "Brezilya":"br","Fas":"ma","Haiti":"ht","İskoçya":"gb-sct",
+            "ABD":"us","Paraguay":"py","Türkiye":"tr","Avustralya":"au",
+            "Almanya":"de","Curaçao":"cw","Fildişi Sahili":"ci","Ekvador":"ec",
+            "Hollanda":"nl","Japonya":"jp","İsveç":"se","Tunus":"tn",
+            "Belçika":"be","Mısır":"eg","İran":"ir","Yeni Zelanda":"nz",
+            "İspanya":"es","Yeşil Burun Adaları":"cv","Suudi Arabistan":"sa","Uruguay":"uy",
+            "Fransa":"fr","Senegal":"sn","Irak":"iq","Norveç":"no",
+            "Arjantin":"ar","Cezayir":"dz","Avusturya":"at","Ürdün":"jo",
+            "Portekiz":"pt","Demokratik Kongo Cum.":"cd","Özbekistan":"uz","Kolombiya":"co",
+            "İngiltere":"gb-eng","Hırvatistan":"hr","Gana":"gh","Panama":"pa"
+        };
+        function getFlag(name) {
+            let code = countryFlags[name];
+            if(!code) return '';
+            return `<img src="https://flagcdn.com/24x18/${code}.png" width="22" height="16" style="border-radius:2px; flex-shrink:0; box-shadow:0 0 1px rgba(0,0,0,0.5);" alt="" onerror="this.style.display='none'">`;
         }
-    }
 
-    html += `<div class="bracket-column" style="justify-content:center;">
-                <div class="bracket-round-title" style="border-bottom:none;">ŞAMPİYON</div>
-                <div class="bracket-match" style="background:linear-gradient(145deg, #fbbf24, #f59e0b); border:2px solid #d97706; text-align:center; padding:15px; margin-top:10px; box-shadow: 0 4px 15px rgba(217, 119, 6, 0.3);">
-                    <div style="font-size:24px; margin-bottom:5px;">🏆</div>
-                    <div style="font-size:16px; font-weight:900; color:#451a03; text-transform:uppercase;">${championName}</div>
-                </div>
-             </div>`;
+        // --- GERÇEK TURNUVA EŞLEŞMELERİ GÖRÜNÜMÜ (sol-sağ çift taraflı ağaç) ---
+        function showBracket() {
+            let dynamicNames = getDynamicBracketNames();
+            const fmtTeam = (name) => dynamicNames[name] || name;
+
+            // Bir takım satırı (mirror=true ise sağ taraf için ayna görünümü)
+            function teamRow(team, score, win, mirror) {
+                let flag = getFlag(team);
+                let winClass = win ? 'winner' : '';
+                if(mirror) {
+                    let extra = win ? 'border-left:none; border-right:5px solid var(--success);' : '';
+                    return `<div class="bracket-team ${winClass}" style="flex-direction:row-reverse; ${extra}">
+                                <span style="display:flex; align-items:center; gap:6px;"><span>${team}</span>${flag}</span>
+                                <span class="bracket-score">${score}</span>
+                            </div>`;
+                }
+                return `<div class="bracket-team ${winClass}">
+                            <span style="display:flex; align-items:center; gap:6px;">${flag}<span>${team}</span></span>
+                            <span class="bracket-score">${score}</span>
+                        </div>`;
+            }
+
+            // Tek bir maç kutusu
+            function matchBox(mId, mirror) {
+                const m = matches.find(x => x.id === mId);
+                if(!m) return '';
+                let hTeam = fmtTeam(m.home), aTeam = fmtTeam(m.away);
+                let hScore = "-", aScore = "-", hWin = false, aWin = false;
+                if(realResults[m.id]) {
+                    hScore = realResults[m.id].home;
+                    aScore = realResults[m.id].away;
+                    if(Number(hScore) > Number(aScore)) hWin = true;
+                    if(Number(aScore) > Number(hScore)) aWin = true;
+                }
+                return `<div class="bracket-match">
+                            ${teamRow(hTeam, hScore, hWin, mirror)}
+                            ${teamRow(aTeam, aScore, aWin, mirror)}
+                        </div>`;
+            }
+
+            // Bir tur sütunu (üstten alta maç sırası, ağaç hizası için önemli)
+            function renderColumn(title, ids, mirror) {
+                let h = `<div class="bracket-column"><div class="bracket-round-title">${title}</div><div class="bracket-matches-wrapper">`;
+                ids.forEach(id => { h += matchBox(id, mirror); });
+                h += `</div></div>`;
+                return h;
+            }
+
+            // Merkez sütun: Final + Şampiyon
+            function centerColumn() {
+                let championName = "......", championFlag = "";
+                let finalMatch = realResults["m104"];
+                const fm = matches.find(x => x.id === "m104");
+                if(finalMatch && fm) {
+                    if(Number(finalMatch.home) > Number(finalMatch.away)) championName = fmtTeam(fm.home);
+                    else if(Number(finalMatch.away) > Number(finalMatch.home)) championName = fmtTeam(fm.away);
+                    else championName = "Final Oynanıyor...";
+                }
+                championFlag = getFlag(championName);
+                let h = `<div class="bracket-column" style="justify-content:center; min-width:0; flex:0 1 140px;">`;
+                h += `<div class="bracket-round-title">FİNAL</div>`;
+                h += matchBox("m104", false);
+                h += `<div class="bracket-round-title" style="border-bottom:none; margin-top:18px;">ŞAMPİYON</div>`;
+                h += `<div class="bracket-match" style="background:linear-gradient(145deg, #fbbf24, #f59e0b); border:2px solid #d97706; text-align:center; padding:10px;">
+                        <div style="font-size:18px; margin-bottom:3px;">🏆</div>
+                        <div style="font-size:12px; font-weight:900; color:#451a03; text-transform:uppercase; display:flex; align-items:center; justify-content:center; gap:6px;">${championFlag}<span>${championName}</span></div>
+                      </div>`;
+                h += `</div>`;
+                return h;
+            }
+
+            // Maç numaraları resmi FIFA 2026 ağacına göre doğrulandı.
+            // SOL YARI Final'in üst yarısıdır (m101'e gider),
+            // SAĞ YARI Final'in alt yarısıdır (m102'ye gider).
+            let html = '<div class="bracket-container">';
+
+            // SOL TARAF: dıştan içe -> Son 32, Son 16, Çeyrek, Yarı
+            html += renderColumn("Son 32",    ["m74","m77","m73","m75","m83","m84","m81","m82"], false);
+            html += renderColumn("Son 16",    ["m89","m90","m93","m94"], false);
+            html += renderColumn("Çeyrek F.", ["m97","m98"], false);
+            html += renderColumn("Yarı F.",   ["m101"], false);
+
+            // MERKEZ: Final + Şampiyon
+            html += centerColumn();
+
+            // SAĞ TARAF (ayna): içten dışa -> Yarı, Çeyrek, Son 16, Son 32
+            html += renderColumn("Yarı F.",   ["m102"], true);
+            html += renderColumn("Çeyrek F.", ["m99","m100"], true);
+            html += renderColumn("Son 16",    ["m91","m92","m95","m96"], true);
+            html += renderColumn("Son 32",    ["m76","m78","m79","m80","m86","m88","m85","m87"], true);
+
             html += '</div>';
             document.getElementById('bracketContent').innerHTML = html;
             document.getElementById('bracketOverlay').style.display = 'flex';
+        }
+
+        // --- ÜNİTE & SIRALAMA GEÇMİŞİ YARDIMCI FONKSİYONLARI ---
+        // Her kullanıcının toplam puanı (maç + şampiyon + 2.şampiyon + hızlı tahmin)
+        function computeUserTotals() {
+            let realFast = extractRealFastData();
+            let totals = {};
+            for(let user in savedUsers) {
+                let totalPts = 0;
+                for(let mId in savedUsers[user]) {
+                    if(realResults[mId] && mId.startsWith("m")) {
+                        let p = savedUsers[user][mId];
+                        if(p.home === undefined || p.away === undefined) continue;
+                        let r = realResults[mId];
+                        totalPts += getMatchPoints(p.home, p.away, r.home, r.away);
+                    }
+                }
+                if(savedUsers[user].champion && realResults.champion && savedUsers[user].champion === realResults.champion) totalPts += 15;
+                if(savedUsers[user].secondChampion && realResults.champion && savedUsers[user].secondChampion === realResults.champion) totalPts += 7;
+                if(savedUsers[user].fastMode) totalPts += calculateFastPoints(savedUsers[user].fastMode, realFast);
+                totals[user] = totalPts;
+            }
+            return totals;
+        }
+
+        // Her kullanıcının 1. maçtan itibaren sıra geçmişi (sadece maç puanı bazlı)
+        function computeRankHistory() {
+            let playedList = [];
+            matches.forEach(m => { if(realResults[m.id]) playedList.push(m); });
+            playedList.sort((a,b) => parseInt(a.id.replace("m","")) - parseInt(b.id.replace("m","")));
+
+            let history = {};
+            for(let u in savedUsers) history[u] = [];
+
+            for(let step = 1; step <= playedList.length; step++) {
+                let sub = playedList.slice(0, step);
+                let st = [];
+                for(let u in savedUsers) {
+                    let pts = 0;
+                    sub.forEach(m => {
+                        if(savedUsers[u][m.id] && realResults[m.id]) {
+                            pts += getMatchPoints(savedUsers[u][m.id].home, savedUsers[u][m.id].away, realResults[m.id].home, realResults[m.id].away);
+                        }
+                    });
+                    st.push({ name: u, pts: pts });
+                }
+                st.sort((a,b) => (b.pts - a.pts) || a.name.localeCompare(b.name, 'tr'));
+                st.forEach((s, idx) => history[s.name].push(idx + 1));
+            }
+            return { history: history, steps: playedList.length };
+        }
+
+        // Minimal sıralama-geçmişi çizgi grafiği (SVG sparkline). Sıra 1 en üstte.
+        function miniRankSparkline(ranks, totalUsers) {
+            if(!ranks || ranks.length === 0) {
+                return '<span style="color:#cbd5e1;font-size:10px;">—</span>';
+            }
+            let w = 54, h = 18, pad = 3;
+            let n = ranks.length;
+            let maxR = Math.max(totalUsers, 2);
+            function px(i) { return n === 1 ? w / 2 : pad + (i / (n - 1)) * (w - 2 * pad); }
+            function py(r) { return pad + ((r - 1) / (maxR - 1)) * (h - 2 * pad); } // sıra 1 -> üst
+            let pts = ranks.map((r, i) => px(i).toFixed(1) + "," + py(r).toFixed(1)).join(' ');
+            let first = ranks[0], last = ranks[n - 1];
+            let color = last < first ? '#059669' : (last > first ? '#dc2626' : '#64748b'); // yükseldi/düştü
+            let lx = px(n - 1), ly = py(last);
+            if(n === 1) {
+                return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" style="vertical-align:middle;"><circle cx="${lx.toFixed(1)}" cy="${ly.toFixed(1)}" r="2" fill="${color}"/></svg>`;
+            }
+            return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" style="vertical-align:middle;">
+                <polyline points="${pts}" fill="none" stroke="${color}" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
+                <circle cx="${lx.toFixed(1)}" cy="${ly.toFixed(1)}" r="2" fill="${color}"/>
+            </svg>`;
         }
 
         function showLeaderboard() {
@@ -2490,6 +2660,10 @@ function validateR32Selections(currentSelect) {
         return b.sonucBildi - a.sonucBildi;
     });
 
+    // Sıralama geçmişi (mini grafik için)
+    let rankData = computeRankHistory();
+    let totalUsersForChart = standings.length;
+
     const list = document.getElementById('leaderboardList');
     list.innerHTML = "";
 
@@ -2498,6 +2672,7 @@ function validateR32Selections(currentSelect) {
     } else {
         // Karşılaştır butonu
         list.innerHTML = `<div style="display:flex;gap:8px;margin-bottom:12px;">
+            <button class="btn-blue" style="flex:1;padding:10px;font-size:13px;border-radius:8px;" onclick="showUnitRanking()">🏢 Ünite Sıralaması</button>
             <button class="btn-purple" style="flex:1;padding:10px;font-size:13px;border-radius:8px;" onclick="document.getElementById('leaderboardOverlay').style.display='none';showRace();">🎬 Puan Akışı</button>
             <button class="btn-purple" style="flex:1;padding:10px;font-size:13px;border-radius:8px;" onclick="showCompare()">2-4 kişi seç 🆚 Karşılaştır</button>
         </div>`;
@@ -2508,6 +2683,7 @@ function validateR32Selections(currentSelect) {
             <thead><tr style="background:#1e3a8a;color:white;">
                 <th style="padding:7px 4px;border:1px solid #cbd5e1;text-align:center;width:30px;">Vs</th>
                 <th style="padding:7px 4px;border:1px solid #cbd5e1;text-align:center;width:20px;">#</th>
+                <th style="padding:7px 4px;border:1px solid #cbd5e1;text-align:center;width:56px;" title="Sıralama Geçmişi (1. maçtan itibaren)">📈</th>
                 <th style="padding:7px 4px;border:1px solid #cbd5e1;text-align:left;">İsim</th>
                 <th style="padding:7px 4px;border:1px solid #cbd5e1;text-align:center;">🎯Skor</th>
                 <th style="padding:7px 4px;border:1px solid #cbd5e1;text-align:center;">✅Sonuç</th>
@@ -2536,6 +2712,7 @@ function validateR32Selections(currentSelect) {
                     <input type="checkbox" class="compare-check" value="${s.name}" onchange="limitCompareCheck()" style="width:15px;height:15px;cursor:pointer;">
                 </td>
                 <td style="padding:5px 3px;border:1px solid #e2e8f0;text-align:center;font-weight:bold;font-size:11px;">${medal || (i+1)+'.'}</td>
+                <td style="padding:2px 3px;border:1px solid #e2e8f0;text-align:center;">${miniRankSparkline(rankData.history[s.name], totalUsersForChart)}</td>
                 <td style="padding:5px 3px;border:1px solid #e2e8f0;font-weight:bold;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:90px;">${s.name}</td>
                 <td style="padding:5px 3px;border:1px solid #e2e8f0;text-align:center;color:#059669;font-weight:bold;">${s.skorBildi}</td>
                 <td style="padding:5px 3px;border:1px solid #e2e8f0;text-align:center;color:#d97706;font-weight:bold;">${s.sonucBildi}</td>
@@ -2875,6 +3052,98 @@ function limitCompareCheck() {
     }
 }
 
+function showUnitRanking() {
+    let totals = computeUserTotals();
+
+    // Üniteye göre grupla
+    let unitMap = {};   // ünite -> [{name, pts}]
+    let unassigned = [];
+    for(let user in savedUsers) {
+        let unit = userUnits[user];
+        if(unit && unit.trim() !== "") {
+            if(!unitMap[unit]) unitMap[unit] = [];
+            unitMap[unit].push({ name: user, pts: totals[user] || 0 });
+        } else {
+            unassigned.push(user);
+        }
+    }
+
+    let units = Object.keys(unitMap);
+    let html = "";
+
+    if(units.length === 0) {
+        html = `<div style="text-align:center;padding:30px 15px;color:#94a3b8;font-size:14px;">
+            🏢 Henüz hiçbir kişiye ünite atanmamış.<br><br>
+            <span style="font-size:12px;">Admin → ⚙️ Ayarlar → <b>Kişi Üniteleri</b> bölümünden kişilerin yanına ünitelerini yazın.</span>
+        </div>`;
+        document.getElementById('unitRankingContent').innerHTML = html;
+        document.getElementById('unitRankingOverlay').style.display = 'flex';
+        return;
+    }
+
+    // Her ünitenin ortalamasını hesapla
+    let unitStats = units.map(u => {
+        let members = unitMap[u].slice().sort((a,b) => b.pts - a.pts);
+        let total = members.reduce((acc, m) => acc + m.pts, 0);
+        let avg = total / members.length;
+        return { unit: u, members: members, count: members.length, total: total, avg: avg };
+    });
+    // Ortalamaya göre sırala (eşitlikte toplam, sonra kişi sayısı)
+    unitStats.sort((a,b) => (b.avg - a.avg) || (b.total - a.total) || (b.count - a.count));
+
+    html += `<div style="font-size:11px;color:#64748b;margin-bottom:12px;text-align:center;">Üniteler, üyelerinin <b>puan ortalamasına</b> göre sıralanır.</div>`;
+
+    // Özet tablo
+    html += `<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:15px;">
+        <thead><tr style="background:#1e3a8a;color:white;">
+            <th style="padding:7px 4px;border:1px solid #cbd5e1;text-align:center;width:30px;">#</th>
+            <th style="padding:7px 6px;border:1px solid #cbd5e1;text-align:left;">Ünite</th>
+            <th style="padding:7px 4px;border:1px solid #cbd5e1;text-align:center;">Kişi</th>
+            <th style="padding:7px 4px;border:1px solid #cbd5e1;text-align:center;">Toplam</th>
+            <th style="padding:7px 4px;border:1px solid #cbd5e1;text-align:center;font-weight:900;">Ortalama</th>
+        </tr></thead><tbody>`;
+
+    unitStats.forEach((u, i) => {
+        let medal = i === 0 ? "🥇" : (i === 1 ? "🥈" : (i === 2 ? "🥉" : (i+1)+"."));
+        let bg = i % 2 === 0 ? '#ffffff' : '#f8fafc';
+        if(i === 0) bg = '#fef9c3'; if(i === 1) bg = '#f0fdf4'; if(i === 2) bg = '#fff7ed';
+        let avgStr = u.avg.toFixed(1).replace('.', ',');
+        html += `<tr style="background:${bg};">
+            <td style="padding:6px 4px;border:1px solid #e2e8f0;text-align:center;font-weight:bold;">${medal}</td>
+            <td style="padding:6px;border:1px solid #e2e8f0;font-weight:bold;">${u.unit}</td>
+            <td style="padding:6px 4px;border:1px solid #e2e8f0;text-align:center;color:#475569;">${u.count}</td>
+            <td style="padding:6px 4px;border:1px solid #e2e8f0;text-align:center;color:#6b7280;">${u.total}</td>
+            <td style="padding:6px 4px;border:1px solid #e2e8f0;text-align:center;font-weight:900;font-size:15px;color:#1e3a8a;">${avgStr}</td>
+        </tr>`;
+    });
+    html += `</tbody></table></div>`;
+
+    // Ünite detayları (üyeler)
+    html += `<div style="font-size:13px;font-weight:bold;color:#334155;margin:5px 0 8px;">👥 Ünite Kadroları</div>`;
+    unitStats.forEach((u, i) => {
+        let medal = i === 0 ? "🥇" : (i === 1 ? "🥈" : (i === 2 ? "🥉" : (i+1)+"."));
+        let avgStr = u.avg.toFixed(1).replace('.', ',');
+        let memberChips = u.members.map(m =>
+            `<span style="display:inline-flex;align-items:center;gap:4px;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:6px;padding:2px 8px;font-size:11px;margin:2px;">
+                👤 ${m.name} <b style="color:#1e3a8a;">${m.pts}p</b>
+            </span>`).join('');
+        html += `<div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;padding:10px;margin-bottom:8px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                <span style="font-weight:900;font-size:13px;">${medal} ${u.unit}</span>
+                <span style="font-size:11px;color:#059669;font-weight:bold;background:#d1fae5;padding:2px 8px;border-radius:6px;">Ort. ${avgStr}p · ${u.count} kişi</span>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;">${memberChips}</div>
+        </div>`;
+    });
+
+    if(unassigned.length > 0) {
+        html += `<div style="margin-top:10px;padding:8px 12px;background:#fef2f2;border:1px solid #fecaca;border-radius:6px;font-size:11px;color:#dc2626;">⚠️ Ünitesi atanmamış (${unassigned.length}): <b>${unassigned.join(', ')}</b></div>`;
+    }
+
+    document.getElementById('unitRankingContent').innerHTML = html;
+    document.getElementById('unitRankingOverlay').style.display = 'flex';
+}
+
         function showAdminLogin() { document.getElementById('adminLoginOverlay').style.display = 'flex'; document.getElementById('adminPassInput').value = ''; }
         function enterAdminMode() {
             let girilenSifre = document.getElementById('adminPassInput').value;
@@ -2896,6 +3165,7 @@ function limitCompareCheck() {
             document.getElementById('adminAnnouncementText').value = announcementText || "";
             for(var di=1;di<=8;di++){var dlEl=document.getElementById('setDeadline'+di);if(dlEl&&matchdayDeadlines[String(di)])dlEl.value=matchdayDeadlines[String(di)];}
 renderDayVisibilityAdminControls();
+renderUnitAdminControls();
             document.getElementById('adminSettingsOverlay').style.display = 'flex';
         }
 
@@ -2920,7 +3190,15 @@ for(let vi=1; vi<=8; vi++) {
 const champ = document.getElementById('realChampionSelect').value;
             if(champ) realResults.champion = champ; else delete realResults.champion;
 
-            db.collection("appData").doc("admin").set({ realResults: realResults, matchdayStatus: matchdayStatus, championOpen: championOpen, secondChampionOpen: secondChampionOpen, announcementText: announcementText, matchdayDeadlines: matchdayDeadlines, dayVisibilitySettings: dayVisibilitySettings }, { merge: true })
+            // Kişi ünitelerini topla
+            userUnits = {};
+            document.querySelectorAll('#unitSettingsBox input[data-user]').forEach(function(inp) {
+                let u = decodeURIComponent(inp.getAttribute('data-user'));
+                let v = inp.value.trim();
+                if(v) userUnits[u] = v;
+            });
+
+            db.collection("appData").doc("admin").set({ realResults: realResults, matchdayStatus: matchdayStatus, championOpen: championOpen, secondChampionOpen: secondChampionOpen, announcementText: announcementText, matchdayDeadlines: matchdayDeadlines, dayVisibilitySettings: dayVisibilitySettings, userUnits: userUnits }, { merge: true })
             .then(() => { document.getElementById('adminSettingsOverlay').style.display = 'none'; alert("Ayarlar güncellendi!"); })
             .catch((error) => alert("Hata: " + error.message));
         }
