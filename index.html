@@ -133,6 +133,26 @@
         #bracketContent .bracket-team img { width: 15px !important; height: 11px !important; }
         #bracketContent .bracket-match:hover { transform: none; }
 
+        /* Tahmin oyunu ağacı - aynı kompakt görünüm + tıklanabilir kutular */
+        #clBracketContent .bracket-container { gap: 6px; padding: 4px; height: calc(80vh - 130px); overflow-x: auto; overflow-y: hidden; justify-content: center; }
+        #clBracketContent .bracket-column { min-width: 0; flex: 0 1 155px; }
+        #clBracketContent .bracket-matches-wrapper { gap: 5px; }
+        #clBracketContent .bracket-round-title { font-size: 10px; height: 18px; line-height: 18px; margin-bottom: 6px; border-bottom-width: 2px; letter-spacing: 0; }
+        #clBracketContent .bracket-match { border-radius: 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.06); }
+        #clBracketContent .bracket-team { padding: 5px 12px; font-size: 12px; line-height: 1.15; }
+        #clBracketContent .bracket-team > span { gap: 4px !important; min-width: 0; }
+        #clBracketContent .bracket-team > span > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        #clBracketContent .bracket-score { padding: 1px 4px; font-size: 11px; min-width: 12px; border-radius: 4px; }
+        #clBracketContent .bracket-team img { width: 15px !important; height: 11px !important; }
+        #clBracketContent .bracket-team.cl-clickable { cursor: pointer; }
+        #clBracketContent .bracket-team.cl-clickable:hover { background: #eff6ff; }
+        #clBracketContent .bracket-team.cl-pick { background: #dcfce7; color: #065f46; border-left: 3px solid #059669; }
+        #clBracketContent .bracket-team.cl-pick .bracket-score { background: #059669; color: #fff; }
+        #clBracketContent .bracket-score.cl-pts-ok { background: #059669 !important; color: #fff !important; font-weight: 900; }
+        #clBracketContent .bracket-score.cl-pts-no { background: #fecaca !important; color: #991b1b !important; }
+        #clBracketContent .bracket-match.cl-locked { position: relative; opacity: 0.92; }
+        #clBracketContent .bracket-match.cl-locked::after { content: "🔒"; position: absolute; top: 1px; right: 3px; font-size: 9px; opacity: 0.75; pointer-events: none; }
+
 .fast-team-row { display: flex; align-items: center; justify-content: space-between; padding: 3px; border-bottom: 1px solid #f1f5f9; gap: 3px; }
 .fast-team-row select { width: 150px; font-size: 11px; padding: 2px; border-radius: 4px; border: 1px solid #cbd5e1; outline:none; font-weight:bold;}
 .fast-team-row .fast-slot { width: 100px; font-size: 11px; font-weight: bold; color: #1e3a8a; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 2px 0;}
@@ -597,7 +617,35 @@
         <div class="custom-modal" style="max-width: 96%; width: 1200px; background: #f8fafc; padding: 12px; border: 2px solid #e5e7eb;">
             <span class="close-btn" onclick="document.getElementById('bracketOverlay').style.display='none'">&times;</span>
             <h2 style="color: var(--secondary); margin-top: 0; text-align: center; border-bottom: 2px solid #cbd5e1; padding-bottom: 15px; font-size: 20px; font-weight: 900;">Gerçekleşen Eşleşmeler</h2>
+            <div id="clBtnRow" style="display:none; justify-content:center; gap:10px; margin-bottom:12px;">
+                <button onclick="openClPredict()" style="background:linear-gradient(45deg,#2563eb,#1d4ed8);color:#fff;border:none;padding:9px 20px;border-radius:8px;font-weight:bold;cursor:pointer;box-shadow:0 2px 5px rgba(0,0,0,0.15);">🎯 Tahmin</button>
+                <button onclick="openClStandings()" style="background:linear-gradient(45deg,#f59e0b,#d97706);color:#fff;border:none;padding:9px 20px;border-radius:8px;font-weight:bold;cursor:pointer;box-shadow:0 2px 5px rgba(0,0,0,0.15);">📊 Puan Durumu</button>
+            </div>
             <div id="bracketContent"></div>
+        </div>
+    </div>
+
+    <!-- Bağımsız Tahmin Oyunu: Tahmin ağacı modalı -->
+    <div class="modal-overlay" id="clPredictOverlay">
+        <div class="custom-modal" style="max-width: 96%; width: 1200px; background: #f8fafc; padding: 12px; border: 2px solid #1e3a8a;">
+            <span class="close-btn" onclick="document.getElementById('clPredictOverlay').style.display='none'">&times;</span>
+            <h2 id="clPredictTitle" style="color:#1e3a8a; margin:0 0 4px; text-align:center; font-size:18px; font-weight:900;">🎯 Tahmin — Kim Eler, Kim Gider?</h2>
+            <div style="text-align:center; font-size:11px; color:#64748b; margin-bottom:8px;">Takım kutusuna tıklayarak turu geçecek takımı seç; bir üst tur otomatik dolar. Aynı takıma tekrar tıklayınca seçim kalkar.</div>
+            <div id="clLockNotice" style="display:none; text-align:center; background:#fef2f2; color:#dc2626; font-weight:bold; padding:8px; border-radius:8px; margin-bottom:8px; font-size:13px;">🔒 Tahmin paneli şu anda kapalı. Sadece görüntüleyebilirsin, değişiklik kaydedilemez.</div>
+            <div id="clBracketContent"></div>
+            <div style="text-align:center; margin-top:10px;">
+                <button id="clSaveBtn" onclick="saveClPred()" style="background:#059669;color:#fff;border:none;padding:11px 28px;border-radius:8px;font-weight:bold;cursor:pointer;font-size:15px;box-shadow:0 2px 6px rgba(0,0,0,0.15);">💾 Tahmini Kaydet</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bağımsız Tahmin Oyunu: Puan durumu modalı -->
+    <div class="modal-overlay" id="clStandingsOverlay">
+        <div class="custom-modal" style="max-width: 420px;">
+            <span class="close-btn" onclick="document.getElementById('clStandingsOverlay').style.display='none'">&times;</span>
+            <h2 style="color:#1e3a8a; margin-top:0; text-align:center; font-weight:900;">📊 Tahmin Puan Durumu</h2>
+            <div style="font-size:11px;color:#64748b;text-align:center;margin-bottom:12px;">Doğru ilerleyen: 2p · Şampiyon: 4p · İkili tam bilme: +1p<br><b>Dünya Kupası puanından tamamen bağımsızdır.</b></div>
+            <div id="clStandingsContent"></div>
         </div>
     </div>
 
@@ -647,6 +695,32 @@
                     <option value="">-- Henüz Belli Değil --</option>
                 </select>
             </div>
+            <div style="margin-top:15px;background:#eff6ff;padding:15px;border-radius:8px;border:1px solid #bfdbfe;">
+                <label style="font-weight:bold;color:#1d4ed8;display:block;margin-bottom:4px;">🥉 En İyi 3.'lerin Eşleşme Ataması</label>
+                <div style="font-size:11px;color:#3b82f6;margin-bottom:10px;">Her Son 32 slotu için, izin verilen grupların 3.'lük takımını seç. Seçtiklerin turnuva ağacında isim ve bayrakla görünür. (Grup skorları girilmeden listeler dolmaz.)</div>
+                <div id="thirdAssignBox"></div>
+            </div>
+            <div style="margin-top:15px;background:#eff6ff;padding:15px;border-radius:8px;border:1px solid #93c5fd;">
+                <label style="font-weight:bold;color:#1d4ed8;display:block;margin-bottom:4px;">🎯 Tahmin Oyunu Erişimi</label>
+                <div style="font-size:11px;color:#3b82f6;margin-bottom:10px;">İşaretlediğin kişiler, "Gerçekleşen Eşleşmeler" ekranında <b>Tahmin</b> ve <b>Puan Durumu</b> butonlarını görür. Bu oyun Dünya Kupası puanından bağımsızdır.</div>
+                <div id="clAccessBox" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;max-height:200px;overflow-y:auto;"></div>
+            </div>
+            <div style="margin-top:15px;background:#eff6ff;padding:15px;border-radius:8px;border:1px solid #93c5fd;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;flex-wrap:wrap;gap:6px;">
+                    <label style="font-weight:bold;color:#1d4ed8;">🔒 Maç Bazında Tahmin Aç/Kapa</label>
+                    <span>
+                        <button type="button" onclick="clMatchSetAll(true)" style="background:#059669;color:#fff;border:none;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:bold;cursor:pointer;">Tümünü Aç</button>
+                        <button type="button" onclick="clMatchSetAll(false)" style="background:#dc2626;color:#fff;border:none;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:bold;cursor:pointer;">Tümünü Kapat</button>
+                    </span>
+                </div>
+                <div style="font-size:11px;color:#3b82f6;margin-bottom:10px;"><b>Tek belirleyici burasıdır.</b> İşaretli = o maçın tahmini <b>açık</b>, işaretsiz = kapalı. Önerilen akış: <b>Tümünü Kapat</b> → açmak istediğin maçı işaretle → <b>Ayarları Kaydet</b>. Sıkışık programda istediğin maçı tek tek aç/kapat.</div>
+                <div id="clMatchLockBox" style="display:grid;grid-template-columns:1fr 1fr;gap:4px;max-height:240px;overflow-y:auto;"></div>
+            </div>
+            <div style="margin-top:15px;background:#ecfdf5;padding:15px;border-radius:8px;border:2px solid #6ee7b7;">
+                <label style="font-weight:bold;color:#047857;display:block;margin-bottom:4px;">🔓 ANA OYUN — Maç Bazında Açma (tur kapalıyken tek maç aç)</label>
+                <div style="font-size:11px;color:#059669;margin-bottom:10px;">Bu <b>ANA OYUN</b> içindir (skor tahmini). Yukarıdaki tur "Kapalı" olsa bile, burada <b>işaretlediğin maçlar tahmine açık</b> olur. Sıkışık programda tek bir maçı açmak için işaretle → <b>Ayarları Kaydet</b>. (İşaretsiz maç, turun durumunu izler.)</div>
+                <div id="mainMatchOpenBox" style="display:grid;grid-template-columns:1fr 1fr;gap:4px;max-height:240px;overflow-y:auto;"></div>
+            </div>
             <div style="margin-top:15px;background:#eef2ff;padding:15px;border-radius:8px;border:1px solid #c7d2fe;">
                 <label style="font-weight:bold;color:#4338ca;display:block;margin-bottom:4px;">🏢 Kişi Üniteleri</label>
                 <div style="font-size:11px;color:#6366f1;margin-bottom:10px;">Her kişinin yanına ünitesini yazın. Aynı ünitedeki kişilerin <b>puan ortalaması</b> alınarak üniteler de yarıştırılır.</div>
@@ -670,6 +744,7 @@
         const db = firebase.firestore();
 
         let matchdayStatus = { 1: true, 2: false, 3: false, 4: false, 5: false, 6: false, 7: false, 8: false };
+        let mainMatchOpen = {}; // Ana oyun: tur kapalıyken tek tek açılan maçlar { matchId: true }
         let championOpen = true;
         let secondChampionOpen = false; // 2. şampiyon adayı (+7)
         let announcementText = "";
@@ -807,6 +882,7 @@ let countdownInterval = null;
 
         let savedUsers = {};
         let realResults = {};
+        let thirdAssign = {}; // Admin'in elle atadığı "En İyi 3." takımları (matchId -> takım adı)
 
         function init() {
             extractTeams();
@@ -918,6 +994,287 @@ function filterByTeam() {
                 return null;
             }
         }
+
+        // ================================================================
+        // BAĞIMSIZ ŞL-TARZI KNOCKOUT TAHMİN OYUNU
+        // (Dünya Kupası sıralama/puanlamasından tamamen bağımsız)
+        // ================================================================
+        let clAccess = {};      // Admin'in erişim verdiği kullanıcılar { kullanıcı: true }
+        let clOpen = true;      // Tahmin paneli açık mı? (admin aç/kapa) - kapalıyken düzenleme/kayıt kilitli
+        let clMatchLock = {};   // Maç bazında kilit { matchId: true } - true ise o maçın tahmini kapalı
+        let clEditPred = {};    // Tahmin ekranında düzenlenen geçici tahmin (matchId -> takım adı)
+        let clStandingsArr = []; // Puan durumundaki sıralı kişi listesi (isme tıklayınca tahmini açmak için)
+        const CL_PTS_ADVANCE = 2;    // her doğru ilerleyen takım
+        const CL_PTS_CHAMPION = 4;   // şampiyonu doğru bilme
+        const CL_PTS_PAIRBONUS = 1;  // bir eşleşmenin iki tarafını da doğru bilme bonusu
+        // Galibi bir üst tura ilerleyen maçlar (şampiyon maçı m104 hariç)
+        const CL_ADVANCE_MATCHES = ["m73","m74","m75","m76","m77","m78","m79","m80","m81","m82","m83","m84","m85","m86","m87","m88","m89","m90","m91","m92","m93","m94","m95","m96","m97","m98","m99","m100","m101","m102"];
+        // İki tarafı da başka maçtan beslenen maçlar (ikili bonus için)
+        const CL_DEST_MATCHES = ["m89","m90","m91","m92","m93","m94","m95","m96","m97","m98","m99","m100","m101","m102","m104"];
+
+        // Bir slottaki takımı, verilen tahmin haritasına göre döndürür
+        function getClTeamInSlot(matchId, side, pred) {
+            const m = matches.find(x => x.id === matchId);
+            if(!m) return null;
+            const depName = side === 'h' ? m.home : m.away;
+            const depId = getDepId(depName);
+            if(!depId) { // Son 32 taban slotu: gerçek katılımcı (gruplar + En İyi 3 ataması)
+                const dyn = getDynamicBracketNames();
+                return dyn[depName] || null;
+            }
+            return pred[depId] || null; // besleyen maçın tahmin edilen galibi
+        }
+
+        // Bir maçın GERÇEK galibi (girilmiş skorlardan)
+        function getClRealWinner(matchId) {
+            if(!realResults[matchId]) return null;
+            const rh = realResults[matchId].home, ra = realResults[matchId].away;
+            if(rh > ra) return getRealTeamInSlot(matchId, 'h');
+            if(ra > rh) return getRealTeamInSlot(matchId, 'a');
+            return null;
+        }
+
+        // Bir kullanıcının ŞL puanını hesapla (DK puanından bağımsız)
+        function calcClPointsFromPred(pred) {
+            if(!pred) return 0;
+            let pts = 0;
+            CL_ADVANCE_MATCHES.forEach(mid => {
+                const realW = getClRealWinner(mid);
+                if(realW && pred[mid] && pred[mid] === realW) pts += CL_PTS_ADVANCE;
+            });
+            const champW = getClRealWinner("m104");
+            if(champW && pred["m104"] && pred["m104"] === champW) pts += CL_PTS_CHAMPION;
+            CL_DEST_MATCHES.forEach(mid => {
+                const m = matches.find(x => x.id === mid);
+                if(!m) return;
+                const fh = getDepId(m.home), fa = getDepId(m.away);
+                if(!fh || !fa) return;
+                const rwh = getClRealWinner(fh), rwa = getClRealWinner(fa);
+                if(rwh && rwa && pred[fh] === rwh && pred[fa] === rwa) pts += CL_PTS_PAIRBONUS;
+            });
+            return pts;
+        }
+        function calcClPoints(username) {
+            const u = savedUsers[username];
+            return (u && u.clPred) ? calcClPointsFromPred(u.clPred) : 0;
+        }
+
+        // Üst tur seçimi değişince geçersiz kalan alt-tur tahminlerini temizle
+        function cleanupClPred() {
+            for(let pass = 0; pass < 6; pass++) {
+                [...CL_ADVANCE_MATCHES, "m104"].forEach(mid => {
+                    if(!clEditPred[mid]) return;
+                    const h = getClTeamInSlot(mid, 'h', clEditPred);
+                    const a = getClTeamInSlot(mid, 'a', clEditPred);
+                    if(clEditPred[mid] !== h && clEditPred[mid] !== a) delete clEditPred[mid];
+                });
+            }
+        }
+
+        // Bir takım kutusuna tıklanınca galibi seç / kaldır
+        function clAdvance(matchId, side) {
+            if(clMatchLock[matchId]) return; // bu maç kapalı (maç-bazlı kilit belirleyicidir)
+            const team = getClTeamInSlot(matchId, side, clEditPred);
+            if(!team) return; // katılımcı henüz belli değil
+            if(clEditPred[matchId] === team) delete clEditPred[matchId]; // tekrar tıkla -> kaldır
+            else clEditPred[matchId] = team;
+            cleanupClPred();
+            renderClBracket(clEditPred, true);
+            const ttl = document.getElementById('clPredictTitle');
+            if(ttl && currentAuthenticatedUser) ttl.innerHTML = `🎯 Senin Tahminin <span style="font-size:13px;color:#059669;">(Topladığın: ${calcClPointsFromPred(clEditPred)} p)</span>`;
+        }
+
+        // Tahmin ağacı: pred = gösterilecek tahmin haritası, editable = tıklanabilir mi
+        // Gerçek sonuçlar girildikçe doğru seçimlerde kazanılan puan (+2 / +4) ağaçta görünür.
+        function renderClBracket(pred, editable) {
+            const canClick = editable; // genel panel değil, maç-bazlı kilit belirler (aşağıda !clMatchLock)
+            function scoreSpan(mid, team, picked) {
+                if(!picked) return '<span class="bracket-score"></span>';
+                const realW = getClRealWinner(mid);
+                if(realW && realW === team) {
+                    const p = (mid === "m104" ? CL_PTS_CHAMPION : CL_PTS_ADVANCE);
+                    return `<span class="bracket-score cl-pts-ok">+${p}</span>`;
+                }
+                if(realW && realW !== team) return `<span class="bracket-score cl-pts-no">✗</span>`;
+                return `<span class="bracket-score">✓</span>`;
+            }
+            function teamRow(mid, side, mirror) {
+                const team = getClTeamInSlot(mid, side, pred);
+                const m0 = matches.find(x => x.id === mid);
+                const depName = m0 ? (side === 'h' ? m0.home : m0.away) : "";
+                const label = team || depName || "?"; // takım belli değilse slot tanımını göster
+                const flag = team ? getFlag(team) : "";
+                const picked = team && pred[mid] === team;
+                const editableHere = canClick && team && !clMatchLock[mid];
+                const click = editableHere ? `onclick="clAdvance('${mid}','${side}')" ` : "";
+                const cls = "bracket-team" + (picked ? " cl-pick" : "") + (editableHere ? " cl-clickable" : "");
+                const sc = scoreSpan(mid, team, picked);
+                if(mirror) {
+                    return `<div class="${cls}" ${click}style="flex-direction:row-reverse;">
+                        <span style="display:flex;align-items:center;gap:6px;"><span>${label}</span>${flag}</span>
+                        ${sc}</div>`;
+                }
+                return `<div class="${cls}" ${click}>
+                        <span style="display:flex;align-items:center;gap:6px;">${flag}<span>${label}</span></span>
+                        ${sc}</div>`;
+            }
+            // Düzenleme modunda kilitli maçlara 🔒 göstergesi (görüntülemede gösterme)
+            const box = (mid, mirror) => `<div class="bracket-match${(editable && clMatchLock[mid]) ? ' cl-locked' : ''}">${teamRow(mid,'h',mirror)}${teamRow(mid,'a',mirror)}</div>`;
+            function col(title, ids, mirror) {
+                let h = `<div class="bracket-column"><div class="bracket-round-title">${title}</div><div class="bracket-matches-wrapper">`;
+                ids.forEach(id => h += box(id, mirror));
+                return h + `</div></div>`;
+            }
+            function center() {
+                const champ = pred["m104"] || "";
+                const champFlag = champ ? getFlag(champ) : "";
+                let h = `<div class="bracket-column" style="justify-content:center; min-width:0; flex:0 1 140px;">`;
+                h += `<div class="bracket-round-title">FİNAL</div>`;
+                h += box("m104", false);
+                h += `<div class="bracket-round-title" style="border-bottom:none; margin-top:18px;">ŞAMPİYON</div>`;
+                h += `<div class="bracket-match" style="background:linear-gradient(145deg,#fbbf24,#f59e0b);border:2px solid #d97706;text-align:center;padding:10px;">
+                        <div style="font-size:18px;margin-bottom:3px;">🏆</div>
+                        <div style="font-size:12px;font-weight:900;color:#451a03;text-transform:uppercase;display:flex;align-items:center;justify-content:center;gap:6px;">${champFlag}<span>${champ || "?"}</span></div></div>`;
+                return h + `</div>`;
+            }
+            let html = '<div class="bracket-container">';
+            html += col("Son 32", ["m74","m77","m73","m75","m83","m84","m81","m82"], false);
+            html += col("Son 16", ["m89","m90","m93","m94"], false);
+            html += col("Çeyrek F.", ["m97","m98"], false);
+            html += col("Yarı F.", ["m101"], false);
+            html += center();
+            html += col("Yarı F.", ["m102"], true);
+            html += col("Çeyrek F.", ["m99","m100"], true);
+            html += col("Son 16", ["m91","m92","m95","m96"], true);
+            html += col("Son 32", ["m76","m78","m79","m80","m86","m88","m85","m87"], true);
+            html += '</div>';
+            document.getElementById('clBracketContent').innerHTML = html;
+        }
+
+        // "Tahmin" butonu: giriş yapan kullanıcının tahminini düzenlemeye aç
+        function openClPredict() {
+            const user = currentAuthenticatedUser;
+            if(!user && !isAdminMode) { alert("Tahmin yapabilmek için önce kendi kullanıcı girişini yapmalısın."); return; }
+            // Kullanıcı: kendi tahmini. Admin (girişsiz): önizleme (tıklanabilir, ama kaydedemez).
+            clEditPred = Object.assign({}, (user && savedUsers[user] && savedUsers[user].clPred) || {});
+            cleanupClPred();
+            renderClBracket(clEditPred, true);
+            const ttl = document.getElementById('clPredictTitle');
+            if(ttl) ttl.innerHTML = user
+                ? `🎯 Senin Tahminin <span style="font-size:13px;color:#059669;">(Topladığın: ${calcClPointsFromPred(clEditPred)} p)</span>`
+                : `🎯 Tahmin — <span style="font-size:13px;color:#d97706;">Admin Önizleme (kaydetmek için kullanıcı girişi gerekir)</span>`;
+            const koOpen = matches.some(m => m.day >= 4 && m.id !== "m103" && !clMatchLock[m.id]);
+            const ln = document.getElementById('clLockNotice'); if(ln) ln.style.display = koOpen ? 'none' : 'block';
+            const sb = document.getElementById('clSaveBtn'); if(sb) sb.style.display = (user && koOpen) ? 'inline-block' : 'none';
+            document.getElementById('clPredictOverlay').style.display = 'flex';
+        }
+
+        // Davetli bir kişinin tahminini SADECE GÖRÜNTÜLE (kazandığı puanlarla birlikte)
+        function openClViewIdx(i) {
+            const s = clStandingsArr[i];
+            if(s) openClView(s.name);
+        }
+        function openClView(user) {
+            const pred = (savedUsers[user] && savedUsers[user].clPred) || {};
+            renderClBracket(pred, false);
+            const ttl = document.getElementById('clPredictTitle');
+            if(ttl) ttl.innerHTML = `👁️ ${user} — Tahmini <span style="font-size:13px;color:#059669;">(Toplam: ${calcClPointsFromPred(pred)} p)</span>`;
+            const ln = document.getElementById('clLockNotice'); if(ln) ln.style.display = 'none';
+            const sb = document.getElementById('clSaveBtn'); if(sb) sb.style.display = 'none';
+            document.getElementById('clPredictOverlay').style.display = 'flex';
+        }
+
+        // Tahmini kullanıcı dokümanına kaydet (DK verisine dokunmaz)
+        function saveClPred() {
+            const user = currentAuthenticatedUser;
+            if(!user) { alert("Bu bir admin önizlemesidir — tahmini kaydetmek için kendi kullanıcı girişini yapmalısın."); return; }
+            db.collection("users").doc(user).set({ clPred: clEditPred }, { merge: true })
+                .then(() => { alert("Tahminlerin kaydedildi!"); document.getElementById('clPredictOverlay').style.display = 'none'; })
+                .catch(e => alert("Hata: " + e.message));
+        }
+
+        // "Puan Durumu" butonu: bağımsız sıralama
+        function openClStandings() {
+            const players = Object.keys(clAccess).filter(u => clAccess[u]);
+            let arr = players.map(u => ({ name: u, pts: calcClPoints(u), has: !!(savedUsers[u] && savedUsers[u].clPred) }));
+            arr.sort((a, b) => b.pts - a.pts || a.name.localeCompare(b.name, 'tr'));
+            clStandingsArr = arr;
+            let html;
+            if(arr.length === 0) {
+                html = '<div style="text-align:center;color:#94a3b8;padding:20px;">Henüz erişim verilen kullanıcı yok. Admin Ayarları → "Tahmin Oyunu Erişimi" bölümünden ekleyebilirsin.</div>';
+            } else {
+                html = '<div style="font-size:11px;color:#64748b;text-align:center;margin-bottom:8px;">👇 Bir isme tıkla → o kişinin tahmin ağacını gör</div>';
+                html += '<ul style="list-style:none;padding:0;margin:0;">';
+                arr.forEach((s, i) => {
+                    const medal = i === 0 ? "🥇" : (i === 1 ? "🥈" : (i === 2 ? "🥉" : `${i+1}.`));
+                    const noPred = s.has ? "" : ' <span style="font-size:10px;color:#cbd5e1;">(tahmin yok)</span>';
+                    const baseBg = i === 0 ? '#fffbeb' : '#ffffff';
+                    html += `<li onclick="openClViewIdx(${i})" style="cursor:pointer;display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-bottom:1px solid #e2e8f0;background:${baseBg};${i===0?'border-radius:8px;':''}" onmouseover="this.style.background='#eff6ff'" onmouseout="this.style.background='${baseBg}'"><span>${medal} ${s.name}${noPred} <span style="font-size:10px;color:#93c5fd;">👁️</span></span><b style="color:#1e3a8a;">${s.pts} p</b></li>`;
+                });
+                html += '</ul>';
+            }
+            document.getElementById('clStandingsContent').innerHTML = html;
+            document.getElementById('clStandingsOverlay').style.display = 'flex';
+        }
+
+        // Admin Ayarları: erişim listesi (kullanıcı onay kutuları)
+        function renderClAccessControls() {
+            const box = document.getElementById('clAccessBox');
+            if(!box) return;
+            const users = Object.keys(savedUsers).filter(u => u !== "GERCEKLIK_ADMIN_HESABI").sort((a, b) => a.localeCompare(b, 'tr'));
+            if(users.length === 0) { box.innerHTML = '<div style="font-size:11px;color:#94a3b8;">Henüz kayıtlı kullanıcı yok.</div>'; return; }
+            box.innerHTML = users.map(u => `<label style="display:flex;align-items:center;gap:6px;padding:4px 6px;font-size:12px;background:#fff;border-radius:6px;border:1px solid #e2e8f0;"><input type="checkbox" data-cluser="${encodeURIComponent(u)}" ${clAccess[u] ? 'checked' : ''}> ${u}</label>`).join('');
+        }
+
+        // Admin Ayarları: maç bazında tahmin aç/kapa kutusu (Son 32 -> Final)
+        function renderClMatchLockControls() {
+            const box = document.getElementById('clMatchLockBox');
+            if(!box) return;
+            const ko = matches.filter(m => m.day >= 4 && m.id !== "m103").sort((a, b) => parseInt(a.id.slice(1)) - parseInt(b.id.slice(1)));
+            box.innerHTML = ko.map(m => {
+                const open = !clMatchLock[m.id];
+                let lbl = m.group || m.id.toUpperCase();
+                if(m.day === 4) { // Son 32: takımlar gruplardan/3.lük atamasından gelir
+                    const h = getClTeamInSlot(m.id, 'h', {}), a = getClTeamInSlot(m.id, 'a', {});
+                    if(h && a) lbl += ` <span style="color:#059669;font-weight:bold;">✓ ${h}–${a}</span>`;
+                    else lbl += ` <span style="color:#d97706;">⏳ takım bekleniyor</span>`;
+                }
+                return `<label style="display:flex;align-items:center;gap:5px;padding:4px 6px;font-size:10.5px;background:#fff;border-radius:5px;border:1px solid #e2e8f0;"><input type="checkbox" data-clmatch="${m.id}" ${open ? 'checked' : ''}> <span style="line-height:1.2;">${lbl}</span></label>`;
+            }).join('');
+        }
+        function clMatchSetAll(open) {
+            document.querySelectorAll('#clMatchLockBox input[data-clmatch]').forEach(cb => { cb.checked = open; });
+        }
+
+        // ANA OYUN: bir günde (turda) en az bir maç tahmine açık mı?
+        // Tur açıksa hepsi açık; tur kapalıysa sadece tek tek açılan maçlar (mainMatchOpen) açıktır.
+        function isAnyMatchOpenInDay(day) {
+            if(matchdayStatus[day]) return true;
+            return matches.some(m => m.day === day && mainMatchOpen[m.id]);
+        }
+        // ANA OYUN: Admin Ayarları - maç bazında açma kutusu (tur kapalıyken tek maç aç)
+        function renderMainMatchOpenControls() {
+            const box = document.getElementById('mainMatchOpenBox');
+            if(!box) return;
+            const dyn = getDynamicBracketNames();
+            const dayNames = {1:"1. Maçlar",2:"2. Maçlar",3:"3. Maçlar",4:"Son 32",5:"Son 16",6:"Çeyrek F.",7:"Yarı F.",8:"Final"};
+            let html = '';
+            for(let d=1; d<=8; d++) {
+                const dm = matches.filter(m => m.day === d && m.id !== "m103").sort((a,b)=>parseInt(a.id.slice(1))-parseInt(b.id.slice(1)));
+                if(dm.length === 0) continue;
+                const ro = matchdayStatus[d];
+                html += `<div style="grid-column:1/-1;font-weight:bold;font-size:10.5px;margin-top:6px;padding:3px 5px;background:#e0e7ff;border-radius:4px;color:#1e3a8a;">${dayNames[d]} ${ro ? '<span style="color:#059669;">(tur açık)</span>' : '<span style="color:#dc2626;">(tur kapalı)</span>'}</div>`;
+                dm.forEach(m => {
+                    let h = dyn[m.home] || m.home, a = dyn[m.away] || m.away;
+                    if(h.length > 13) h = h.slice(0,12) + '…';
+                    if(a.length > 13) a = a.slice(0,12) + '…';
+                    const checked = mainMatchOpen[m.id] ? 'checked' : '';
+                    html += `<label style="display:flex;align-items:center;gap:4px;padding:3px 5px;font-size:10px;background:#fff;border-radius:5px;border:1px solid #e2e8f0;"><input type="checkbox" data-mainmatch="${m.id}" ${checked}> <span style="line-height:1.15;">${m.id.toUpperCase()}: ${h} – ${a}</span></label>`;
+                });
+            }
+            box.innerHTML = html;
+        }
+
 function showReports() {
     let html = `<div style="display:flex;gap:8px;margin-bottom:15px;">
         <button id="repTabTahmin" onclick="renderReportTab('tahmin')" style="flex:1;padding:10px;border:2px solid #1e3a8a;border-radius:8px;font-weight:900;font-size:14px;cursor:pointer;background:#1e3a8a;color:white;">📋 Tahmin İstatistikleri</button>
@@ -1423,7 +1780,12 @@ function extractRealFastData() {
                 if (doc.exists) {
                     let data = doc.data();
                     realResults = data.realResults || {};
+                    thirdAssign = data.thirdAssign || {};
+                    clAccess = data.clAccess || {};
+                    clOpen = data.clOpen !== undefined ? data.clOpen : true;
+                    clMatchLock = data.clMatchLock || {};
                     matchdayStatus = data.matchdayStatus || matchdayStatus;
+                    mainMatchOpen = data.mainMatchOpen || {};
                     championOpen = data.championOpen !== undefined ? data.championOpen : true;
                     secondChampionOpen = data.secondChampionOpen !== undefined ? data.secondChampionOpen : false;
                     announcementText = data.announcementText || "";
@@ -1704,7 +2066,64 @@ function renderUnitAdminControls() {
                 if(st.length > 0 && st[0].p > 0) map[`${gLetter} Grubu 1.'si`] = st[0].name;
                 if(st.length > 1 && st[1].p > 0) map[`${gLetter} Grubu 2.'si`] = st[1].name;
             });
+            // Admin'in elle atadığı "En İyi 3." takımlarını da çöz (slot metnini takım adına çevir)
+            for(const mid in thirdAssign) {
+                if(!thirdAssign[mid]) continue;
+                const mm = matches.find(x => x.id === mid);
+                if(!mm) continue;
+                const slotDesc = (mm.home && mm.home.includes("En İyi 3")) ? mm.home : mm.away;
+                map[slotDesc] = thirdAssign[mid];
+            }
             return map;
+        }
+
+        // Bir grubun (gLetter: "A".."L") mevcut 3.'lük takımını döndürür (yoksa null)
+        function getGroupThirdName(gLetter) {
+            const g = gLetter + " Grubu";
+            const gMatches = matches.filter(m => m.group === g);
+            let tData = {};
+            gMatches.forEach(m => {
+                if(!tData[m.home]) tData[m.home] = { name: m.home, p:0, gd:0, gf:0 };
+                if(!tData[m.away]) tData[m.away] = { name: m.away, p:0, gd:0, gf:0 };
+            });
+            gMatches.forEach(m => {
+                if(realResults[m.id]) {
+                    const rh = realResults[m.id].home, ra = realResults[m.id].away;
+                    tData[m.home].gf+=rh; tData[m.away].gf+=ra;
+                    tData[m.home].gd+=(rh-ra); tData[m.away].gd+=(ra-rh);
+                    if(rh>ra) tData[m.home].p+=3; else if(rh<ra) tData[m.away].p+=3; else { tData[m.home].p+=1; tData[m.away].p+=1; }
+                }
+            });
+            let st = Object.values(tData);
+            st.sort((a,b) => b.p - a.p || b.gd - a.gd || b.gf - a.gf);
+            return st.length >= 3 ? st[2].name : null;
+        }
+
+        // Admin modalındaki "En İyi 3. Atamaları" kutusunu doldurur
+        function renderThirdAssignControls() {
+            const box = document.getElementById('thirdAssignBox');
+            if(!box) return;
+            const slots = matches.filter(m => (m.home && m.home.includes("En İyi 3")) || (m.away && m.away.includes("En İyi 3")));
+            let html = '';
+            slots.forEach(m => {
+                const desc = (m.home && m.home.includes("En İyi 3")) ? m.home : m.away;
+                const letters = desc.split(" ")[0].split("/");
+                const cur = thirdAssign[m.id] || "";
+                let opts = `<option value="" ${cur === "" ? "selected" : ""}>-- Seç --</option>`;
+                let curIncluded = false;
+                letters.forEach(L => {
+                    const t = getGroupThirdName(L);
+                    if(t) { opts += `<option value="${t}" ${t === cur ? "selected" : ""}>${L}: ${t}</option>`; if(t === cur) curIncluded = true; }
+                    else { opts += `<option value="" disabled>${L}: (skor yok)</option>`; }
+                });
+                if(cur && !curIncluded) opts += `<option value="${cur}" selected>${cur} (kayıtlı)</option>`;
+                const labelShort = m.id.toUpperCase() + ' — ' + desc.replace(" En İyi 3.'sü", "");
+                html += `<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 8px;background:#f8fafc;border-radius:6px;border:1px solid #e2e8f0;margin-bottom:6px;">
+                    <label style="font-weight:bold;color:#334155;font-size:11px;white-space:nowrap;">${labelShort}</label>
+                    <select data-mid="${m.id}" style="flex:1;min-width:0;padding:4px;border-radius:4px;border:1px solid #cbd5e1;font-size:11px;outline:none;">${opts}</select>
+                </div>`;
+            });
+            box.innerHTML = html;
         }
 
         function loadUserPredictions(skipAuth = false) {
@@ -1733,8 +2152,8 @@ document.getElementById('username').value = '';
                 document.getElementById('userSecondChampionSelect').value = '';
                 actionBar.style.display = "flex";
                 champBox.style.display = "none";
-                lockedNotice.style.display = matchdayStatus[currentDay] ? "none" : "block";
-                mainSaveBtn.style.display = matchdayStatus[currentDay] ? "block" : "none";
+                lockedNotice.style.display = isAnyMatchOpenInDay(currentDay) ? "none" : "block";
+                mainSaveBtn.style.display = isAnyMatchOpenInDay(currentDay) ? "block" : "none";
                 if(deleteUserBtn) deleteUserBtn.style.display = "none"; 
                 renderMatches(currentDay);
 updateLockedNotice()
@@ -1761,8 +2180,8 @@ updateLockedNotice()
             actionBar.style.display = "none";
         }
 
-        lockedNotice.style.display = (currentAuthenticatedUser !== viewMode && !isAdminMode) ? "block" : (matchdayStatus[currentDay] ? "none" : "block");
-        mainSaveBtn.style.display = (currentAuthenticatedUser === viewMode || isAdminMode) && matchdayStatus[currentDay] ? "block" : "none";
+        lockedNotice.style.display = (currentAuthenticatedUser !== viewMode && !isAdminMode) ? "block" : (isAnyMatchOpenInDay(currentDay) ? "none" : "block");
+        mainSaveBtn.style.display = (currentAuthenticatedUser === viewMode || isAdminMode) && isAnyMatchOpenInDay(currentDay) ? "block" : "none";
         if(deleteUserBtn) deleteUserBtn.style.display = isAdminMode ? "block" : "none";
 
         if (savedUsers[viewMode]) {
@@ -1955,11 +2374,21 @@ function renderUserDayPoints() {
 }
 function updateLockedNotice() {
     const lockedNotice = document.getElementById('lockedNotice');
-    let isOpen = matchdayStatus[currentDay];
+    let dayItselfOpen = matchdayStatus[currentDay];
+    let isOpen = isAnyMatchOpenInDay(currentDay); // tur açık VEYA içinde tek tek açılmış maç var
+    let partialOpen = !dayItselfOpen && isOpen; // tur kapalı ama bazı maçlar açık
     const dayNames = {1:"1. Maçlar", 2:"2. Maçlar", 3:"3. Maçlar", 4:"Son 32", 5:"Son 16", 6:"Çeyrek F.", 7:"Yarı F.", 8:"Final"};
 
     if(currentViewingUser === "ALL") {
         lockedNotice.style.display = "none";
+        return;
+    }
+
+    if(partialOpen) {
+        lockedNotice.className = "locked-notice open-notice";
+        lockedNotice.innerHTML = "⚽ " + dayNames[currentDay] + " - Bu turda sadece <b>bazı maçlar</b> tahmine açık. Açık maçlara girip kaydedebilirsin.";
+        lockedNotice.style.display = "block";
+        renderUserDayPoints();
         return;
     }
 
@@ -1993,7 +2422,7 @@ let allExpanded = false; // Sayfanın genel durumunu tutar
 function updateSaveButton() {
     let mainSaveBtn = document.getElementById('mainSaveBtn');
     if(!mainSaveBtn) return;
-    let isOpen = matchdayStatus[currentDay];
+    let isOpen = isAnyMatchOpenInDay(currentDay);
 
     if(currentViewingUser === "ALL") {
         mainSaveBtn.style.display = isAdminMode ? "block" : "none";
@@ -2025,11 +2454,14 @@ function toggleMatchPredictions(clickedBtn, targetId) {
             const dayMatches = matches.filter(m => m.day === day);
             let dynamicNames = getDynamicBracketNames(); 
             
-            let isLocked = !matchdayStatus[day];
-            if (!isAdminMode && currentViewingUser !== "NEW" && currentViewingUser !== currentAuthenticatedUser) isLocked = true;
-            if (currentViewingUser === "ALL" && !isAdminMode) isLocked = true;
+            // Kullanıcı/görüntüleme kısıtı (gün/maç kilidinden bağımsız)
+            let viewRestricted = false;
+            if (!isAdminMode && currentViewingUser !== "NEW" && currentViewingUser !== currentAuthenticatedUser) viewRestricted = true;
+            if (currentViewingUser === "ALL" && !isAdminMode) viewRestricted = true;
 
             dayMatches.forEach(match => {
+                // Maç-bazında kilit: tur açıksa VEYA bu maç tek tek açıldıysa -> açık
+                let isLocked = viewRestricted || !(matchdayStatus[day] || mainMatchOpen[match.id]);
                 let pHome = "", pAway = "";
                 let dataSrc = null;
 
@@ -2542,6 +2974,10 @@ function validateR32Selections(currentSelect) {
 
             html += '</div>';
             document.getElementById('bracketContent').innerHTML = html;
+            // Tahmin oyunu butonları: yalnızca admin'in erişim verdiği kullanıcılara (veya admin'e) göster
+            const canCl = isAdminMode || (currentAuthenticatedUser && clAccess[currentAuthenticatedUser]);
+            const clBtnRow = document.getElementById('clBtnRow');
+            if(clBtnRow) clBtnRow.style.display = canCl ? 'flex' : 'none';
             document.getElementById('bracketOverlay').style.display = 'flex';
         }
 
@@ -3162,10 +3598,15 @@ function showUnitRanking() {
             if(realResults.champion) document.getElementById('realChampionSelect').value = realResults.champion;
             document.getElementById('setChampionOpen').value = championOpen ? "true" : "false";
             document.getElementById('setSecondChampionOpen').value = secondChampionOpen ? "true" : "false";
+            if(document.getElementById('setClOpen')) document.getElementById('setClOpen').value = clOpen ? "true" : "false";
             document.getElementById('adminAnnouncementText').value = announcementText || "";
             for(var di=1;di<=8;di++){var dlEl=document.getElementById('setDeadline'+di);if(dlEl&&matchdayDeadlines[String(di)])dlEl.value=matchdayDeadlines[String(di)];}
 renderDayVisibilityAdminControls();
 renderUnitAdminControls();
+renderThirdAssignControls();
+renderClAccessControls();
+renderClMatchLockControls();
+renderMainMatchOpenControls();
             document.getElementById('adminSettingsOverlay').style.display = 'flex';
         }
 
@@ -3173,6 +3614,7 @@ renderUnitAdminControls();
             for(let i=1; i<=8; i++) { matchdayStatus[i] = document.getElementById('setDay'+i).value === "true"; }
             championOpen = document.getElementById('setChampionOpen').value === "true";
             secondChampionOpen = document.getElementById('setSecondChampionOpen').value === "true";
+            if(document.getElementById('setClOpen')) clOpen = document.getElementById('setClOpen').value === "true";
             announcementText = document.getElementById('adminAnnouncementText').value.trim();
             for(var di=1;di<=8;di++){var dlEl=document.getElementById('setDeadline'+di);if(dlEl&&dlEl.value)matchdayDeadlines[String(di)]=dlEl.value;else delete matchdayDeadlines[String(di)];}
 dayVisibilitySettings = {};
@@ -3198,7 +3640,31 @@ const champ = document.getElementById('realChampionSelect').value;
                 if(v) userUnits[u] = v;
             });
 
-            db.collection("appData").doc("admin").set({ realResults: realResults, matchdayStatus: matchdayStatus, championOpen: championOpen, secondChampionOpen: secondChampionOpen, announcementText: announcementText, matchdayDeadlines: matchdayDeadlines, dayVisibilitySettings: dayVisibilitySettings, userUnits: userUnits }, { merge: true })
+            // En İyi 3. atamalarını topla
+            thirdAssign = {};
+            document.querySelectorAll('#thirdAssignBox select[data-mid]').forEach(function(sel) {
+                thirdAssign[sel.getAttribute('data-mid')] = sel.value || ""; // boş = atama yok (merge'de eski atama kalmasın)
+            });
+
+            // Tahmin oyunu erişim listesini topla
+            clAccess = {};
+            document.querySelectorAll('#clAccessBox input[data-cluser]').forEach(function(cb) {
+                clAccess[decodeURIComponent(cb.getAttribute('data-cluser'))] = cb.checked; // açıkça true/false (merge'de eski erişim kalmasın)
+            });
+
+            // Maç bazında kilitleri topla (işaretsiz = kilitli/kapalı)
+            clMatchLock = {};
+            document.querySelectorAll('#clMatchLockBox input[data-clmatch]').forEach(function(cb) {
+                clMatchLock[cb.getAttribute('data-clmatch')] = !cb.checked; // her maç açıkça: true=kilitli, false=açık (Firestore merge'de eski kilit kalmasın)
+            });
+
+            // ANA OYUN maç bazında açma (işaretli = tur kapalı olsa da açık). Her maç açıkça yazılır.
+            mainMatchOpen = {};
+            document.querySelectorAll('#mainMatchOpenBox input[data-mainmatch]').forEach(function(cb) {
+                mainMatchOpen[cb.getAttribute('data-mainmatch')] = cb.checked;
+            });
+
+            db.collection("appData").doc("admin").set({ realResults: realResults, thirdAssign: thirdAssign, clAccess: clAccess, clOpen: clOpen, clMatchLock: clMatchLock, mainMatchOpen: mainMatchOpen, matchdayStatus: matchdayStatus, championOpen: championOpen, secondChampionOpen: secondChampionOpen, announcementText: announcementText, matchdayDeadlines: matchdayDeadlines, dayVisibilitySettings: dayVisibilitySettings, userUnits: userUnits }, { merge: true })
             .then(() => { document.getElementById('adminSettingsOverlay').style.display = 'none'; alert("Ayarlar güncellendi!"); })
             .catch((error) => alert("Hata: " + error.message));
         }
@@ -3240,13 +3706,15 @@ if(existingSecondChamp && secondChampionOpen) {
 }
 
 
-                if(!matchdayStatus[currentDay]) return alert("Bu güne ait tahmin alımı kilitli.");
-                
+                if(!isAnyMatchOpenInDay(currentDay)) return alert("Bu turda tahmin alımı kilitli.");
+
                 let userObj = savedUsers[username] || {};
                 if (viewMode === "NEW") { userObj.password = password; if(champ && championOpen) userObj.champion = champ; if(secondChamp && secondChampionOpen) userObj.secondChampion = secondChamp; }
-                
+
                 const dayMatches = matches.filter(m => m.day === currentDay);
                 dayMatches.forEach(match => {
+                    // Sadece açık maçları kaydet (tur açık VEYA bu maç tek tek açık)
+                    if(!(matchdayStatus[currentDay] || mainMatchOpen[match.id])) return;
                     const h = document.getElementById(`home_${match.id}`).value;
                     const a = document.getElementById(`away_${match.id}`).value;
                     if(h !== "" && a !== "") userObj[match.id] = { home: parseInt(h), away: parseInt(a) };
