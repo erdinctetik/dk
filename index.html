@@ -429,6 +429,13 @@
             <div class="ann-content" id="announcementText"></div>
         </div>
     </div>
+    <!-- Sadece tahmin oyunu erişimi olan kişilere (ve admin'e) görünen ikinci duyuru -->
+    <div id="clAnnouncementBar" style="display:none; max-width:1300px; margin:10px auto 0; padding:0 20px; box-sizing:border-box;">
+        <div style="background:#eef2ff; border:1px solid #c7d2fe; border-radius:10px; padding:12px 16px; display:flex; align-items:center; gap:10px; box-shadow:0 2px 6px rgba(0,0,0,0.05);">
+            <span style="font-size:20px;">🎯</span>
+            <div id="clAnnouncementText" style="color:#3730a3; font-weight:bold; font-size:14px; line-height:1.35;"></div>
+        </div>
+    </div>
 
     <div class="layout">
         
@@ -666,8 +673,11 @@
                 <div class="admin-setting-row" style="grid-column:1/-1;background:#f0fdf4;border-color:#86efac;"><label style="color:#059669;">🥈 2. Şampiyon Adayı (+7)</label><select id="setSecondChampionOpen"><option value="true">Açık</option><option value="false">Kapalı</option></select></div>
             </div>
             <div style="margin-top:15px;background:#f0f9ff;padding:15px;border-radius:8px;border:1px solid #bae6fd;">
-                <label style="font-weight:bold;color:#0369a1;display:block;margin-bottom:8px;">📢 Duyuru Metni</label>
+                <label style="font-weight:bold;color:#0369a1;display:block;margin-bottom:8px;">📢 Duyuru Metni (herkese)</label>
                 <textarea id="adminAnnouncementText" rows="3" style="width:100%;padding:10px;border-radius:8px;border:1px solid #7dd3fc;font-size:14px;resize:vertical;outline:none;box-sizing:border-box;" placeholder="Boş bırakırsanız duyuru gizlenir"></textarea>
+                <label style="font-weight:bold;color:#4338ca;display:block;margin:12px 0 8px;">🎯 Tahmin Oyunu Duyurusu (sadece erişim verdiğin kişilere)</label>
+                <div style="font-size:11px;color:#6366f1;margin-bottom:8px;">Normal duyurunun altında, yalnızca "Tahmin Oyunu Erişimi"ndeki kişilere (ve admin'e) görünür. Örn: "Eşleşmeler alanından tahminlerinizi seçin."</div>
+                <textarea id="adminClAnnouncementText" rows="2" style="width:100%;padding:10px;border-radius:8px;border:1px solid #c7d2fe;font-size:14px;resize:vertical;outline:none;box-sizing:border-box;" placeholder="Boş bırakırsanız bu duyuru gizlenir"></textarea>
             </div>
             <div style="margin-top:15px;background:#fef2f2;padding:15px;border-radius:8px;border:1px solid #fecaca;">
                 <label style="font-weight:bold;color:#dc2626;display:block;margin-bottom:8px;">⏱️ Tahmin Kapanış Saatleri</label>
@@ -748,6 +758,7 @@
         let championOpen = true;
         let secondChampionOpen = false; // 2. şampiyon adayı (+7)
         let announcementText = "";
+        let clAnnouncementText = ""; // Sadece tahmin oyunu erişimlilerine görünen duyuru
         let matchdayDeadlines = {};
 let dayVisibilitySettings = {}; // Tur bazlı skor/oran görünürlük ayarları
 let userUnits = {}; // Kişi -> Ünite eşlemesi (admin tarafından atanır)
@@ -1789,6 +1800,7 @@ function extractRealFastData() {
                     championOpen = data.championOpen !== undefined ? data.championOpen : true;
                     secondChampionOpen = data.secondChampionOpen !== undefined ? data.secondChampionOpen : false;
                     announcementText = data.announcementText || "";
+                    clAnnouncementText = data.clAnnouncementText || "";
                     matchdayDeadlines = data.matchdayDeadlines || {};
 dayVisibilitySettings = data.dayVisibilitySettings || {};
 userUnits = data.userUnits || {};
@@ -1822,6 +1834,16 @@ updateAnnouncementDisplay();
                 txt.innerHTML = announcementText.replace(/\n/g, '<br>');
                 bar.style.display = 'block';
             } else { bar.style.display = 'none'; }
+            // Tahmin oyunu (erişimli) duyurusu: yalnızca erişim verilen kişi veya admin görür
+            var clBar = document.getElementById('clAnnouncementBar');
+            var clTxt = document.getElementById('clAnnouncementText');
+            if(clBar && clTxt) {
+                var canSee = isAdminMode || (currentAuthenticatedUser && clAccess[currentAuthenticatedUser]);
+                if(clAnnouncementText && clAnnouncementText.trim() !== "" && canSee) {
+                    clTxt.innerHTML = clAnnouncementText.replace(/\n/g, '<br>');
+                    clBar.style.display = 'block';
+                } else { clBar.style.display = 'none'; }
+            }
         }
         function updateChampionLock() {
             var champSel = document.getElementById('userChampionSelect');
@@ -2129,6 +2151,7 @@ function renderUnitAdminControls() {
         function loadUserPredictions(skipAuth = false) {
             const select = document.getElementById('viewUserSelect');
             const viewMode = select.value;
+            updateAnnouncementDisplay(); // erişimli duyuru, giriş yapan kişiye göre güncellensin
             const actionBar = document.getElementById('actionBar');
             const champBox = document.getElementById('viewedUserChampionBox');
             const lockedNotice = document.getElementById('lockedNotice');
@@ -3600,6 +3623,7 @@ function showUnitRanking() {
             document.getElementById('setSecondChampionOpen').value = secondChampionOpen ? "true" : "false";
             if(document.getElementById('setClOpen')) document.getElementById('setClOpen').value = clOpen ? "true" : "false";
             document.getElementById('adminAnnouncementText').value = announcementText || "";
+            if(document.getElementById('adminClAnnouncementText')) document.getElementById('adminClAnnouncementText').value = clAnnouncementText || "";
             for(var di=1;di<=8;di++){var dlEl=document.getElementById('setDeadline'+di);if(dlEl&&matchdayDeadlines[String(di)])dlEl.value=matchdayDeadlines[String(di)];}
 renderDayVisibilityAdminControls();
 renderUnitAdminControls();
@@ -3616,6 +3640,7 @@ renderMainMatchOpenControls();
             secondChampionOpen = document.getElementById('setSecondChampionOpen').value === "true";
             if(document.getElementById('setClOpen')) clOpen = document.getElementById('setClOpen').value === "true";
             announcementText = document.getElementById('adminAnnouncementText').value.trim();
+            if(document.getElementById('adminClAnnouncementText')) clAnnouncementText = document.getElementById('adminClAnnouncementText').value.trim();
             for(var di=1;di<=8;di++){var dlEl=document.getElementById('setDeadline'+di);if(dlEl&&dlEl.value)matchdayDeadlines[String(di)]=dlEl.value;else delete matchdayDeadlines[String(di)];}
 dayVisibilitySettings = {};
 for(let vi=1; vi<=8; vi++) {
@@ -3664,7 +3689,7 @@ const champ = document.getElementById('realChampionSelect').value;
                 mainMatchOpen[cb.getAttribute('data-mainmatch')] = cb.checked;
             });
 
-            db.collection("appData").doc("admin").set({ realResults: realResults, thirdAssign: thirdAssign, clAccess: clAccess, clOpen: clOpen, clMatchLock: clMatchLock, mainMatchOpen: mainMatchOpen, matchdayStatus: matchdayStatus, championOpen: championOpen, secondChampionOpen: secondChampionOpen, announcementText: announcementText, matchdayDeadlines: matchdayDeadlines, dayVisibilitySettings: dayVisibilitySettings, userUnits: userUnits }, { merge: true })
+            db.collection("appData").doc("admin").set({ realResults: realResults, thirdAssign: thirdAssign, clAccess: clAccess, clOpen: clOpen, clMatchLock: clMatchLock, mainMatchOpen: mainMatchOpen, matchdayStatus: matchdayStatus, championOpen: championOpen, secondChampionOpen: secondChampionOpen, announcementText: announcementText, clAnnouncementText: clAnnouncementText, matchdayDeadlines: matchdayDeadlines, dayVisibilitySettings: dayVisibilitySettings, userUnits: userUnits }, { merge: true })
             .then(() => { document.getElementById('adminSettingsOverlay').style.display = 'none'; alert("Ayarlar güncellendi!"); })
             .catch((error) => alert("Hata: " + error.message));
         }
