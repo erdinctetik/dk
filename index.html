@@ -161,7 +161,7 @@
             .mobile-swipe-hint { display: block; text-align: center; font-size: 12px; font-weight: bold; color: #2563eb; background: #eff6ff; border: 1px dashed #93c5fd; border-radius: 8px; padding: 6px; margin-bottom: 8px; }
             /* Her iki bracket de: sütunlar küçülmesin, okunur kalsın; yatay kaydırılsın */
             #bracketContent .bracket-container,
-            #clBracketContent .bracket-container { height: 70vh; gap: 8px; padding: 6px; overflow-x: auto; overflow-y: hidden; justify-content: flex-start; -webkit-overflow-scrolling: touch; }
+            #clBracketContent .bracket-container { height: auto; max-height: 80vh; gap: 8px; padding: 6px; overflow: auto; justify-content: flex-start; -webkit-overflow-scrolling: touch; }
             #bracketContent .bracket-column,
             #clBracketContent .bracket-column { flex: 0 0 140px !important; min-width: 140px !important; }
             #bracketContent .bracket-matches-wrapper,
@@ -656,7 +656,7 @@
                 <button onclick="openClPredict()" style="background:linear-gradient(45deg,#2563eb,#1d4ed8);color:#fff;border:none;padding:9px 20px;border-radius:8px;font-weight:bold;cursor:pointer;box-shadow:0 2px 5px rgba(0,0,0,0.15);">🎯 Tahmin</button>
                 <button onclick="openClStandings()" style="background:linear-gradient(45deg,#f59e0b,#d97706);color:#fff;border:none;padding:9px 20px;border-radius:8px;font-weight:bold;cursor:pointer;box-shadow:0 2px 5px rgba(0,0,0,0.15);">📊 Puan Durumu</button>
             </div>
-            <div class="mobile-swipe-hint">👈 Ağacı görmek için yana kaydırın 👉</div>
+            <div class="mobile-swipe-hint">👈 Yana 👉 ve 👆 aşağı-yukarı 👇 kaydırarak gezin</div>
             <div id="bracketContent"></div>
         </div>
     </div>
@@ -668,7 +668,7 @@
             <h2 id="clPredictTitle" style="color:#1e3a8a; margin:0 0 4px; text-align:center; font-size:18px; font-weight:900;">🎯 Tahmin — Kim Eler, Kim Gider?</h2>
             <div style="text-align:center; font-size:11px; color:#64748b; margin-bottom:8px;">Takım kutusuna tıklayarak turu geçecek takımı seç; bir üst tur otomatik dolar. Aynı takıma tekrar tıklayınca seçim kalkar.</div>
             <div id="clLockNotice" style="display:none; text-align:center; background:#fef2f2; color:#dc2626; font-weight:bold; padding:8px; border-radius:8px; margin-bottom:8px; font-size:13px;">🔒 Tahmin paneli şu anda kapalı. Sadece görüntüleyebilirsin, değişiklik kaydedilemez.</div>
-            <div class="mobile-swipe-hint">👈 Ağacı görmek için yana kaydırın 👉</div>
+            <div class="mobile-swipe-hint">👈 Yana 👉 ve 👆 aşağı-yukarı 👇 kaydırarak gezin</div>
             <div id="clBracketContent"></div>
             <div style="text-align:center; margin-top:10px;">
                 <button id="clSaveBtn" onclick="saveClPred()" style="background:#059669;color:#fff;border:none;padding:11px 28px;border-radius:8px;font-weight:bold;cursor:pointer;font-size:15px;box-shadow:0 2px 6px rgba(0,0,0,0.15);">💾 Tahmini Kaydet</button>
