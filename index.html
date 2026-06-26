@@ -1036,6 +1036,18 @@ function filterByTeam() {
             }
         }
 
+        // İstatistik/gösterim için: bir maçın home/away slotunu GERÇEK takım adına çevirir.
+        // "A Grubu 2.'si" -> gruptan; "73. Maç Galibi" -> gerçek galip. Belli değilse ham metin kalır.
+        function resolveMatchSlot(matchId, side) {
+            const m = matches.find(x => x.id === matchId);
+            if(!m) return "";
+            const raw = side === 'h' ? m.home : m.away;
+            const dyn = getDynamicBracketNames();
+            if(dyn[raw]) return dyn[raw];
+            const real = getRealTeamInSlot(matchId, side);
+            return real || raw;
+        }
+
         // ================================================================
         // BAĞIMSIZ ŞL-TARZI KNOCKOUT TAHMİN OYUNU
         // (Dünya Kupası sıralama/puanlamasından tamamen bağımsız)
@@ -1372,13 +1384,14 @@ function buildPredictionReport() {
 
                 let match = matches.find(x => x.id === mId);
                 if(match) {
-                    if(!teamStats[match.home]) teamStats[match.home] = { gf:0, ga:0, count:0, w:0, d:0, l:0, pts:0 };
-                    if(!teamStats[match.away]) teamStats[match.away] = { gf:0, ga:0, count:0, w:0, d:0, l:0, pts:0 };
-                    teamStats[match.home].gf += hg; teamStats[match.home].ga += ag; teamStats[match.home].count++;
-                    teamStats[match.away].gf += ag; teamStats[match.away].ga += hg; teamStats[match.away].count++;
-                    if(hg > ag) { teamStats[match.home].w++; teamStats[match.home].pts += 3; teamStats[match.away].l++; }
-                    else if(hg < ag) { teamStats[match.away].w++; teamStats[match.away].pts += 3; teamStats[match.home].l++; }
-                    else { teamStats[match.home].d++; teamStats[match.home].pts += 1; teamStats[match.away].d++; teamStats[match.away].pts += 1; }
+                    let mh = resolveMatchSlot(match.id, 'h'), ma = resolveMatchSlot(match.id, 'a');
+                    if(!teamStats[mh]) teamStats[mh] = { gf:0, ga:0, count:0, w:0, d:0, l:0, pts:0 };
+                    if(!teamStats[ma]) teamStats[ma] = { gf:0, ga:0, count:0, w:0, d:0, l:0, pts:0 };
+                    teamStats[mh].gf += hg; teamStats[mh].ga += ag; teamStats[mh].count++;
+                    teamStats[ma].gf += ag; teamStats[ma].ga += hg; teamStats[ma].count++;
+                    if(hg > ag) { teamStats[mh].w++; teamStats[mh].pts += 3; teamStats[ma].l++; }
+                    else if(hg < ag) { teamStats[ma].w++; teamStats[ma].pts += 3; teamStats[mh].l++; }
+                    else { teamStats[mh].d++; teamStats[mh].pts += 1; teamStats[ma].d++; teamStats[ma].pts += 1; }
                 }
                 matchCount++;
             }
@@ -1443,8 +1456,8 @@ function buildPredictionReport() {
     for(let mId in matchPredictions) {
         matchPredictions[mId].forEach(pred => {
             let m = matches.find(x => x.id === mId);
-            if(!enGollu || pred.total > enGollu.total) enGollu = { ...pred, matchName: m ? m.home + " vs " + m.away : mId };
-            if(!enFarkli || pred.diff > enFarkli.diff) enFarkli = { ...pred, matchName: m ? m.home + " vs " + m.away : mId };
+            if(!enGollu || pred.total > enGollu.total) enGollu = { ...pred, matchName: m ? resolveMatchSlot(m.id,'h') + " vs " + resolveMatchSlot(m.id,'a') : mId };
+            if(!enFarkli || pred.diff > enFarkli.diff) enFarkli = { ...pred, matchName: m ? resolveMatchSlot(m.id,'h') + " vs " + resolveMatchSlot(m.id,'a') : mId };
         });
     }
     let golsuzCounts = {};
@@ -1503,16 +1516,17 @@ function buildRealResultsReport() {
         if(!scoreCounts[scoreKey]) scoreCounts[scoreKey] = 0;
         scoreCounts[scoreKey]++;
 
-        // Takım istatistikleri
-        if(!teamStats[match.home]) teamStats[match.home] = { gf:0, ga:0, count:0, w:0, d:0, l:0, pts:0 };
-        if(!teamStats[match.away]) teamStats[match.away] = { gf:0, ga:0, count:0, w:0, d:0, l:0, pts:0 };
+        // Takım istatistikleri (Son 32+ slotları gerçek takıma çözülür ve gruba entegre olur)
+        let mh = resolveMatchSlot(match.id, 'h'), ma = resolveMatchSlot(match.id, 'a');
+        if(!teamStats[mh]) teamStats[mh] = { gf:0, ga:0, count:0, w:0, d:0, l:0, pts:0 };
+        if(!teamStats[ma]) teamStats[ma] = { gf:0, ga:0, count:0, w:0, d:0, l:0, pts:0 };
 
-        teamStats[match.home].gf += rH; teamStats[match.home].ga += rA; teamStats[match.home].count++;
-        teamStats[match.away].gf += rA; teamStats[match.away].ga += rH; teamStats[match.away].count++;
+        teamStats[mh].gf += rH; teamStats[mh].ga += rA; teamStats[mh].count++;
+        teamStats[ma].gf += rA; teamStats[ma].ga += rH; teamStats[ma].count++;
 
-        if(rH > rA) { teamStats[match.home].w++; teamStats[match.home].pts += 3; teamStats[match.away].l++; }
-        else if(rH < rA) { teamStats[match.away].w++; teamStats[match.away].pts += 3; teamStats[match.home].l++; }
-        else { teamStats[match.home].d++; teamStats[match.home].pts += 1; teamStats[match.away].d++; teamStats[match.away].pts += 1; }
+        if(rH > rA) { teamStats[mh].w++; teamStats[mh].pts += 3; teamStats[ma].l++; }
+        else if(rH < rA) { teamStats[ma].w++; teamStats[ma].pts += 3; teamStats[mh].l++; }
+        else { teamStats[mh].d++; teamStats[mh].pts += 1; teamStats[ma].d++; teamStats[ma].pts += 1; }
 
         matchDetails.push({ id: mId, match: match, home: rH, away: rA, total: rH + rA, diff: Math.abs(rH - rA) });
     });
@@ -1542,8 +1556,8 @@ function buildRealResultsReport() {
     let enFarkli = matchDetails.sort((a,b) => b.diff - a.diff)[0];
 
     html += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;">`;
-    if(enGollu) html += `<div style="background:#d1fae5;border:1px solid #10b981;border-radius:8px;padding:12px;text-align:center;"><div style="font-size:11px;color:#065f46;font-weight:bold;">⚽ En Gollü Maç</div><div style="font-size:22px;font-weight:900;color:#059669;margin:5px 0;">${enGollu.home} - ${enGollu.away}</div><div style="font-size:11px;color:#065f46;">${enGollu.match.home} vs ${enGollu.match.away}</div><div style="font-size:11px;color:#064e3b;margin-top:3px;">⚽ Toplam ${enGollu.total} gol</div></div>`;
-    if(enFarkli) html += `<div style="background:#fee2e2;border:1px solid #ef4444;border-radius:8px;padding:12px;text-align:center;"><div style="font-size:11px;color:#991b1b;font-weight:bold;">💥 En Farklı Maç</div><div style="font-size:22px;font-weight:900;color:#dc2626;margin:5px 0;">${enFarkli.home} - ${enFarkli.away}</div><div style="font-size:11px;color:#991b1b;">${enFarkli.match.home} vs ${enFarkli.match.away}</div><div style="font-size:11px;color:#7f1d1d;margin-top:3px;">💥 ${enFarkli.diff} fark</div></div>`;
+    if(enGollu) html += `<div style="background:#d1fae5;border:1px solid #10b981;border-radius:8px;padding:12px;text-align:center;"><div style="font-size:11px;color:#065f46;font-weight:bold;">⚽ En Gollü Maç</div><div style="font-size:22px;font-weight:900;color:#059669;margin:5px 0;">${enGollu.home} - ${enGollu.away}</div><div style="font-size:11px;color:#065f46;">${resolveMatchSlot(enGollu.match.id,'h')} vs ${resolveMatchSlot(enGollu.match.id,'a')}</div><div style="font-size:11px;color:#064e3b;margin-top:3px;">⚽ Toplam ${enGollu.total} gol</div></div>`;
+    if(enFarkli) html += `<div style="background:#fee2e2;border:1px solid #ef4444;border-radius:8px;padding:12px;text-align:center;"><div style="font-size:11px;color:#991b1b;font-weight:bold;">💥 En Farklı Maç</div><div style="font-size:22px;font-weight:900;color:#dc2626;margin:5px 0;">${enFarkli.home} - ${enFarkli.away}</div><div style="font-size:11px;color:#991b1b;">${resolveMatchSlot(enFarkli.match.id,'h')} vs ${resolveMatchSlot(enFarkli.match.id,'a')}</div><div style="font-size:11px;color:#7f1d1d;margin-top:3px;">💥 ${enFarkli.diff} fark</div></div>`;
     html += `</div>`;
 
     // TAHMİN BAŞARI ANALİZİ
@@ -1591,7 +1605,7 @@ function buildRealResultsReport() {
             let topBilen = skorBilenler.length + (skorBilenler.length === 1 && sonucBilenler.length === 1 ? 1 : (skorBilenler.length === 0 ? sonucBilenler.length : 0));
             elmasItems.push(`<div style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:10px;margin-bottom:8px;">
                 <div style="display:flex;justify-content:space-between;align-items:center;">
-                    <span style="font-weight:bold;font-size:12px;">${md.match.home} vs ${md.match.away}</span>
+                    <span style="font-weight:bold;font-size:12px;">${resolveMatchSlot(md.match.id,'h')} vs ${resolveMatchSlot(md.match.id,'a')}</span>
                     <span style="font-weight:900;font-size:14px;color:#1e3a8a;">${md.home} - ${md.away}</span>
                 </div>
                 <div style="font-size:10px;color:#94a3b8;margin-top:2px;">${topTahmin} tahminden 🎯${skorBilenler.length} skor ✅${sonucBilenler.length} sonuç bildi</div>
@@ -1654,7 +1668,7 @@ function buildRealResultsReport() {
         let bg = i % 2 === 0 ? '#ffffff' : '#f8fafc';
 
         basariRows.push(`<tr style="background:${bg};">
-            <td style="padding:5px;border:1px solid #e2e8f0;font-weight:bold;white-space:nowrap;">${md.match.home} - ${md.match.away}</td>
+            <td style="padding:5px;border:1px solid #e2e8f0;font-weight:bold;white-space:nowrap;">${resolveMatchSlot(md.match.id,'h')} - ${resolveMatchSlot(md.match.id,'a')}</td>
             <td style="padding:5px;border:1px solid #e2e8f0;text-align:center;font-weight:900;">${md.home}-${md.away}</td>
             <td style="padding:5px;border:1px solid #e2e8f0;text-align:center;color:#059669;font-weight:bold;">${skorBildi}</td>
             <td style="padding:5px;border:1px solid #e2e8f0;text-align:center;color:#d97706;">${sonucBildi}</td>
