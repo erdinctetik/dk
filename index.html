@@ -130,6 +130,8 @@
         #bracketContent .bracket-team > span > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         #bracketContent .bracket-score { padding: 1px 4px; font-size: 9.5px; min-width: 12px; border-radius: 4px; }
         #bracketContent .bracket-team.winner { border-left-width: 3px; }
+        #bracketContent .bracket-team.admin-pick { cursor: pointer; }
+        #bracketContent .bracket-team.admin-pick:hover { background: #fef9c3; box-shadow: inset 0 0 0 2px #fbbf24; }
         #bracketContent .bracket-team img { width: 15px !important; height: 11px !important; }
         #bracketContent .bracket-match:hover { transform: none; }
 
@@ -784,6 +786,7 @@
         const db = firebase.firestore();
 
         let matchdayStatus = { 1: true, 2: false, 3: false, 4: false, 5: false, 6: false, 7: false, 8: false };
+        let clRealAdvance = {}; // Admin'in elle belirlediği tur atlayan (beraberlik/penaltı) { matchId: takım adı }
         let mainMatchOpen = {}; // Ana oyun: tur kapalıyken tek tek açılan maçlar { matchId: true }
         let championOpen = true;
         let secondChampionOpen = false; // 2. şampiyon adayı (+7)
@@ -1028,11 +1031,7 @@ function filterByTeam() {
                 let dynamicNames = getDynamicBracketNames();
                 return dynamicNames[depName] || null;
             } else {
-                if(!realResults[depId]) return null;
-                let rh = realResults[depId].home, ra = realResults[depId].away;
-                if(rh > ra) return getRealTeamInSlot(depId, 'h');
-                if(ra > rh) return getRealTeamInSlot(depId, 'a');
-                return null;
+                return getMatchWinner(depId); // admin'in belirlediği tur atlayan dahil
             }
         }
 
@@ -1079,12 +1078,24 @@ function filterByTeam() {
         }
 
         // Bir maçın GERÇEK galibi (girilmiş skorlardan)
-        function getClRealWinner(matchId) {
+        // Bir maçın tur atlayanı: önce admin'in elle belirlediği (beraberlik/penaltı), yoksa skora göre.
+        function getMatchWinner(matchId) {
+            if(clRealAdvance[matchId]) return clRealAdvance[matchId];
             if(!realResults[matchId]) return null;
-            const rh = realResults[matchId].home, ra = realResults[matchId].away;
+            const rh = Number(realResults[matchId].home), ra = Number(realResults[matchId].away);
             if(rh > ra) return getRealTeamInSlot(matchId, 'h');
             if(ra > rh) return getRealTeamInSlot(matchId, 'a');
-            return null;
+            return null; // beraberlik ve admin henüz belirlememiş
+        }
+        function getClRealWinner(matchId) { return getMatchWinner(matchId); }
+
+        // Admin: bracket'te takıma tıklayınca tur atlayanı belirle/kaldır (beraberlik için). Anında kaydeder.
+        function setRealAdvance(matchId, team) {
+            if(!isAdminMode) return;
+            clRealAdvance[matchId] = (clRealAdvance[matchId] === team) ? "" : team;
+            showBracket(); // anında yeniden çiz
+            db.collection("appData").doc("admin").set({ clRealAdvance: clRealAdvance }, { merge: true })
+                .catch(e => alert("Kayıt hatası: " + e.message));
         }
 
         // Bir kullanıcının ŞL puanını hesapla (DK puanından bağımsız)
@@ -1839,6 +1850,7 @@ function extractRealFastData() {
                     clAccess = data.clAccess || {};
                     clOpen = data.clOpen !== undefined ? data.clOpen : true;
                     clMatchLock = data.clMatchLock || {};
+                    clRealAdvance = data.clRealAdvance || {};
                     matchdayStatus = data.matchdayStatus || matchdayStatus;
                     mainMatchOpen = data.mainMatchOpen || {};
                     championOpen = data.championOpen !== undefined ? data.championOpen : true;
@@ -2953,18 +2965,19 @@ function validateR32Selections(currentSelect) {
             let dynamicNames = getDynamicBracketNames();
             const fmtTeam = (name) => dynamicNames[name] || name;
 
-            // Bir takım satırı (mirror=true ise sağ taraf için ayna görünümü)
-            function teamRow(team, score, win, mirror) {
+            // Bir takım satırı (mirror=true ayna; clickable=admin tıklayıp tur atlayanı seçebilir)
+            function teamRow(team, score, win, mirror, mId, clickable) {
                 let flag = getFlag(team);
-                let winClass = win ? 'winner' : '';
+                let cls = "bracket-team" + (win ? " winner" : "") + (clickable ? " admin-pick" : "");
+                let onclick = clickable ? ` onclick="setRealAdvance('${mId}','${String(team).replace(/'/g, "\\'")}')"` : "";
                 if(mirror) {
                     let extra = win ? 'border-left:none; border-right:5px solid var(--success);' : '';
-                    return `<div class="bracket-team ${winClass}" style="flex-direction:row-reverse; ${extra}">
+                    return `<div class="${cls}"${onclick} style="flex-direction:row-reverse; ${extra}">
                                 <span style="display:flex; align-items:center; gap:6px;"><span>${team}</span>${flag}</span>
                                 <span class="bracket-score">${score}</span>
                             </div>`;
                 }
-                return `<div class="bracket-team ${winClass}">
+                return `<div class="${cls}"${onclick}>
                             <span style="display:flex; align-items:center; gap:6px;">${flag}<span>${team}</span></span>
                             <span class="bracket-score">${score}</span>
                         </div>`;
@@ -2975,16 +2988,15 @@ function validateR32Selections(currentSelect) {
                 const m = matches.find(x => x.id === mId);
                 if(!m) return '';
                 let hTeam = fmtTeam(m.home), aTeam = fmtTeam(m.away);
-                let hScore = "-", aScore = "-", hWin = false, aWin = false;
-                if(realResults[m.id]) {
-                    hScore = realResults[m.id].home;
-                    aScore = realResults[m.id].away;
-                    if(Number(hScore) > Number(aScore)) hWin = true;
-                    if(Number(aScore) > Number(hScore)) aWin = true;
-                }
+                let hScore = "-", aScore = "-";
+                if(realResults[m.id]) { hScore = realResults[m.id].home; aScore = realResults[m.id].away; }
+                let advancer = getMatchWinner(m.id); // skor VEYA admin'in belirlediği (beraberlik)
+                let hWin = advancer && advancer === hTeam;
+                let aWin = advancer && advancer === aTeam;
+                let clickable = isAdminMode && !!realResults[m.id]; // admin, oynanmış maçta tur atlayanı seçebilir
                 return `<div class="bracket-match">
-                            ${teamRow(hTeam, hScore, hWin, mirror)}
-                            ${teamRow(aTeam, aScore, aWin, mirror)}
+                            ${teamRow(hTeam, hScore, hWin, mirror, mId, clickable)}
+                            ${teamRow(aTeam, aScore, aWin, mirror, mId, clickable)}
                         </div>`;
             }
 
@@ -2999,13 +3011,9 @@ function validateR32Selections(currentSelect) {
             // Merkez sütun: Final + Şampiyon
             function centerColumn() {
                 let championName = "......", championFlag = "";
-                let finalMatch = realResults["m104"];
-                const fm = matches.find(x => x.id === "m104");
-                if(finalMatch && fm) {
-                    if(Number(finalMatch.home) > Number(finalMatch.away)) championName = fmtTeam(fm.home);
-                    else if(Number(finalMatch.away) > Number(finalMatch.home)) championName = fmtTeam(fm.away);
-                    else championName = "Final Oynanıyor...";
-                }
+                const champW = getMatchWinner("m104");
+                if(champW) championName = champW;
+                else if(realResults["m104"]) championName = "Final Oynanıyor..."; // beraberlik, admin belirlememiş
                 championFlag = getFlag(championName);
                 let h = `<div class="bracket-column" style="justify-content:center; min-width:0; flex:0 1 140px;">`;
                 h += `<div class="bracket-round-title">FİNAL</div>`;
@@ -3022,7 +3030,9 @@ function validateR32Selections(currentSelect) {
             // Maç numaraları resmi FIFA 2026 ağacına göre doğrulandı.
             // SOL YARI Final'in üst yarısıdır (m101'e gider),
             // SAĞ YARI Final'in alt yarısıdır (m102'ye gider).
-            let html = '<div class="bracket-container">';
+            let html = '';
+            if(isAdminMode) html += '<div style="text-align:center;font-size:12px;color:#b45309;background:#fffbeb;border:1px dashed #fbbf24;border-radius:8px;padding:6px 8px;margin-bottom:8px;">🔧 Admin: Beraberlik biten maçta <b>tur atlayan takıma tıkla</b> (penaltı galibi). Tekrar tıklayınca kalkar.</div>';
+            html += '<div class="bracket-container">';
 
             // SOL TARAF: dıştan içe -> Son 32, Son 16, Çeyrek, Yarı
             html += renderColumn("Son 32",    ["m74","m77","m73","m75","m83","m84","m81","m82"], false);
