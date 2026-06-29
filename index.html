@@ -2564,8 +2564,9 @@ function toggleMatchPredictions(clickedBtn, targetId) {
                     pAway = dataSrc[match.id].away;
                 }
 
-                let displayHome = dynamicNames[match.home] || match.home;
-                let displayAway = dynamicNames[match.away] || match.away;
+                // Grup slotları + 3.lük + "X. Maç Galibi" (tur atlayan) hepsini çöz
+                let displayHome = resolveMatchSlot(match.id, 'h');
+                let displayAway = resolveMatchSlot(match.id, 'a');
 
                 let matchMiddleHTML = "";
 
