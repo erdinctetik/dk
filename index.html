@@ -760,7 +760,7 @@
             </div>
             <div style="margin-top:15px;background:#ecfdf5;padding:15px;border-radius:8px;border:2px solid #6ee7b7;">
                 <label style="font-weight:bold;color:#047857;display:block;margin-bottom:4px;">🔓 ANA OYUN — Maç Bazında Açma (tur kapalıyken tek maç aç)</label>
-                <div style="font-size:11px;color:#059669;margin-bottom:10px;">Bu <b>ANA OYUN</b> içindir (skor tahmini). Yukarıdaki tur "Kapalı" olsa bile, burada <b>işaretlediğin maçlar tahmine açık</b> olur. Sıkışık programda tek bir maçı açmak için işaretle → <b>Ayarları Kaydet</b>. (İşaretsiz maç, turun durumunu izler.)</div>
+                <div style="font-size:11px;color:#059669;margin-bottom:10px;">Bu <b>ANA OYUN</b> içindir (skor tahmini). <b>İşaretli = maç açık, işaretsiz = maç kapalı.</b> Tur "Kapalı" olsa bile işaretlediğin maç açılır; tur "Açık" olsa bile <b>işaretini kaldırdığın maç kapanır</b> (ör. oynanmış maçı kapatmak için). Geri sayım turun "Açık/Kapalı" durumuna bağlıdır. Değiştirip <b>Ayarları Kaydet</b>.</div>
                 <div id="mainMatchOpenBox" style="display:grid;grid-template-columns:1fr 1fr;gap:4px;max-height:240px;overflow-y:auto;"></div>
             </div>
             <div style="margin-top:15px;background:#eef2ff;padding:15px;border-radius:8px;border:1px solid #c7d2fe;">
@@ -1310,11 +1310,23 @@ function filterByTeam() {
             document.querySelectorAll('#clMatchLockBox input[data-clmatch]').forEach(cb => { cb.checked = open; });
         }
 
-        // ANA OYUN: bir günde (turda) en az bir maç tahmine açık mı?
-        // Tur açıksa hepsi açık; tur kapalıysa sadece tek tek açılan maçlar (mainMatchOpen) açıktır.
+        // ANA OYUN: Bir maçın skor girişi açık mı?
+        // mainMatchOpen[id] === true  -> açık (tur kapalı olsa bile)
+        // mainMatchOpen[id] === false -> kapalı (tur açık olsa bile)
+        // değer yok ("" / undefined)  -> turun durumunu izler (matchdayStatus)
+        function isMatchInputOpen(match) {
+            const ov = mainMatchOpen[match.id];
+            if(ov === true) return true;
+            if(ov === false) return false;
+            return !!matchdayStatus[match.day];
+        }
+        // Bir günde (turda) en az bir maç tahmine açık mı? (kaydet butonu / uyarı için)
         function isAnyMatchOpenInDay(day) {
-            if(matchdayStatus[day]) return true;
-            return matches.some(m => m.day === day && mainMatchOpen[m.id]);
+            return matches.some(m => m.day === day && m.id !== "m103" && isMatchInputOpen(m));
+        }
+        // Kaydet butonu görünmeli mi? Açık maç YA DA şampiyon/2.şampiyon seçimi açıksa.
+        function canSaveNow() {
+            return isAnyMatchOpenInDay(currentDay) || championOpen || secondChampionOpen;
         }
         // ANA OYUN: Admin Ayarları - maç bazında açma kutusu (tur kapalıyken tek maç aç)
         function renderMainMatchOpenControls() {
@@ -1332,7 +1344,7 @@ function filterByTeam() {
                     let h = dyn[m.home] || m.home, a = dyn[m.away] || m.away;
                     if(h.length > 13) h = h.slice(0,12) + '…';
                     if(a.length > 13) a = a.slice(0,12) + '…';
-                    const checked = mainMatchOpen[m.id] ? 'checked' : '';
+                    const checked = isMatchInputOpen(m) ? 'checked' : '';
                     html += `<label style="display:flex;align-items:center;gap:4px;padding:3px 5px;font-size:10px;background:#fff;border-radius:5px;border:1px solid #e2e8f0;"><input type="checkbox" data-mainmatch="${m.id}" ${checked}> <span style="line-height:1.15;">${m.id.toUpperCase()}: ${h} – ${a}</span></label>`;
                 });
             }
@@ -2232,7 +2244,7 @@ document.getElementById('username').value = '';
                 actionBar.style.display = "flex";
                 champBox.style.display = "none";
                 lockedNotice.style.display = isAnyMatchOpenInDay(currentDay) ? "none" : "block";
-                mainSaveBtn.style.display = isAnyMatchOpenInDay(currentDay) ? "block" : "none";
+                mainSaveBtn.style.display = canSaveNow() ? "block" : "none";
                 if(deleteUserBtn) deleteUserBtn.style.display = "none"; 
                 renderMatches(currentDay);
 updateLockedNotice()
@@ -2260,7 +2272,7 @@ updateLockedNotice()
         }
 
         lockedNotice.style.display = (currentAuthenticatedUser !== viewMode && !isAdminMode) ? "block" : (isAnyMatchOpenInDay(currentDay) ? "none" : "block");
-        mainSaveBtn.style.display = (currentAuthenticatedUser === viewMode || isAdminMode) && isAnyMatchOpenInDay(currentDay) ? "block" : "none";
+        mainSaveBtn.style.display = (currentAuthenticatedUser === viewMode || isAdminMode) && canSaveNow() ? "block" : "none";
         if(deleteUserBtn) deleteUserBtn.style.display = isAdminMode ? "block" : "none";
 
         if (savedUsers[viewMode]) {
@@ -2501,7 +2513,7 @@ let allExpanded = false; // Sayfanın genel durumunu tutar
 function updateSaveButton() {
     let mainSaveBtn = document.getElementById('mainSaveBtn');
     if(!mainSaveBtn) return;
-    let isOpen = isAnyMatchOpenInDay(currentDay);
+    let isOpen = canSaveNow();
 
     if(currentViewingUser === "ALL") {
         mainSaveBtn.style.display = isAdminMode ? "block" : "none";
@@ -2540,7 +2552,7 @@ function toggleMatchPredictions(clickedBtn, targetId) {
 
             dayMatches.forEach(match => {
                 // Maç-bazında kilit: tur açıksa VEYA bu maç tek tek açıldıysa -> açık
-                let isLocked = viewRestricted || !(matchdayStatus[day] || mainMatchOpen[match.id]);
+                let isLocked = viewRestricted || !isMatchInputOpen(match);
                 let pHome = "", pAway = "";
                 let dataSrc = null;
 
@@ -3528,7 +3540,7 @@ if(checks.length < 2 || checks.length > 4) {
     });
     html += `</tr></tbody></table>`;
 
-    // Kafa kafaya (sadece 2 kişiyse göster)
+    //  (sadece 2 kişiyse göster)
     if(users.length === 2) {
         let u1Wins = 0, u2Wins = 0, ties = 0;
         for(let mId in realResults) {
@@ -3541,7 +3553,7 @@ if(checks.length < 2 || checks.length > 4) {
             }
         }
         html += `<div style="margin-top:15px;padding:12px;background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;">
-            <div style="font-weight:bold;font-size:12px;color:#0369a1;margin-bottom:8px;">⚔️ Kafa Kafaya</div>
+            <div style="font-weight:bold;font-size:12px;color:#0369a1;margin-bottom:8px;">⚔️ </div>
             <div style="display:flex;justify-content:space-around;text-align:center;font-size:13px;">
                 <div><div style="font-size:22px;font-weight:900;color:#059669;">${u1Wins}</div><div style="font-size:10px;color:#64748b;">${users[0]}</div></div>
                 <div><div style="font-size:22px;font-weight:900;color:#d97706;">${ties}</div><div style="font-size:10px;color:#64748b;">Berabere</div></div>
@@ -3737,10 +3749,14 @@ const champ = document.getElementById('realChampionSelect').value;
                 clMatchLock[cb.getAttribute('data-clmatch')] = !cb.checked; // her maç açıkça: true=kilitli, false=açık (Firestore merge'de eski kilit kalmasın)
             });
 
-            // ANA OYUN maç bazında açma (işaretli = tur kapalı olsa da açık). Her maç açıkça yazılır.
+            // ANA OYUN maç bazında açık/kapalı (override): turun varsayılanından farklıysa override yaz,
+            // aynıysa "" (turu izle). Böylece tur durumu değişince override'lar absolut kalır, stale olmaz.
             mainMatchOpen = {};
             document.querySelectorAll('#mainMatchOpenBox input[data-mainmatch]').forEach(function(cb) {
-                mainMatchOpen[cb.getAttribute('data-mainmatch')] = cb.checked;
+                const mid = cb.getAttribute('data-mainmatch');
+                const m = matches.find(x => x.id === mid);
+                const roundDef = m ? !!matchdayStatus[m.day] : false;
+                mainMatchOpen[mid] = (cb.checked === roundDef) ? "" : cb.checked; // "" = turu izle, true/false = override
             });
 
             db.collection("appData").doc("admin").set({ realResults: realResults, thirdAssign: thirdAssign, clAccess: clAccess, clOpen: clOpen, clMatchLock: clMatchLock, mainMatchOpen: mainMatchOpen, matchdayStatus: matchdayStatus, championOpen: championOpen, secondChampionOpen: secondChampionOpen, announcementText: announcementText, clAnnouncementText: clAnnouncementText, matchdayDeadlines: matchdayDeadlines, dayVisibilitySettings: dayVisibilitySettings, userUnits: userUnits }, { merge: true })
@@ -3777,23 +3793,39 @@ const champ = document.getElementById('realChampionSelect').value;
 
 let existingChamp = document.getElementById('userChampionSelect').value;
 let existingSecondChamp = document.getElementById('userSecondChampionSelect').value;
+let champSaved = false;
 if(existingChamp && championOpen) {
     db.collection("users").doc(username).set({ champion: existingChamp }, { merge: true });
+    champSaved = true;
 }
 if(existingSecondChamp && secondChampionOpen) {
     db.collection("users").doc(username).set({ secondChampion: existingSecondChamp }, { merge: true });
+    champSaved = true;
 }
 
-
-                if(!isAnyMatchOpenInDay(currentDay)) return alert("Bu turda tahmin alımı kilitli.");
+                // Hiç açık maç yoksa: şampiyon seçimi kaydedildiyse onu onayla, yoksa kilit uyarısı ver.
+                if(!isAnyMatchOpenInDay(currentDay)) {
+                    if(champSaved) {
+                        alert("Şampiyon tercihiniz kaydedildi!");
+                        currentAuthenticatedUser = username;
+                        document.getElementById('viewUserSelect').value = username;
+                        loadUserPredictions(true);
+                    } else {
+                        alert("Bu turda tahmin alımı kilitli.");
+                    }
+                    return;
+                }
 
                 let userObj = savedUsers[username] || {};
                 if (viewMode === "NEW") { userObj.password = password; if(champ && championOpen) userObj.champion = champ; if(secondChamp && secondChampionOpen) userObj.secondChampion = secondChamp; }
+                // ÖNEMLİ: maç kaydı, seçili (yeni) şampiyonları geri yazsın — eski değeri ezmesin.
+                if(existingChamp && championOpen) userObj.champion = existingChamp;
+                if(existingSecondChamp && secondChampionOpen) userObj.secondChampion = existingSecondChamp;
 
                 const dayMatches = matches.filter(m => m.day === currentDay);
                 dayMatches.forEach(match => {
-                    // Sadece açık maçları kaydet (tur açık VEYA bu maç tek tek açık)
-                    if(!(matchdayStatus[currentDay] || mainMatchOpen[match.id])) return;
+                    // Sadece açık maçları kaydet (maç-bazında açık/kapalı)
+                    if(!isMatchInputOpen(match)) return;
                     const h = document.getElementById(`home_${match.id}`).value;
                     const a = document.getElementById(`away_${match.id}`).value;
                     if(h !== "" && a !== "") userObj[match.id] = { home: parseInt(h), away: parseInt(a) };
