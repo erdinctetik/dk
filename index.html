@@ -3672,8 +3672,10 @@ function showUnitRanking() {
         function showAdminLogin() { document.getElementById('adminLoginOverlay').style.display = 'flex'; document.getElementById('adminPassInput').value = ''; }
         function enterAdminMode() {
             let girilenSifre = document.getElementById('adminPassInput').value;
-            // Şifre "3435"ün Base64 hali
-            if(btoa(girilenSifre) === "MzQzNQ==") {
+            
+// Şifre "191923"ün Base64 hali
+if (btoa(girilenSifre) === "MTkxOTIz") {
+
                 isAdminMode = true;
                 document.getElementById('adminLoginOverlay').style.display = 'none';
                 document.getElementById('adminBanner').style.display = 'block';
