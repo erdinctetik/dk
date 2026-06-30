@@ -79,6 +79,16 @@
         .vs { font-weight: bold; color: #d1d5db; font-size: 12px; }
         
         .result-tag { background: #f8fafc; padding: 8px; border-radius: 6px; font-size: 12px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; margin-top: 5px; border: 1px solid #e2e8f0; }
+        /* Risk Var (RV) butonu */
+        .rv-btn { background:#ffffff; color:#dc2626; border:2px solid #fecaca; border-radius:6px; font-weight:900; font-size:11px; padding:3px 12px; cursor:pointer; letter-spacing:1px; transition:0.15s; }
+        .rv-btn:hover:not(:disabled) { border-color:#dc2626; }
+        .rv-btn.rv-on { background:#dc2626; color:#fff; border-color:#dc2626; box-shadow:0 2px 6px rgba(220,38,38,0.35); }
+        .rv-btn:disabled { opacity:0.5; cursor:not-allowed; }
+        .rv-row { display:flex; align-items:center; justify-content:center; gap:6px; margin-top:6px; }
+        .rv-hint { font-size:9px; color:#94a3b8; }
+        .rv-result { font-size:11px; font-weight:900; padding:2px 7px; border-radius:5px; }
+        .rv-win { background:#d1fae5; color:#059669; }
+        .rv-lose { background:#fee2e2; color:#dc2626; }
         .pts-5 { color: #059669; background: #d1fae5; padding: 3px 8px; border-radius: 4px; }
         .pts-3 { color: #d97706; background: #fef3c7; padding: 3px 8px; border-radius: 4px; }
         .pts-0 { color: #dc2626; background: #fee2e2; padding: 3px 8px; border-radius: 4px; }
@@ -704,6 +714,20 @@
                 <div class="admin-setting-row" style="grid-column:1/-1;background:#fffbeb;border-color:#fbbf24;"><label style="color:#b45309;">🏆 Şampiyon Seçimi</label><select id="setChampionOpen"><option value="true">Açık</option><option value="false">Kapalı</option></select></div>
                 <div class="admin-setting-row" style="grid-column:1/-1;background:#f0fdf4;border-color:#86efac;"><label style="color:#059669;">🥈 2. Şampiyon Adayı (+7)</label><select id="setSecondChampionOpen"><option value="true">Açık</option><option value="false">Kapalı</option></select></div>
             </div>
+            <div style="margin-top:15px;background:#fef2f2;padding:15px;border-radius:8px;border:2px solid #fecaca;">
+                <label style="font-weight:bold;color:#dc2626;display:block;margin-bottom:4px;">🎲 Risk Var (RV) — Tur Bazlı Aç/Kapa</label>
+                <div style="font-size:11px;color:#ef4444;margin-bottom:10px;">RV butonu yalnızca "Açık" yaptığın turlarda görünür ve puanlanır (bilirsen +2, bilemezsen −2).</div>
+                <div class="admin-grid">
+                    <div class="admin-setting-row"><label>1. Maçlar</label><select id="setRv1"><option value="false">Kapalı</option><option value="true">Açık</option></select></div>
+                    <div class="admin-setting-row"><label>2. Maçlar</label><select id="setRv2"><option value="false">Kapalı</option><option value="true">Açık</option></select></div>
+                    <div class="admin-setting-row"><label>3. Maçlar</label><select id="setRv3"><option value="false">Kapalı</option><option value="true">Açık</option></select></div>
+                    <div class="admin-setting-row"><label>Son 32</label><select id="setRv4"><option value="false">Kapalı</option><option value="true">Açık</option></select></div>
+                    <div class="admin-setting-row"><label>Son 16</label><select id="setRv5"><option value="false">Kapalı</option><option value="true">Açık</option></select></div>
+                    <div class="admin-setting-row"><label>Çeyrek F.</label><select id="setRv6"><option value="false">Kapalı</option><option value="true">Açık</option></select></div>
+                    <div class="admin-setting-row"><label>Yarı F.</label><select id="setRv7"><option value="false">Kapalı</option><option value="true">Açık</option></select></div>
+                    <div class="admin-setting-row"><label>Final</label><select id="setRv8"><option value="false">Kapalı</option><option value="true">Açık</option></select></div>
+                </div>
+            </div>
             <div style="margin-top:15px;background:#f0f9ff;padding:15px;border-radius:8px;border:1px solid #bae6fd;">
                 <label style="font-weight:bold;color:#0369a1;display:block;margin-bottom:8px;">📢 Duyuru Metni (herkese)</label>
                 <textarea id="adminAnnouncementText" rows="3" style="width:100%;padding:10px;border-radius:8px;border:1px solid #7dd3fc;font-size:14px;resize:vertical;outline:none;box-sizing:border-box;" placeholder="Boş bırakırsanız duyuru gizlenir"></textarea>
@@ -788,6 +812,7 @@
         let matchdayStatus = { 1: true, 2: false, 3: false, 4: false, 5: false, 6: false, 7: false, 8: false };
         let clRealAdvance = {}; // Admin'in elle belirlediği tur atlayan (beraberlik/penaltı) { matchId: takım adı }
         let mainMatchOpen = {}; // Ana oyun: tur kapalıyken tek tek açılan maçlar { matchId: true }
+        let rvRoundOpen = {};   // Risk Var (RV) hangi turlarda açık { day: true/false }
         let championOpen = true;
         let secondChampionOpen = false; // 2. şampiyon adayı (+7)
         let announcementText = "";
@@ -1863,6 +1888,7 @@ function extractRealFastData() {
                     clOpen = data.clOpen !== undefined ? data.clOpen : true;
                     clMatchLock = data.clMatchLock || {};
                     clRealAdvance = data.clRealAdvance || {};
+                    rvRoundOpen = data.rvRoundOpen || {};
                     matchdayStatus = data.matchdayStatus || matchdayStatus;
                     mainMatchOpen = data.mainMatchOpen || {};
                     championOpen = data.championOpen !== undefined ? data.championOpen : true;
@@ -1878,7 +1904,10 @@ updateAnnouncementDisplay();
                 }
                 renderMatches(currentDay);
                 renderGroupPanel();
-                renderTabs(); 
+                renderTabs();
+                // Açık duran "Eşleşmeler" penceresi varsa yeni verilerle yeniden çiz (tur atlayanlar güncellensin)
+                var _bo = document.getElementById('bracketOverlay');
+                if(_bo && _bo.style.display === 'flex') showBracket();
             });
 
             db.collection("users").onSnapshot((snapshot) => {
@@ -2296,10 +2325,14 @@ updateLockedNotice()
                     let realFast = extractRealFastData();
                     let fastPts = calculateFastPoints(savedUsers[viewMode].fastMode, realFast);
                     totalPts += fastPts;
+                    // RV (Risk Var) puanları
+                    let riskPts = getRiskPoints(savedUsers[viewMode]);
+                    totalPts += riskPts;
 
                     let champText = savedUsers[viewMode].champion ? savedUsers[viewMode].champion : "Seçilmedi";
                     let secondChampText = savedUsers[viewMode].secondChampion ? savedUsers[viewMode].secondChampion : "Seçilmedi";
                     let fastInfo = savedUsers[viewMode].fastMode ? `<div style="font-size:12px; margin-top:5px; color:#1e3a8a;">⚡ Hızlı Tahmin Puanı: <b>+${fastPts}</b></div>` : `<div style="font-size:12px; margin-top:5px; color:#ef4444;"></div>`;
+                    let riskInfo = riskPts !== 0 ? `<div style="font-size:12px; margin-top:3px; color:${riskPts>0?'#059669':'#dc2626'};">🎲 Risk (RV) Puanı: <b>${riskPts>0?'+':''}${riskPts}</b></div>` : '';
 
                     champBox.innerHTML = `
     <div style="text-align:center;font-size:13px;font-weight:900;color:#92400e;">
@@ -2314,6 +2347,7 @@ updateLockedNotice()
         </span>
     </div>
     ${fastInfo}
+    ${riskInfo}
 `;
                     champBox.style.display = "block";
                 } else {
@@ -2366,6 +2400,45 @@ updateLockedNotice();
             let rOut = rh > ra ? 1 : (rh < ra ? 2 : 0);
             if(pOut === rOut) return 3;
             return 0;
+        }
+
+        // RV (Risk Var) butonunu aç/kapa
+        function toggleRisk(btn) {
+            if(btn.disabled) return;
+            btn.classList.toggle('rv-on');
+        }
+        // RV bu turda açık mı?
+        function isRvOpenForMatch(mId) {
+            const m = matches.find(x => x.id === mId);
+            return !!(m && rvRoundOpen[m.day]);
+        }
+        // Bir maç için RV sonucu: skor/sonuç bilindiyse +2, bilinmediyse -2 (tahmin yoksa / RV kapalıysa 0)
+        function riskOutcomeForMatch(userData, mId) {
+            if(!userData || !userData.risk || !userData.risk[mId]) return 0;
+            if(!isRvOpenForMatch(mId)) return 0; // RV bu turda kapalı
+            if(!realResults[mId]) return 0; // maç oynanmadı
+            let p = userData[mId];
+            if(!p || p.home === undefined || p.away === undefined) return 0; // tahmin yok
+            let pts = getMatchPoints(p.home, p.away, realResults[mId].home, realResults[mId].away);
+            return (pts > 0) ? 2 : -2;
+        }
+        // Bir kullanıcının toplam RV puanı (tüm risk açtığı, sonucu girilmiş maçlar)
+        function getRiskPoints(userData) {
+            if(!userData || !userData.risk) return 0;
+            let rp = 0;
+            for(let mId in userData.risk) {
+                if(userData.risk[mId]) rp += riskOutcomeForMatch(userData, mId);
+            }
+            return rp;
+        }
+        // Gerçekleşen sonuçlarda kullanıcı ismi yanına RV kişi ikonu (renkli SVG).
+        // RV işaretliyse: bildi -> yeşil, bilemedi/henüz belli değil -> kırmızı. RV yoksa "" döner.
+        function rvUserIcon(userData, mId) {
+            if(!userData || !userData.risk || !userData.risk[mId]) return "";
+            if(!isRvOpenForMatch(mId)) return "";
+            let color = "#dc2626"; // kırmızı: risk alınmış (henüz belli değil veya bilemedi)
+            if(realResults[mId]) color = (riskOutcomeForMatch(userData, mId) > 0) ? "#16a34a" : "#dc2626";
+            return `<svg width="13" height="13" viewBox="0 0 24 24" fill="${color}" style="vertical-align:middle;margin-right:2px;flex-shrink:0;"><title>Risk Var (RV)</title><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>`;
         }
 
         function renderTabs() {
@@ -2656,7 +2729,7 @@ if(showScoresForDay) {
             }
             predictionsList += `
             <div style="display:flex; justify-content:space-between; align-items:center; padding:4px 0; border-bottom:1px solid #f1f5f9; font-size:11px;">
-                <span style="color:#334155; font-weight:bold; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:85px;">👤 ${u}</span>
+                <span style="color:#334155; font-weight:bold; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:95px; display:flex; align-items:center;">${rvUserIcon(savedUsers[u], match.id) || "👤"} ${u}</span>
                 <div style="display:flex; align-items:center; gap:8px;">
                     <span style="font-weight:900; color:#0f172a;">${p.home} - ${p.away}</span>
                     <div style="width:30px; text-align:right;">${ptsHTML}</div>
@@ -2727,6 +2800,19 @@ matchMiddleHTML = `
                         </div>`;
                     }
 
+                    // RV (Risk Var) — sadece admin'in RV'yi açtığı turlarda gösterilir
+                    let rvAllowed = !!rvRoundOpen[match.day];
+                    let riskOn = rvAllowed && !!(dataSrc && dataSrc.risk && dataSrc.risk[match.id]);
+                    let rvResultHTML = "";
+                    if(riskOn && realResults[match.id]) {
+                        let ro = riskOutcomeForMatch(dataSrc, match.id);
+                        rvResultHTML = ro > 0 ? `<span class="rv-result rv-win">Risk ✓ +2</span>` : `<span class="rv-result rv-lose">Risk ✗ −2</span>`;
+                    }
+                    let rvRowHTML = "";
+                    if(rvAllowed) {
+                        let rvBtnHTML = `<button type="button" class="rv-btn ${riskOn ? 'rv-on' : ''}" data-rv="${match.id}" ${isLocked ? 'disabled' : ''} onclick="toggleRisk(this)" title="Risk Var — bilirsen +2, bilemezsen −2">RV</button>`;
+                        rvRowHTML = `<div class="rv-row">${rvBtnHTML}${rvResultHTML || '<span class="rv-hint">Risk: bilirsen +2 · bilemezsen −2</span>'}</div>`;
+                    }
                     matchMiddleHTML = `
                         <div class="match-teams">
                             <div class="team home">${displayHome}</div>
@@ -2737,6 +2823,7 @@ matchMiddleHTML = `
                             </div>
                             <div class="team away">${displayAway}</div>
                         </div>
+                        ${rvRowHTML}
                         ${statsBarHTML2}
                         ${resultHTML}
                     `;
@@ -3000,7 +3087,7 @@ function validateR32Selections(currentSelect) {
             function matchBox(mId, mirror) {
                 const m = matches.find(x => x.id === mId);
                 if(!m) return '';
-                let hTeam = fmtTeam(m.home), aTeam = fmtTeam(m.away);
+                let hTeam = resolveMatchSlot(m.id, 'h'), aTeam = resolveMatchSlot(m.id, 'a'); // galip-slotlarını da çöz
                 let hScore = "-", aScore = "-";
                 if(realResults[m.id]) { hScore = realResults[m.id].home; aScore = realResults[m.id].away; }
                 let advancer = getMatchWinner(m.id); // skor VEYA admin'in belirlediği (beraberlik)
@@ -3089,6 +3176,7 @@ function validateR32Selections(currentSelect) {
                 if(savedUsers[user].champion && realResults.champion && savedUsers[user].champion === realResults.champion) totalPts += 15;
                 if(savedUsers[user].secondChampion && realResults.champion && savedUsers[user].secondChampion === realResults.champion) totalPts += 7;
                 if(savedUsers[user].fastMode) totalPts += calculateFastPoints(savedUsers[user].fastMode, realFast);
+                totalPts += getRiskPoints(savedUsers[user]); // RV (Risk Var) puanları
                 totals[user] = totalPts;
             }
             return totals;
@@ -3174,6 +3262,7 @@ function validateR32Selections(currentSelect) {
         if(savedUsers[user].fastMode) {
             totalPts += calculateFastPoints(savedUsers[user].fastMode, realFast);
         }
+        totalPts += getRiskPoints(savedUsers[user]); // RV (Risk Var) puanları
 
         let isabet = topTahmin > 0 ? Math.round(((skorBildi + sonucBildi) / topTahmin) * 100) : 0;
         standings.push({ name: user, points: totalPts, skorBildi, sonucBildi, yanlis, topTahmin, isabet });
@@ -3489,6 +3578,7 @@ if(checks.length < 2 || checks.length > 4) {
         }
         if(data.champion && realResults.champion && data.champion === realResults.champion) stats.puan += 15;
         if(data.secondChampion && realResults.champion && data.secondChampion === realResults.champion) stats.puan += 7;
+        stats.puan += getRiskPoints(data); // RV (Risk Var) puanları
         stats.isabet = stats.tahmin > 0 ? Math.round(((stats.skorBildi + stats.sonucBildi) / stats.tahmin) * 100) : 0;
         return stats;
     }
@@ -3687,6 +3777,7 @@ if (btoa(girilenSifre) === "MTkxOTIz") {
         function exitAdminMode() { isAdminMode = false; document.getElementById('adminBanner').style.display = 'none'; loadUserPredictions(true); }
         function openAdminSettings() {
             for(let i=1; i<=8; i++) { if(document.getElementById('setDay'+i)) document.getElementById('setDay'+i).value = matchdayStatus[i] ? "true" : "false"; }
+            for(let i=1; i<=8; i++) { if(document.getElementById('setRv'+i)) document.getElementById('setRv'+i).value = rvRoundOpen[i] ? "true" : "false"; }
             if(realResults.champion) document.getElementById('realChampionSelect').value = realResults.champion;
             document.getElementById('setChampionOpen').value = championOpen ? "true" : "false";
             document.getElementById('setSecondChampionOpen').value = secondChampionOpen ? "true" : "false";
@@ -3705,6 +3796,8 @@ renderMainMatchOpenControls();
 
         function saveAdminSettings() {
             for(let i=1; i<=8; i++) { matchdayStatus[i] = document.getElementById('setDay'+i).value === "true"; }
+            rvRoundOpen = {};
+            for(let i=1; i<=8; i++) { if(document.getElementById('setRv'+i)) rvRoundOpen[i] = document.getElementById('setRv'+i).value === "true"; }
             championOpen = document.getElementById('setChampionOpen').value === "true";
             secondChampionOpen = document.getElementById('setSecondChampionOpen').value === "true";
             if(document.getElementById('setClOpen')) clOpen = document.getElementById('setClOpen').value === "true";
@@ -3762,7 +3855,7 @@ const champ = document.getElementById('realChampionSelect').value;
                 mainMatchOpen[mid] = (cb.checked === roundDef) ? "" : cb.checked; // "" = turu izle, true/false = override
             });
 
-            db.collection("appData").doc("admin").set({ realResults: realResults, thirdAssign: thirdAssign, clAccess: clAccess, clOpen: clOpen, clMatchLock: clMatchLock, mainMatchOpen: mainMatchOpen, matchdayStatus: matchdayStatus, championOpen: championOpen, secondChampionOpen: secondChampionOpen, announcementText: announcementText, clAnnouncementText: clAnnouncementText, matchdayDeadlines: matchdayDeadlines, dayVisibilitySettings: dayVisibilitySettings, userUnits: userUnits }, { merge: true })
+            db.collection("appData").doc("admin").set({ realResults: realResults, thirdAssign: thirdAssign, clAccess: clAccess, clOpen: clOpen, clMatchLock: clMatchLock, mainMatchOpen: mainMatchOpen, rvRoundOpen: rvRoundOpen, matchdayStatus: matchdayStatus, championOpen: championOpen, secondChampionOpen: secondChampionOpen, announcementText: announcementText, clAnnouncementText: clAnnouncementText, matchdayDeadlines: matchdayDeadlines, dayVisibilitySettings: dayVisibilitySettings, userUnits: userUnits }, { merge: true })
             .then(() => { document.getElementById('adminSettingsOverlay').style.display = 'none'; alert("Ayarlar güncellendi!"); })
             .catch((error) => alert("Hata: " + error.message));
         }
@@ -3832,6 +3925,12 @@ if(existingSecondChamp && secondChampionOpen) {
                     const h = document.getElementById(`home_${match.id}`).value;
                     const a = document.getElementById(`away_${match.id}`).value;
                     if(h !== "" && a !== "") userObj[match.id] = { home: parseInt(h), away: parseInt(a) };
+                });
+
+                // RV (Risk Var) seçimlerini topla (ekrandaki açık maçların butonlarından)
+                userObj.risk = userObj.risk || {};
+                document.querySelectorAll('.rv-btn[data-rv]').forEach(function(b) {
+                    userObj.risk[b.getAttribute('data-rv')] = b.classList.contains('rv-on');
                 });
                 
                 db.collection("users").doc(username).set(userObj, { merge: true })
