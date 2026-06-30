@@ -151,7 +151,7 @@
         #clBracketContent .bracket-matches-wrapper { gap: 5px; }
         #clBracketContent .bracket-round-title { font-size: 10px; height: 18px; line-height: 18px; margin-bottom: 6px; border-bottom-width: 2px; letter-spacing: 0; }
         #clBracketContent .bracket-match { border-radius: 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.06); }
-        #clBracketContent .bracket-team { padding: 5px 12px; font-size: 12px; line-height: 1.15; }
+        #clBracketContent .bracket-team { padding: 5px 12px; font-size: 10px; line-height: 1.15; }
         #clBracketContent .bracket-team > span { gap: 4px !important; min-width: 0; }
         #clBracketContent .bracket-team > span > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         #clBracketContent .bracket-score { padding: 1px 4px; font-size: 11px; min-width: 12px; border-radius: 4px; }
@@ -160,6 +160,17 @@
         #clBracketContent .bracket-team.cl-clickable:hover { background: #eff6ff; }
         #clBracketContent .bracket-team.cl-pick { background: #dcfce7; color: #065f46; border-left: 3px solid #059669; }
         #clBracketContent .bracket-team.cl-pick .bracket-score { background: #059669; color: #fff; }
+        /* Seçtiğim takım elendiyse: soluk gri */
+        #clBracketContent .bracket-team.cl-elim { background: #f1f5f9; color: #94a3b8; border-left: 3px solid #cbd5e1; }
+        /* Seçmediğim ama gerçek tur atlayan: sarı */
+        #clBracketContent .bracket-team.cl-actual { background: #fef9c3; color: #854d0e; border-left: 3px solid #eab308; }
+        /* İkili tam bilme bonusu (+1): maç kutusuna yeşil çerçeve + üst ortada +1 rozeti */
+        #clBracketContent .bracket-match.cl-pairbonus { border: 2px solid #16a34a !important; overflow: visible; position: relative; box-shadow: 0 0 0 1px #16a34a33; }
+        #clBracketContent .cl-pairbonus-badge { position: absolute; top: -8px; left: 50%; transform: translateX(-50%); background: #16a34a; color: #fff; font-size: 9.5px; font-weight: 900; padding: 1px 7px; border-radius: 8px; z-index: 3; box-shadow: 0 1px 3px rgba(0,0,0,0.3); white-space: nowrap; }
+        /* Mobilde tahmin yan paneli daha dar */
+        @media (max-width: 768px) {
+            #clSidePanel { width: 150px !important; }
+        }
         #clBracketContent .bracket-score.cl-pts-ok { background: #059669 !important; color: #fff !important; font-weight: 900; }
         #clBracketContent .bracket-score.cl-pts-no { background: #fecaca !important; color: #991b1b !important; }
         #clBracketContent .bracket-match.cl-locked { position: relative; opacity: 0.92; }
@@ -181,7 +192,7 @@
             #bracketContent .bracket-round-title,
             #clBracketContent .bracket-round-title { font-size: 12px; height: auto; line-height: 1.3; margin-bottom: 8px; padding-bottom: 4px; }
             #bracketContent .bracket-team,
-            #clBracketContent .bracket-team { font-size: 12.5px; padding: 8px 9px; line-height: 1.25; }
+            #clBracketContent .bracket-team { font-size: 11px; padding: 8px 9px; line-height: 1.25; }
             #bracketContent .bracket-team > span > span,
             #clBracketContent .bracket-team > span > span { white-space: normal; overflow: visible; text-overflow: clip; }
             #bracketContent .bracket-score,
@@ -680,10 +691,20 @@
             <h2 id="clPredictTitle" style="color:#1e3a8a; margin:0 0 4px; text-align:center; font-size:18px; font-weight:900;">🎯 Tahmin — Kim Eler, Kim Gider?</h2>
             <div style="text-align:center; font-size:11px; color:#64748b; margin-bottom:8px;">Takım kutusuna tıklayarak turu geçecek takımı seç; bir üst tur otomatik dolar. Aynı takıma tekrar tıklayınca seçim kalkar.</div>
             <div id="clLockNotice" style="display:none; text-align:center; background:#fef2f2; color:#dc2626; font-weight:bold; padding:8px; border-radius:8px; margin-bottom:8px; font-size:13px;">🔒 Tahmin paneli şu anda kapalı. Sadece görüntüleyebilirsin, değişiklik kaydedilemez.</div>
-            <div class="mobile-swipe-hint">👈 Yana 👉 ve 👆 aşağı-yukarı 👇 kaydırarak gezin</div>
-            <div id="clBracketContent"></div>
-            <div style="text-align:center; margin-top:10px;">
-                <button id="clSaveBtn" onclick="saveClPred()" style="background:#059669;color:#fff;border:none;padding:11px 28px;border-radius:8px;font-weight:bold;cursor:pointer;font-size:15px;box-shadow:0 2px 6px rgba(0,0,0,0.15);">💾 Tahmini Kaydet</button>
+            <div style="display:flex; gap:10px; align-items:flex-start;">
+                <div style="flex:1; min-width:0;">
+                    <div class="mobile-swipe-hint">👈 Yana 👉 ve 👆 aşağı-yukarı 👇 kaydırarak gezin</div>
+                    <div id="clBracketContent"></div>
+                </div>
+                <div id="clSidePanel" style="display:none; width:200px; flex-shrink:0; background:#fff; border:1px solid #e2e8f0; border-radius:10px; padding:8px; max-height:72vh; overflow-y:auto;">
+                    <div style="font-weight:900;color:#1e3a8a;text-align:center;font-size:13px;">📊 Puan Durumu</div>
+                    <div style="font-size:9px;color:#94a3b8;text-align:center;margin-bottom:6px;">İsme tıkla → tahminini gör</div>
+                    <div id="clSideStandings"></div>
+                </div>
+            </div>
+            <div style="text-align:center; margin-top:10px; display:flex; gap:8px; justify-content:center; flex-wrap:wrap;">
+                <button onclick="toggleClSidePanel()" style="background:linear-gradient(45deg,#f59e0b,#d97706);color:#fff;border:none;padding:10px 18px;border-radius:8px;font-weight:bold;cursor:pointer;">📊 Puan Durumu</button>
+                <button id="clSaveBtn" onclick="saveClPred()" style="background:#059669;color:#fff;border:none;padding:11px 24px;border-radius:8px;font-weight:bold;cursor:pointer;font-size:15px;box-shadow:0 2px 6px rgba(0,0,0,0.15);">💾 Tahmini Kaydet</button>
             </div>
         </div>
     </div>
@@ -1081,6 +1102,7 @@ function filterByTeam() {
         let clMatchLock = {};   // Maç bazında kilit { matchId: true } - true ise o maçın tahmini kapalı
         let clEditPred = {};    // Tahmin ekranında düzenlenen geçici tahmin (matchId -> takım adı)
         let clStandingsArr = []; // Puan durumundaki sıralı kişi listesi (isme tıklayınca tahmini açmak için)
+        let clViewUser = "";     // Yan panelde o an görüntülenen kişi (vurgulamak için)
         const CL_PTS_ADVANCE = 2;    // her doğru ilerleyen takım
         const CL_PTS_CHAMPION = 4;   // şampiyonu doğru bilme
         const CL_PTS_PAIRBONUS = 1;  // bir eşleşmenin iki tarafını da doğru bilme bonusu
@@ -1113,6 +1135,31 @@ function filterByTeam() {
             return null; // beraberlik ve admin henüz belirlememiş
         }
         function getClRealWinner(matchId) { return getMatchWinner(matchId); }
+
+        // Bir maçın İKİLİSİNİ tam bildi mi? (iki katılımcısını da doğru tahmin -> +1 bonus)
+        function hasPairBonus(mid, pred) {
+            const m = matches.find(x => x.id === mid);
+            if(!m) return false;
+            const fh = getDepId(m.home), fa = getDepId(m.away);
+            if(!fh || !fa) return false; // Son 32 taban maçlarının besleyeni yok -> bonus yok
+            const rwh = getClRealWinner(fh), rwa = getClRealWinner(fa);
+            return !!(rwh && rwa && pred[fh] === rwh && pred[fa] === rwa);
+        }
+
+        // Bir takım, beforeDay'den ÖNCEKİ bir knockout turunda gerçekten elendiyse true.
+        // (Yani o tura ulaşamadan yolda kaybetti -> sonraki turlardaki tahmin de "ölü" demektir.)
+        function isTeamEliminatedReal(team, beforeDay) {
+            if(!team) return false;
+            for(const m of matches) {
+                if(m.day < 4 || m.id === "m103") continue; // sadece knockout maçları
+                if(m.day >= beforeDay) continue;           // sadece daha erken turlar
+                if(!realResults[m.id]) continue;           // oynanmamış maç
+                const rh = getRealTeamInSlot(m.id, 'h'), ra = getRealTeamInSlot(m.id, 'a');
+                const w = getClRealWinner(m.id);
+                if((rh === team || ra === team) && w && w !== team) return true; // bu maçta elendi
+            }
+            return false;
+        }
 
         // Admin: bracket'te takıma tıklayınca tur atlayanı belirle/kaldır (beraberlik için). Anında kaydeder.
         function setRealAdvance(matchId, team) {
@@ -1196,7 +1243,16 @@ function filterByTeam() {
                 const picked = team && pred[mid] === team;
                 const editableHere = canClick && team && !clMatchLock[mid];
                 const click = editableHere ? `onclick="clAdvance('${mid}','${side}')" ` : "";
-                const cls = "bracket-team" + (picked ? " cl-pick" : "") + (editableHere ? " cl-clickable" : "");
+                // Renk mantığı: seçtiğim+doğru/henüz -> yeşil; seçtiğim+elendi (bu turda VEYA daha önce) -> gri; seçmediğim ama gerçek galip -> sarı
+                const realW = getClRealWinner(mid);
+                const isRealWinner = !!(team && realW && realW === team);
+                const matchDay = m0 ? m0.day : 99;
+                // Bu maçta kaybetti VEYA daha önceki bir turda elendi -> elenmiş say
+                const eliminated = !!(team && ((realW && !isRealWinner) || isTeamEliminatedReal(team, matchDay)));
+                let bgCls = "";
+                if(picked) bgCls = eliminated ? " cl-elim" : " cl-pick";
+                else if(isRealWinner) bgCls = " cl-actual";
+                const cls = "bracket-team" + bgCls + (editableHere ? " cl-clickable" : "");
                 const sc = scoreSpan(mid, team, picked);
                 if(mirror) {
                     return `<div class="${cls}" ${click}style="flex-direction:row-reverse;">
@@ -1208,7 +1264,12 @@ function filterByTeam() {
                         ${sc}</div>`;
             }
             // Düzenleme modunda kilitli maçlara 🔒 göstergesi (görüntülemede gösterme)
-            const box = (mid, mirror) => `<div class="bracket-match${(editable && clMatchLock[mid]) ? ' cl-locked' : ''}">${teamRow(mid,'h',mirror)}${teamRow(mid,'a',mirror)}</div>`;
+            const box = (mid, mirror) => {
+                const bonus = hasPairBonus(mid, pred); // bu maçın ikilisini (her iki takımı) tam bildi mi -> +1
+                const cls = "bracket-match" + ((editable && clMatchLock[mid]) ? ' cl-locked' : '') + (bonus ? ' cl-pairbonus' : '');
+                const badge = bonus ? '<div class="cl-pairbonus-badge">+1</div>' : '';
+                return `<div class="${cls}">${badge}${teamRow(mid,'h',mirror)}${teamRow(mid,'a',mirror)}</div>`;
+            };
             function col(title, ids, mirror) {
                 let h = `<div class="bracket-column"><div class="bracket-round-title">${title}</div><div class="bracket-matches-wrapper">`;
                 ids.forEach(id => h += box(id, mirror));
@@ -1255,6 +1316,8 @@ function filterByTeam() {
             const koOpen = matches.some(m => m.day >= 4 && m.id !== "m103" && !clMatchLock[m.id]);
             const ln = document.getElementById('clLockNotice'); if(ln) ln.style.display = koOpen ? 'none' : 'block';
             const sb = document.getElementById('clSaveBtn'); if(sb) sb.style.display = (user && koOpen) ? 'inline-block' : 'none';
+            clViewUser = "";
+            const sp0 = document.getElementById('clSidePanel'); if(sp0) sp0.style.display = 'none'; // yan panel varsayılan kapalı
             document.getElementById('clPredictOverlay').style.display = 'flex';
         }
 
@@ -1264,12 +1327,16 @@ function filterByTeam() {
             if(s) openClView(s.name);
         }
         function openClView(user) {
+            clViewUser = user;
             const pred = (savedUsers[user] && savedUsers[user].clPred) || {};
             renderClBracket(pred, false);
             const ttl = document.getElementById('clPredictTitle');
             if(ttl) ttl.innerHTML = `👁️ ${user} — Tahmini <span style="font-size:13px;color:#059669;">(Toplam: ${calcClPointsFromPred(pred)} p)</span>`;
             const ln = document.getElementById('clLockNotice'); if(ln) ln.style.display = 'none';
             const sb = document.getElementById('clSaveBtn'); if(sb) sb.style.display = 'none';
+            // Yan panel açıksa aktif kişiyi vurgulamak için listeyi tazele
+            const sp = document.getElementById('clSidePanel');
+            if(sp && sp.style.display !== 'none') renderClSideStandings();
             document.getElementById('clPredictOverlay').style.display = 'flex';
         }
 
@@ -1282,28 +1349,42 @@ function filterByTeam() {
                 .catch(e => alert("Hata: " + e.message));
         }
 
-        // "Puan Durumu" butonu: bağımsız sıralama
-        function openClStandings() {
+        // Yan paneldeki puan durumu listesini çiz (isme tıklayınca openClView ile ağaç anlık değişir)
+        function renderClSideStandings() {
+            const box = document.getElementById('clSideStandings');
+            if(!box) return;
             const players = Object.keys(clAccess).filter(u => clAccess[u]);
             let arr = players.map(u => ({ name: u, pts: calcClPoints(u), has: !!(savedUsers[u] && savedUsers[u].clPred) }));
             arr.sort((a, b) => b.pts - a.pts || a.name.localeCompare(b.name, 'tr'));
             clStandingsArr = arr;
-            let html;
-            if(arr.length === 0) {
-                html = '<div style="text-align:center;color:#94a3b8;padding:20px;">Henüz erişim verilen kullanıcı yok. Admin Ayarları → "Tahmin Oyunu Erişimi" bölümünden ekleyebilirsin.</div>';
-            } else {
-                html = '<div style="font-size:11px;color:#64748b;text-align:center;margin-bottom:8px;">👇 Bir isme tıkla → o kişinin tahmin ağacını gör</div>';
-                html += '<ul style="list-style:none;padding:0;margin:0;">';
-                arr.forEach((s, i) => {
-                    const medal = i === 0 ? "🥇" : (i === 1 ? "🥈" : (i === 2 ? "🥉" : `${i+1}.`));
-                    const noPred = s.has ? "" : ' <span style="font-size:10px;color:#cbd5e1;">(tahmin yok)</span>';
-                    const baseBg = i === 0 ? '#fffbeb' : '#ffffff';
-                    html += `<li onclick="openClViewIdx(${i})" style="cursor:pointer;display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-bottom:1px solid #e2e8f0;background:${baseBg};${i===0?'border-radius:8px;':''}" onmouseover="this.style.background='#eff6ff'" onmouseout="this.style.background='${baseBg}'"><span>${medal} ${s.name}${noPred} <span style="font-size:10px;color:#93c5fd;">👁️</span></span><b style="color:#1e3a8a;">${s.pts} p</b></li>`;
-                });
-                html += '</ul>';
+            if(arr.length === 0) { box.innerHTML = '<div style="font-size:11px;color:#94a3b8;text-align:center;padding:10px;">Erişimli kullanıcı yok.</div>'; return; }
+            box.innerHTML = arr.map((s, i) => {
+                const medal = i === 0 ? "🥇" : (i === 1 ? "🥈" : (i === 2 ? "🥉" : `${i+1}.`));
+                const noPred = s.has ? "" : ' <span style="font-size:9px;color:#cbd5e1;">(yok)</span>';
+                const active = (s.name === clViewUser) ? 'background:#dbeafe;border-color:#3b82f6;' : 'background:#fff;';
+                return `<div onclick="openClViewIdx(${i})" style="cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:4px;padding:6px 7px;margin-bottom:4px;border:1px solid #e2e8f0;border-radius:6px;font-size:11px;${active}"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${medal} ${s.name}${noPred}</span><b style="color:#1e3a8a;flex-shrink:0;">${s.pts}p</b></div>`;
+            }).join('');
+        }
+        // Yan paneli aç/kapa (ilk açılışta kapalı)
+        function toggleClSidePanel() {
+            const p = document.getElementById('clSidePanel');
+            if(!p) return;
+            if(p.style.display === 'none' || p.style.display === '') { renderClSideStandings(); p.style.display = 'block'; }
+            else p.style.display = 'none';
+        }
+        // "Puan Durumu" butonu: tahmin modalını yan panelle açar; ilk kişiyi (veya kendini) gösterir
+        function openClStandings() {
+            renderClSideStandings();
+            const p = document.getElementById('clSidePanel'); if(p) p.style.display = 'block';
+            const user = currentAuthenticatedUser;
+            if(user && clAccess[user]) openClView(user);
+            else if(clStandingsArr.length > 0) openClView(clStandingsArr[0].name);
+            else {
+                document.getElementById('clBracketContent').innerHTML = '<div style="text-align:center;color:#94a3b8;padding:30px;">Henüz erişim verilen kullanıcı yok. Admin Ayarları → "Tahmin Oyunu Erişimi"nden ekleyebilirsin.</div>';
+                const ttl = document.getElementById('clPredictTitle'); if(ttl) ttl.innerHTML = '📊 Tahmin Puan Durumu';
+                const sb = document.getElementById('clSaveBtn'); if(sb) sb.style.display = 'none';
+                document.getElementById('clPredictOverlay').style.display = 'flex';
             }
-            document.getElementById('clStandingsContent').innerHTML = html;
-            document.getElementById('clStandingsOverlay').style.display = 'flex';
         }
 
         // Admin Ayarları: erişim listesi (kullanıcı onay kutuları)
@@ -2727,10 +2808,16 @@ if(showScoresForDay) {
                 let ptsClass = pts === 5 ? 'pts-5' : (pts === 3 ? 'pts-3' : 'pts-0');
                 ptsHTML = `<span class="${ptsClass}" style="font-size:11px;">+${pts}p</span>`;
             }
+            // RV puanı: skorun SOLUNA (+2 yeşil / −2 kırmızı). Sadece RV işaretli + sonuç belliyse.
+            let rvPts = riskOutcomeForMatch(savedUsers[u], match.id);
+            let rvBadge = rvPts === 0 ? "" : (rvPts > 0
+                ? `<span style="color:#16a34a;font-weight:900;font-size:11px;background:#d1fae5;padding:2px 6px;border-radius:5px;">+2</span>`
+                : `<span style="color:#dc2626;font-weight:900;font-size:11px;background:#fee2e2;padding:2px 6px;border-radius:5px;">−2</span>`);
             predictionsList += `
             <div style="display:flex; justify-content:space-between; align-items:center; padding:4px 0; border-bottom:1px solid #f1f5f9; font-size:11px;">
                 <span style="color:#334155; font-weight:bold; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:95px; display:flex; align-items:center;">${rvUserIcon(savedUsers[u], match.id) || "👤"} ${u}</span>
                 <div style="display:flex; align-items:center; gap:8px;">
+                    ${rvBadge}
                     <span style="font-weight:900; color:#0f172a;">${p.home} - ${p.away}</span>
                     <div style="width:30px; text-align:right;">${ptsHTML}</div>
                 </div>
