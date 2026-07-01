@@ -2523,6 +2523,16 @@ updateLockedNotice();
             return `<svg width="13" height="13" viewBox="0 0 24 24" fill="${color}" style="vertical-align:middle;margin-right:2px;flex-shrink:0;"><title>Risk Var (RV)</title><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>`;
         }
 
+        // Maç kartında hep görünen küçük detay: kaç tahmin girildi, kaçı RV (skor/oran gizli olsa da görünür)
+        function matchCountDetail(matchId) {
+            let cntPreds = 0, cntRv = 0;
+            for(let u in savedUsers) {
+                if(savedUsers[u][matchId]) cntPreds++;
+                if(savedUsers[u].risk && savedUsers[u].risk[matchId] && isRvOpenForMatch(matchId)) cntRv++;
+            }
+            return `<div style="text-align:center;font-size:10px;color:#94a3b8;margin-top:4px;">📊 <b>${cntPreds}</b> tahmin${cntRv>0 ? ` · <span style="color:#dc2626;font-weight:900;">🎲 ${cntRv} RV</span>` : ''}</div>`;
+        }
+
         function renderTabs() {
     const tabsContainer = document.getElementById('dayTabs'); tabsContainer.innerHTML = '';
     const dayNames = {1:"1. Maç", 2:"2. Maç", 3:"3. Maç", 4:"Son 32", 5:"Son 16", 6:"Çeyrek F.", 7:"Yarı F.", 8:"Final"};
@@ -2835,6 +2845,7 @@ if(showScoresForDay) {
 }
 matchMiddleHTML = `
     ${matchHeaderAndScore}
+    ${matchCountDetail(match.id)}
     ${statsBarHTML}
     ${predictionsBlockHTML}
 `;
@@ -2898,7 +2909,7 @@ matchMiddleHTML = `
                     }
                     let rvRowHTML = "";
                     if(rvAllowed) {
-                        let rvBtnHTML = `<button type="button" class="rv-btn ${riskOn ? 'rv-on' : ''}" data-rv="${match.id}" ${isLocked ? 'disabled' : ''} onclick="toggleRisk(this)" title="Risk Var : bilirsen +2, bilemezsen −2">RV</button>`;
+                        let rvBtnHTML = `<button type="button" class="rv-btn ${riskOn ? 'rv-on' : ''}" data-rv="${match.id}" ${isLocked ? 'disabled' : ''} onclick="toggleRisk(this)" title="Risk Var: — bilirsen +2, bilemezsen −2">RV</button>`;
                         rvRowHTML = `<div class="rv-row">${rvBtnHTML}${rvResultHTML || '<span class="rv-hint">Risk Var: bilirsen +2 · bilemezsen −2</span>'}</div>`;
                     }
                     matchMiddleHTML = `
@@ -2911,6 +2922,7 @@ matchMiddleHTML = `
                             </div>
                             <div class="team away">${displayAway}</div>
                         </div>
+                        ${matchCountDetail(match.id)}
                         ${rvRowHTML}
                         ${statsBarHTML2}
                         ${resultHTML}
@@ -3621,7 +3633,7 @@ function renderRaceStep() {
 
     document.getElementById('raceMatchInfo').innerHTML = `
         <div class="match-num">Maç ${raceStep}/${raceMatchList.length}</div>
-        <div class="match-detail">${currentMatch.home} ${rH} - ${rA} ${currentMatch.away}</div>
+        <div class="match-detail">${resolveMatchSlot(currentMatch.id,'h')} ${rH} - ${rA} ${resolveMatchSlot(currentMatch.id,'a')}</div>
     `;
 
     let standings = calcStandings(raceStep);
