@@ -320,8 +320,9 @@
     border: 1px solid #bbf7d0;
 }
 /* CANLI SIRALAMA */
-.race-bar-container { display:flex; flex-direction:column; gap:4px; }
-.race-bar-row { display:flex; align-items:center; gap:8px; transition: all 0.6s ease; padding:4px 8px; border-radius:6px; }
+.race-bar-container { position:relative; }
+.race-bar-row { display:flex; align-items:center; gap:8px; padding:4px 8px; border-radius:6px; position:absolute; left:0; right:0; height:34px; box-sizing:border-box; transition: transform 0.6s cubic-bezier(.22,.61,.36,1), background-color 0.3s ease, box-shadow 0.3s ease; will-change: transform; }
+.race-bar-row.race-tracked { background:#fde047; box-shadow:0 0 0 2px #ca8a04 inset; }
 .race-bar-rank { min-width:28px; font-weight:900; font-size:13px; text-align:center; }
 .race-bar-name { min-width:120px; font-weight:bold; font-size:12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .race-bar-fill { height:22px; border-radius:4px; transition: width 0.6s ease; display:flex; align-items:center; justify-content:flex-end; padding-right:6px; font-size:11px; font-weight:900; color:white; min-width:20px; }
@@ -3307,8 +3308,12 @@ function validateR32Selections(currentSelect) {
             function px(i) { return n === 1 ? w / 2 : pad + (i / (n - 1)) * (w - 2 * pad); }
             function py(r) { return pad + ((r - 1) / (maxR - 1)) * (h - 2 * pad); } // sıra 1 -> üst
             let pts = ranks.map((r, i) => px(i).toFixed(1) + "," + py(r).toFixed(1)).join(' ');
-            let first = ranks[0], last = ranks[n - 1];
-            let color = last < first ? '#059669' : (last > first ? '#dc2626' : '#64748b'); // yükseldi/düştü
+            // Renk: SON 10 maçtaki sıralama değişimine göre (yeşil=yükseldi, turuncu=sabit, kırmızı=düştü)
+            let recent = ranks.slice(-10);
+            let startR = recent[0], endR = recent[recent.length - 1];
+            let delta = startR - endR; // pozitif = sıra numarası düştü = YÜKSELDİ
+            let color = delta >= 2 ? '#059669' : (delta <= -2 ? '#dc2626' : '#f59e0b'); // yükseldi / düştü / sabit(turuncu)
+            let last = ranks[n - 1];
             let lx = px(n - 1), ly = py(last);
             if(n === 1) {
                 return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" style="vertical-align:middle;"><circle cx="${lx.toFixed(1)}" cy="${ly.toFixed(1)}" r="2" fill="${color}"/></svg>`;
@@ -3434,6 +3439,7 @@ let raceSpeed = 1500;
 let raceMatchList = [];
 let racePrevRanks = {};
 let raceIsPlaying = false;
+const RACE_ROW_H = 34; // Puan Akışı satır yüksekliği (px) - FLIP konumlandırma için
 let raceTrackedUser = null;
 const barColors = ['#f59e0b','#94a3b8','#d97706','#3b82f6','#10b981','#8b5cf6','#ef4444','#06b6d4','#ec4899','#14b8a6','#f97316','#6366f1','#84cc16','#e11d48','#0ea5e9','#a855f7','#22c55e','#dc2626','#eab308','#64748b','#059669','#7c3aed','#db2777','#2563eb','#d946ef','#0d9488','#ea580c','#4f46e5','#16a34a','#be123c'];
 
@@ -3456,12 +3462,12 @@ function showRace() {
     document.getElementById('raceTime').innerText = '0 / ' + raceMatchList.length;
     document.getElementById('racePlayBtn').innerText = '▶';
 
-    // Başlangıç barları
+    // Başlangıç barları (FLIP: her satır absolute + transform ile konumlanır, yumuşak kayar)
     let initHTML = "";
     let users = Object.keys(savedUsers);
     users.forEach((u, i) => {
         racePrevRanks[u] = i + 1;
-        initHTML += `<div class="race-bar-row" id="race_${btoa(encodeURIComponent(u)).replace(/=/g,'')}" style="order:${i}">
+        initHTML += `<div class="race-bar-row" id="race_${btoa(encodeURIComponent(u)).replace(/=/g,'')}" style="transform:translateY(${i*RACE_ROW_H}px);">
             <div class="race-bar-rank">${i+1}.</div>
             <div class="race-bar-name" onclick="trackUser('${u.replace(/'/g,"\\'")}')">${u}</div>
             <div class="race-bar-fill" style="width:0px;background:${barColors[i % barColors.length]};">0</div>
@@ -3469,7 +3475,9 @@ function showRace() {
         </div>`;
     });
 
-    document.getElementById('raceContent').innerHTML = initHTML;
+    const _rc = document.getElementById('raceContent');
+    _rc.innerHTML = initHTML;
+    _rc.style.height = (users.length * RACE_ROW_H) + 'px'; // container yüksekliği (absolute satırlar için)
     document.getElementById('raceMatchInfo').innerHTML = `<div class="match-num">Toplam ${raceMatchList.length} maç · "Kişi Seç" ▶ basın veya barı sürükleyin</div>`;
     document.getElementById('raceOverlay').style.display = 'flex';
 }
@@ -3553,14 +3561,22 @@ function calcStandings(step) {
     standings.sort((a,b) => { if(b.pts !== a.pts) return b.pts - a.pts; return a.name.localeCompare(b.name); });
     return standings;
 }
+function applyRaceHighlight() {
+    Object.keys(savedUsers).forEach(u => {
+        let el = document.getElementById("race_" + btoa(encodeURIComponent(u)).replace(/=/g,''));
+        if(el) el.classList.toggle('race-tracked', u === raceTrackedUser);
+    });
+}
 function trackUser(username) {
     if(raceTrackedUser === username) {
         raceTrackedUser = null;
         document.getElementById('raceTracker').style.display = 'none';
+        applyRaceHighlight();
         return;
     }
     raceTrackedUser = username;
     document.getElementById('raceTracker').style.display = 'block';
+    applyRaceHighlight();
     updateTracker();
 }
 
@@ -3589,7 +3605,8 @@ function renderRaceStep() {
             let elId = "race_" + btoa(encodeURIComponent(u)).replace(/=/g,'');
             let el = document.getElementById(elId);
             if(!el) return;
-            el.style.order = i;
+            el.style.transform = 'translateY(' + (i * RACE_ROW_H) + 'px)';
+            el.classList.toggle('race-tracked', u === raceTrackedUser);
             el.querySelector('.race-bar-rank').innerHTML = (i+1) + ".";
             el.querySelector('.race-bar-fill').style.width = "0px";
             el.querySelector('.race-bar-fill').innerText = "0";
@@ -3627,7 +3644,8 @@ function renderRaceStep() {
         let barWidth = Math.max(20, (s.pts / maxPts) * 250);
         let medal = newRank === 1 ? "🥇" : (newRank === 2 ? "🥈" : (newRank === 3 ? "🥉" : newRank + "."));
 
-        el.style.order = i;
+        el.style.transform = 'translateY(' + (i * RACE_ROW_H) + 'px)';
+        el.classList.toggle('race-tracked', s.name === raceTrackedUser); // takip edilen kişi sarı
         el.querySelector('.race-bar-rank').innerHTML = medal;
         el.querySelector('.race-bar-fill').style.width = barWidth + "px";
         el.querySelector('.race-bar-fill').innerText = s.pts + "p";
