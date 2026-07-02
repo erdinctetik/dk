@@ -458,6 +458,128 @@
     padding: 0 5px;
     font-size: 10px;
 }
+    
+
+/* ORTAK SOHBET ALANI - EKLENDİ */
+.chat-widget {
+    max-width: 1300px;
+    margin: 10px auto 0;
+    padding: 0 20px;
+    box-sizing: border-box;
+}
+.chat-panel {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 10px;
+    box-shadow: 0 2px 8px rgba(15,23,42,0.06);
+}
+.chat-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 900;
+    color: #1e3a8a;
+    padding: 4px 2px 8px 2px;
+    border-bottom: 1px solid #f1f5f9;
+    user-select: none;
+}
+.chat-title-wrap { display:flex; align-items:center; gap:5px; }
+.chat-badge {
+    background: #fee2e2;
+    color: #dc2626;
+    font-size: 10px;
+    font-weight: 900;
+    border-radius: 999px;
+    padding: 2px 6px;
+    display: none;
+}
+.chat-body {
+    display: none;
+    margin-top: 8px;
+}
+.chat-body.open { display: block; }
+.chat-messages {
+    max-height: 230px;
+    overflow-y: auto;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 8px;
+    font-size: 12px;
+}
+.chat-msg {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 6px 8px;
+    margin-bottom: 6px;
+}
+.chat-msg.me {
+    background: #eff6ff;
+    border-color: #bfdbfe;
+}
+.chat-msg-top {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 3px;
+    font-size: 10px;
+    color: #64748b;
+}
+.chat-msg-user {
+    font-weight: 900;
+    color: #1e3a8a;
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.chat-msg-text {
+    color: #111827;
+    line-height: 1.35;
+    word-break: break-word;
+}
+.chat-delete {
+    color: #dc2626;
+    font-size: 10px;
+    cursor: pointer;
+    margin-left: 6px;
+    font-weight: bold;
+}
+.chat-input-row {
+    display: flex;
+    gap: 6px;
+    margin-top: 8px;
+}
+.chat-input-row input {
+    flex: 1;
+    padding: 7px 8px;
+    border: 1px solid #cbd5e1;
+    border-radius: 7px;
+    font-size: 12px;
+    outline: none;
+}
+.chat-input-row button {
+    background: #1e3a8a;
+    color: white;
+    border: none;
+    border-radius: 7px;
+    padding: 7px 12px;
+    font-size: 12px;
+    font-weight: 900;
+    cursor: pointer;
+}
+.chat-input-row button:hover { background:#1d4ed8; }
+.chat-login-note {
+    font-size: 11px;
+    color: #94a3b8;
+    text-align: center;
+    padding: 7px;
+}
+
     </style>
 
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
@@ -486,6 +608,29 @@
         <div style="background:#eef2ff; border:1px solid #c7d2fe; border-radius:10px; padding:12px 16px; display:flex; align-items:center; gap:10px; box-shadow:0 2px 6px rgba(0,0,0,0.05);">
             <span style="font-size:20px;">🎯</span>
             <div id="clAnnouncementText" style="color:#3730a3; font-weight:bold; font-size:14px; line-height:1.35;"></div>
+        </div>
+    </div>
+
+
+    <!-- ORTAK SOHBET ALANI - EKLENDİ -->
+    <div class="chat-widget" id="chatWidget">
+        <div class="chat-panel">
+            <div class="chat-header" onclick="toggleChatBox()">
+                <span class="chat-title-wrap">💬 Ortak Sohbet <span id="chatCountBadge" class="chat-badge">0</span></span>
+                <span id="chatToggleIcon">▼</span>
+            </div>
+            <div class="chat-body" id="chatBody">
+                <div class="chat-messages" id="chatMessages">
+                    <div style="text-align:center;color:#94a3b8;padding:12px;">Mesajlar yükleniyor...</div>
+                </div>
+                <div id="chatInputArea" class="chat-input-row">
+                    <input id="chatInput" maxlength="300" placeholder="Mesaj yaz...">
+                    <button onclick="sendChatMessage()">Gönder</button>
+                </div>
+                <div id="chatLoginNote" class="chat-login-note" style="display:none;">
+                    Mesaj yazmak için kullanıcı girişi yapmalısın.
+                </div>
+            </div>
         </div>
     </div>
 
@@ -848,6 +993,11 @@ let countdownInterval = null;
         let currentViewingUser = "ALL"; 
         let pendingLoginUser = "";
         let currentAuthenticatedUser = "";
+        let chatMessages = [];
+        let chatOpened = false;
+        let chatUnseenCount = 0;
+        let chatFirstLoad = true;
+        let chatLastCount = 0;
 
         const groupsList = ["A Grubu", "B Grubu", "C Grubu", "D Grubu", "E Grubu", "F Grubu", "G Grubu", "H Grubu", "I Grubu", "J Grubu", "K Grubu", "L Grubu"];
         let allTeamsList = [];
@@ -980,6 +1130,7 @@ let countdownInterval = null;
             initSelects();
             buildNextMatchMap();
             initFirebaseListeners();
+            initChatListener();
             renderTabs();
         }
 
@@ -2515,7 +2666,7 @@ updateLockedNotice();
         }
         // Gerçekleşen sonuçlarda kullanıcı ismi yanına RV kişi ikonu (renkli SVG).
         // RV işaretliyse: bildi -> yeşil, bilemedi/henüz belli değil -> kırmızı. RV yoksa "" döner.
-        function rvUserIcon(userData, mId) {
+      function rvUserIcon(userData, mId) {
     if(!userData || !userData.risk || !userData.risk[mId]) return "";
     if(!isRvOpenForMatch(mId)) return "";
 
@@ -2918,8 +3069,8 @@ matchMiddleHTML = `
                     }
                     let rvRowHTML = "";
                     if(rvAllowed) {
-                        let rvBtnHTML = `<button type="button" class="rv-btn ${riskOn ? 'rv-on' : ''}" data-rv="${match.id}" ${isLocked ? 'disabled' : ''} onclick="toggleRisk(this)" title="Risk Var: — bilirsen +2, bilemezsen −2">RV</button>`;
-                        rvRowHTML = `<div class="rv-row">${rvBtnHTML}${rvResultHTML || '<span class="rv-hint">Risk Var: bilirsen +2 · bilemezsen −2</span>'}</div>`;
+                        let rvBtnHTML = `<button type="button" class="rv-btn ${riskOn ? 'rv-on' : ''}" data-rv="${match.id}" ${isLocked ? 'disabled' : ''} onclick="toggleRisk(this)" title="Risk Var — bilirsen +2, bilemezsen −2">RV</button>`;
+                        rvRowHTML = `<div class="rv-row">${rvBtnHTML}${rvResultHTML || '<span class="rv-hint">Risk: bilirsen +2 · bilemezsen −2</span>'}</div>`;
                     }
                     matchMiddleHTML = `
                         <div class="match-teams">
@@ -4077,6 +4228,144 @@ if(existingSecondChamp && secondChampionOpen) {
                 document.querySelector('.main-content').scrollIntoView({ behavior: 'smooth', block: 'start' });
             }, 100);
         }
+
+
+
+        // ORTAK SOHBET FONKSİYONLARI - EKLENDİ
+        function toggleChatBox() {
+            chatOpened = !chatOpened;
+            const body = document.getElementById('chatBody');
+            const icon = document.getElementById('chatToggleIcon');
+            const badge = document.getElementById('chatCountBadge');
+            if(!body || !icon || !badge) return;
+
+            if(chatOpened) {
+                body.classList.add('open');
+                icon.innerText = '▲';
+                chatUnseenCount = 0;
+                badge.style.display = 'none';
+                renderChatMessages();
+            } else {
+                body.classList.remove('open');
+                icon.innerText = '▼';
+            }
+        }
+
+        function initChatListener() {
+            if(!db) return;
+            db.collection("chatMessages")
+              .orderBy("ts", "desc")
+              .limit(80)
+              .onSnapshot(function(snapshot) {
+                  chatMessages = [];
+                  snapshot.forEach(function(doc) {
+                      chatMessages.push({ id: doc.id, ...doc.data() });
+                  });
+                  chatMessages.reverse();
+
+                  if(chatFirstLoad) {
+                      chatFirstLoad = false;
+                  } else if(!chatOpened && chatMessages.length > chatLastCount) {
+                      chatUnseenCount += (chatMessages.length - chatLastCount);
+                      let badge = document.getElementById('chatCountBadge');
+                      if(badge) {
+                          badge.innerText = chatUnseenCount;
+                          badge.style.display = chatUnseenCount > 0 ? 'inline-block' : 'none';
+                      }
+                  }
+                  chatLastCount = chatMessages.length;
+                  renderChatMessages();
+              }, function(error) {
+                  let box = document.getElementById('chatMessages');
+                  if(box) box.innerHTML = '<div style="text-align:center;color:#dc2626;padding:12px;">Sohbet yüklenemedi: ' + escapeHTML(error.message) + '</div>';
+              });
+        }
+
+        function renderChatMessages() {
+            const box = document.getElementById('chatMessages');
+            const inputArea = document.getElementById('chatInputArea');
+            const loginNote = document.getElementById('chatLoginNote');
+            if(!box || !inputArea || !loginNote) return;
+
+            if(currentAuthenticatedUser) {
+                inputArea.style.display = 'flex';
+                loginNote.style.display = 'none';
+            } else {
+                inputArea.style.display = 'none';
+                loginNote.style.display = 'block';
+            }
+
+            if(chatMessages.length === 0) {
+                box.innerHTML = '<div style="text-align:center;color:#94a3b8;padding:12px;">Henüz mesaj yok. İlk mesajı sen yaz 🙂</div>';
+                return;
+            }
+
+            let html = '';
+            chatMessages.forEach(function(m) {
+                let isMe = currentAuthenticatedUser && m.user === currentAuthenticatedUser;
+                let timeText = m.clientTime || '';
+                let deleteHTML = isAdminMode ? '<span class="chat-delete" onclick="deleteChatMessage(\'' + m.id + '\')">Sil</span>' : '';
+                html += '<div class="chat-msg ' + (isMe ? 'me' : '') + '">' +
+                    '<div class="chat-msg-top">' +
+                        '<span class="chat-msg-user">' + escapeHTML(m.user || 'Anonim') + '</span>' +
+                        '<span>' + escapeHTML(timeText) + deleteHTML + '</span>' +
+                    '</div>' +
+                    '<div class="chat-msg-text">' + escapeHTML(m.text || '') + '</div>' +
+                '</div>';
+            });
+
+            box.innerHTML = html;
+            box.scrollTop = box.scrollHeight;
+        }
+
+        function sendChatMessage() {
+            if(!currentAuthenticatedUser) {
+                alert("Mesaj yazmak için önce kullanıcı girişi yapmalısın.");
+                return;
+            }
+            const input = document.getElementById('chatInput');
+            if(!input) return;
+            let text = input.value.trim();
+            if(!text) return;
+            if(text.length > 300) {
+                alert("Mesaj en fazla 300 karakter olabilir.");
+                return;
+            }
+
+            let now = new Date();
+            let clientTime = now.toLocaleString('tr-TR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
+            db.collection("chatMessages").add({
+                user: currentAuthenticatedUser,
+                text: text,
+                ts: firebase.firestore.FieldValue.serverTimestamp(),
+                clientTime: clientTime
+            }).then(function() {
+                input.value = '';
+            }).catch(function(err) {
+                alert("Mesaj gönderilemedi: " + err.message);
+            });
+        }
+
+        function deleteChatMessage(id) {
+            if(!isAdminMode) return;
+            if(!confirm("Bu mesaj silinsin mi?")) return;
+            db.collection("chatMessages").doc(id).delete();
+        }
+
+        function escapeHTML(str) {
+            return String(str)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        document.addEventListener('keydown', function(e) {
+            if(e.key === 'Enter' && document.activeElement && document.activeElement.id === 'chatInput') {
+                sendChatMessage();
+            }
+        });
 
         window.onload = init;
     </script>
