@@ -922,6 +922,13 @@
     </div>
     <div id="dayVisibilitySettingsBox"></div>
 </div>
+<div style="margin-top:15px;background:#f8fafc;padding:15px;border-radius:8px;border:1px solid #cbd5e1;">
+    <label style="font-weight:bold;color:#334155;display:block;margin-bottom:8px;">🎛️ Maç Bazlı Görünürlük Ayarları</label>
+    <div style="font-size:11px;color:#64748b;margin-bottom:10px;">
+        Sadece <b>Son 16 ve sonrası</b> maçlar için skor ve oran görünürlüğünü maç maç ayarlarsın. Admin her zaman görür.
+    </div>
+    <div id="matchVisibilitySettingsBox"></div>
+</div>
             <div style="margin-top: 15px; background: #fffbeb; padding: 15px; border-radius: 8px; border: 1px solid #fde68a;">
                 <label style="font-weight: bold; color: #b45309; display: block; margin-bottom: 8px;">Gerçek Turnuva Şampiyonu</label>
                 <select id="realChampionSelect" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #fbbf24; outline: none;">
@@ -986,6 +993,7 @@
         let clAnnouncementText = ""; // Sadece tahmin oyunu erişimlilerine görünen duyuru
         let matchdayDeadlines = {};
 let dayVisibilitySettings = {}; // Tur bazlı skor/oran görünürlük ayarları
+        let matchVisibilitySettings = {}; // Son 16 ve sonrası maç bazlı skor/oran görünürlük ayarları
 let userUnits = {}; // Kişi -> Ünite eşlemesi (admin tarafından atanır)
 let countdownInterval = null;
         let currentDay = 1;
@@ -2130,6 +2138,7 @@ function extractRealFastData() {
                     clAnnouncementText = data.clAnnouncementText || "";
                     matchdayDeadlines = data.matchdayDeadlines || {};
 dayVisibilitySettings = data.dayVisibilitySettings || {};
+matchVisibilitySettings = data.matchVisibilitySettings || {};
 userUnits = data.userUnits || {};
 updateAnnouncementDisplay();
                     updateChampionLock();
@@ -2230,6 +2239,60 @@ function renderDayVisibilityAdminControls() {
     }
     html += `</div>`;
     box.innerHTML = html;
+}
+
+function getMatchVisibility(matchObj) {
+    if(!matchObj) return { scores: true, rates: true };
+    let dayVis = getDayVisibility(matchObj.day);
+    let s = matchVisibilitySettings[matchObj.id];
+    if(matchObj.day >= 5 && s) {
+        return {
+            scores: s.scores !== false,
+            rates: s.rates !== false
+        };
+    }
+    return dayVis;
+}
+function canShowMatchScores(matchObj) {
+    if(isAdminMode) return true;
+    return getMatchVisibility(matchObj).scores;
+}
+function canShowMatchRates(matchObj) {
+    if(isAdminMode) return true;
+    return getMatchVisibility(matchObj).rates;
+}
+function renderMatchVisibilityAdminControls() {
+    const box = document.getElementById('matchVisibilitySettingsBox');
+    if(!box) return;
+    const dayNames = {5:"Son 16",6:"Çeyrek F.",7:"Yarı F.",8:"Final"};
+    let html = "";
+    [5,6,7,8].forEach(function(day) {
+        const list = matches.filter(function(m){ return m.day === day; });
+        if(list.length === 0) return;
+        html += `<div style="margin-top:10px;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;background:white;">`;
+        html += `<div style="background:#eef2ff;color:#3730a3;font-weight:900;font-size:12px;padding:7px 9px;">${dayNames[day]}</div>`;
+        list.forEach(function(m) {
+            let dayVis = getDayVisibility(m.day);
+            let saved = matchVisibilitySettings[m.id] || {};
+            let scoresOpen = saved.scores !== undefined ? saved.scores !== false : dayVis.scores;
+            let ratesOpen = saved.rates !== undefined ? saved.rates !== false : dayVis.rates;
+            let h = resolveMatchSlot ? resolveMatchSlot(m.id, 'h') : m.home;
+            let a = resolveMatchSlot ? resolveMatchSlot(m.id, 'a') : m.away;
+            html += `<div style="display:grid;grid-template-columns:1fr 90px 90px;gap:8px;align-items:center;padding:7px 8px;border-top:1px solid #f1f5f9;font-size:11px;">
+                <div style="font-weight:bold;color:#334155;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${h} - ${a}">${m.id.toUpperCase()} · ${h} - ${a}</div>
+                <select id="matchVisScores_${m.id}" style="padding:5px;border-radius:6px;border:1px solid #cbd5e1;font-size:11px;font-weight:bold;">
+                    <option value="true" ${scoresOpen ? "selected" : ""}>Skor Açık</option>
+                    <option value="false" ${!scoresOpen ? "selected" : ""}>Skor Kapalı</option>
+                </select>
+                <select id="matchVisRates_${m.id}" style="padding:5px;border-radius:6px;border:1px solid #cbd5e1;font-size:11px;font-weight:bold;">
+                    <option value="true" ${ratesOpen ? "selected" : ""}>Oran Açık</option>
+                    <option value="false" ${!ratesOpen ? "selected" : ""}>Oran Kapalı</option>
+                </select>
+            </div>`;
+        });
+        html += `</div>`;
+    });
+    box.innerHTML = html || `<div style="font-size:11px;color:#94a3b8;text-align:center;padding:8px;">Son 16 ve sonrası maç bulunamadı.</div>`;
 }
 function renderUnitAdminControls() {
     const box = document.getElementById('unitSettingsBox');
@@ -2896,8 +2959,8 @@ function toggleMatchPredictions(clickedBtn, targetId) {
                 let matchMiddleHTML = "";
 
                 if (currentViewingUser === "ALL") {
-    let showScoresForDay = canShowDayScores(match.day);
-    let showRatesForDay = canShowDayRates(match.day);
+    let showScoresForMatch = canShowMatchScores(match);
+    let showRatesForMatch = canShowMatchRates(match);
     let inputsLocked = !isAdminMode ? 'disabled' : '';
                     let rH = realResults[match.id] ? realResults[match.id].home : "";
                     let rA = realResults[match.id] ? realResults[match.id].away : "";
@@ -2925,7 +2988,7 @@ function toggleMatchPredictions(clickedBtn, targetId) {
                         }
                     }
                     let statsBarHTML = "";
-                    if(totalPreds > 0 && showRatesForDay) {
+                    if(totalPreds > 0 && showRatesForMatch) {
                         let hPct = Math.round((homeWin / totalPreds) * 100);
                         let dPct = Math.round((draw / totalPreds) * 100);
                         let aPct = 100 - hPct - dPct;
@@ -2967,7 +3030,7 @@ function toggleMatchPredictions(clickedBtn, targetId) {
                         </div>`;
                     }
                     let predictionsBlockHTML = "";
-if(showScoresForDay) {
+if(showScoresForMatch) {
     let predictionsList = "";
     for (let u in savedUsers) {
         if (savedUsers[u][match.id]) {
@@ -3040,7 +3103,7 @@ matchMiddleHTML = `
                         }
                     }
                     let statsBarHTML2 = "";
-                    if(totalPreds2 > 0 && currentViewingUser !== "NEW" && canShowDayRates(match.day)) {
+                    if(totalPreds2 > 0 && currentViewingUser !== "NEW" && canShowMatchRates(match)) {
                         let hPct2 = Math.round((homeWin2 / totalPreds2) * 100);
                         let dPct2 = Math.round((draw2 / totalPreds2) * 100);
                         let aPct2 = 100 - hPct2 - dPct2;
@@ -4063,6 +4126,7 @@ if (btoa(girilenSifre) === "MTkxOTIz") {
             if(document.getElementById('adminClAnnouncementText')) document.getElementById('adminClAnnouncementText').value = clAnnouncementText || "";
             for(var di=1;di<=8;di++){var dlEl=document.getElementById('setDeadline'+di);if(dlEl&&matchdayDeadlines[String(di)])dlEl.value=matchdayDeadlines[String(di)];}
 renderDayVisibilityAdminControls();
+renderMatchVisibilityAdminControls();
 renderUnitAdminControls();
 renderThirdAssignControls();
 renderClAccessControls();
@@ -4093,6 +4157,17 @@ for(let vi=1; vi<=8; vi++) {
         }
     }
 }
+matchVisibilitySettings = {};
+matches.filter(function(m){ return m.day >= 5; }).forEach(function(m) {
+    let scoreEl = document.getElementById('matchVisScores_' + m.id);
+    let rateEl = document.getElementById('matchVisRates_' + m.id);
+    if(scoreEl && rateEl) {
+        matchVisibilitySettings[m.id] = {
+            scores: scoreEl.value === "true",
+            rates: rateEl.value === "true"
+        };
+    }
+});
 const champ = document.getElementById('realChampionSelect').value;
             if(champ) realResults.champion = champ; else delete realResults.champion;
 
@@ -4132,7 +4207,7 @@ const champ = document.getElementById('realChampionSelect').value;
                 mainMatchOpen[mid] = (cb.checked === roundDef) ? "" : cb.checked; // "" = turu izle, true/false = override
             });
 
-            db.collection("appData").doc("admin").set({ realResults: realResults, thirdAssign: thirdAssign, clAccess: clAccess, clOpen: clOpen, clMatchLock: clMatchLock, mainMatchOpen: mainMatchOpen, rvRoundOpen: rvRoundOpen, matchdayStatus: matchdayStatus, championOpen: championOpen, secondChampionOpen: secondChampionOpen, announcementText: announcementText, clAnnouncementText: clAnnouncementText, matchdayDeadlines: matchdayDeadlines, dayVisibilitySettings: dayVisibilitySettings, userUnits: userUnits }, { merge: true })
+            db.collection("appData").doc("admin").set({ realResults: realResults, thirdAssign: thirdAssign, clAccess: clAccess, clOpen: clOpen, clMatchLock: clMatchLock, mainMatchOpen: mainMatchOpen, rvRoundOpen: rvRoundOpen, matchdayStatus: matchdayStatus, championOpen: championOpen, secondChampionOpen: secondChampionOpen, announcementText: announcementText, clAnnouncementText: clAnnouncementText, matchdayDeadlines: matchdayDeadlines, dayVisibilitySettings: dayVisibilitySettings, matchVisibilitySettings: matchVisibilitySettings, userUnits: userUnits }, { merge: true })
             .then(() => { document.getElementById('adminSettingsOverlay').style.display = 'none'; alert("Ayarlar güncellendi!"); })
             .catch((error) => alert("Hata: " + error.message));
         }
