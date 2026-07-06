@@ -580,6 +580,30 @@
     padding: 7px;
 }
 
+    
+
+/* RV SEÇENEKLERİ + FİNAL ÖZEL ALANI */
+.rv-opt-btn { background:#fff; color:#1e3a8a; border:2px solid #bfdbfe; border-radius:6px; font-weight:900; font-size:10px; padding:3px 7px; cursor:pointer; transition:0.15s; }
+.rv-opt-btn:hover:not(:disabled) { border-color:#2563eb; }
+.rv-opt-btn.rv-opt-on { background:#1e3a8a; color:white; border-color:#1e3a8a; box-shadow:0 2px 6px rgba(30,58,138,0.25); }
+.rv-opt-btn:disabled { opacity:0.55; cursor:not-allowed; }
+.final-special-box { margin-top:8px; background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px; padding:8px; font-size:11px; }
+.final-special-title { color:#1e3a8a; font-weight:900; margin-bottom:6px; text-align:center; }
+.final-special-row { border-top:1px solid #e2e8f0; padding-top:6px; margin-top:6px; }
+.final-special-label { font-weight:bold; color:#334155; font-size:11px; margin-bottom:4px; line-height:1.15; }
+.final-special-controls { display:grid; grid-template-columns:minmax(0,1fr) 34px 62px; gap:5px; align-items:center; }
+.final-special-row select, .final-special-row input { padding:5px; border:1px solid #cbd5e1; border-radius:6px; font-size:11px; width:100%; box-sizing:border-box; min-width:0; }
+.final-special-stake { text-align:center; padding-left:2px !important; padding-right:2px !important; }
+.final-special-stake::-webkit-outer-spin-button, .final-special-stake::-webkit-inner-spin-button { -webkit-appearance:none; margin:0; }
+.final-special-stake { -moz-appearance:textfield; }
+.final-special-note { text-align:center; color:#94a3b8; font-size:9px; margin-top:5px; }
+.final-special-result { margin-top:5px; text-align:center; font-size:10px; color:#475569; }
+.final-special-mini { font-size:10px; font-weight:900; text-align:center; border-radius:6px; padding:4px 3px; background:#fff; border:1px solid #cbd5e1; color:#475569; white-space:nowrap; }
+.final-special-mini.ok { background:#ecfdf5; border-color:#a7f3d0; color:#047857; }
+.final-special-mini.warn { background:#fff7ed; border-color:#fed7aa; color:#c2410c; }
+.final-special-mini .minus { color:#dc2626; }
+.final-special-mini .plus { color:#059669; }
+
     </style>
 
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
@@ -704,14 +728,15 @@
             <div class="top-controls">
                 <select id="viewUserSelect" class="user-view-select" onchange="loadUserPredictions()">
                     <option value="ALL">🌍 -- Kullanıcı Girişi / Tüm Tahminleri Gör --</option>
-                    <option value="NEW">➕ Yeni Kullanıcı</option>
+                    <!-- <option value="NEW">➕ Yeni Kullanıcı</option> -->
                 </select>
                 
                 <div class="controls-buttons">
 
                     <button class="save-btn" id="mainSaveBtn" onclick="savePredictions()">💾 Kaydet</button>
                     <button class="delete-btn" id="deleteUserBtn" onclick="deleteUser()">🗑️ Sil</button>
-                    <button class="btn-green" onclick="heroNewPrediction()">➕ Yeni Kullanıcı</button>
+                    <button class="btn-green" onclick="heroNewPrediction()" style="display:none;">➕ Yeni Kullanıcı</button>
+
                     <button class="btn-blue" onclick="showBracket()">Eşleşmeler</button>
                     <button class="btn-gold" onclick="showLeaderboard()">Sıralama 🏆</button>               
 <button class="btn-purple" onclick="showReports()">📊 İstatistik</button>
@@ -895,6 +920,25 @@
                     <div class="admin-setting-row"><label>Final</label><select id="setRv8"><option value="false">Kapalı</option><option value="true">Açık</option></select></div>
                 </div>
             </div>
+            <div style="margin-top:15px;background:#eff6ff;padding:15px;border-radius:8px;border:2px solid #bfdbfe;">
+                <label style="font-weight:bold;color:#1e3a8a;display:block;margin-bottom:4px;">🎲 RV Seçenekleri Aç/Kapa</label>
+                <div style="font-size:11px;color:#475569;margin-bottom:10px;">Kullanıcı maçta RV1-2 / RV2-3 / RV3-5 seçeneklerinden birini seçebilir. Eski RV sistemi yukarıdaki tur bazlı aç/kapa ile aynen devam eder.</div>
+                <div class="admin-grid">
+                    <div class="admin-setting-row"><label>RV1-2 (+1 / -2)</label><select id="setRvOpt1"><option value="false">Kapalı</option><option value="true">Açık</option></select></div>
+                    <div class="admin-setting-row"><label>RV2-3 (+2 / -3)</label><select id="setRvOpt2"><option value="false">Kapalı</option><option value="true">Açık</option></select></div>
+                    <div class="admin-setting-row"><label>RV3-5 (+3 / -5)</label><select id="setRvOpt3"><option value="false">Kapalı</option><option value="true">Açık</option></select></div>
+                </div>
+            </div>
+            <div style="margin-top:15px;background:#fff7ed;padding:15px;border-radius:8px;border:2px solid #fdba74;">
+                <label style="font-weight:bold;color:#c2410c;display:block;margin-bottom:4px;">🏁 Final Özel Seçenekleri</label>
+                <div style="font-size:11px;color:#9a3412;margin-bottom:10px;">Final maçında İlk Gol, KG Var/Yok ve İlk Yarı/Maç Sonucu seçenekleri açılır. Kullanıcı 2-5 arası puan yazar; tutarsa cetvele göre kazanır, tutmazsa yazdığı puan düşer.</div>
+                <div class="admin-grid">
+                    <div class="admin-setting-row" style="grid-column:1/-1;"><label>Final Özel Oyun</label><select id="setFinalSpecialOpen"><option value="false">Kapalı</option><option value="true">Açık</option></select></div>
+                    <div class="admin-setting-row"><label>İlk Gol Gerçek</label><select id="setFinalFirstGoal"><option value="">Belirsiz</option><option value="home">Ev Sahibi</option><option value="away">Deplasman</option><option value="none">Gol Yok</option></select></div>
+                    <div class="admin-setting-row"><label>KG Gerçek</label><select id="setFinalKG"><option value="">Belirsiz</option><option value="yes">KG Var</option><option value="no">KG Yok</option></select></div>
+                    <div class="admin-setting-row"><label>İY/MS Gerçek</label><select id="setFinalHTFT"><option value="">Belirsiz</option><option value="1/1">1/1</option><option value="1/X">1/X</option><option value="1/2">1/2</option><option value="X/1">X/1</option><option value="X/X">X/X</option><option value="X/2">X/2</option><option value="2/1">2/1</option><option value="2/X">2/X</option><option value="2/2">2/2</option></select></div>
+                </div>
+            </div>
             <div style="margin-top:15px;background:#f0f9ff;padding:15px;border-radius:8px;border:1px solid #bae6fd;">
                 <label style="font-weight:bold;color:#0369a1;display:block;margin-bottom:8px;">📢 Duyuru Metni (herkese)</label>
                 <textarea id="adminAnnouncementText" rows="3" style="width:100%;padding:10px;border-radius:8px;border:1px solid #7dd3fc;font-size:14px;resize:vertical;outline:none;box-sizing:border-box;" placeholder="Boş bırakırsanız duyuru gizlenir"></textarea>
@@ -967,6 +1011,12 @@
                 <datalist id="unitOptions"></datalist>
                 <div id="unitSettingsBox" style="max-height:240px;overflow-y:auto;"></div>
             </div>
+
+            <div style="margin-top:15px;background:#f5f3ff;padding:15px;border-radius:8px;border:1px solid #c4b5fd;">
+                <label style="font-weight:bold;color:#6d28d9;display:block;margin-bottom:4px;">🏅 Rozet Yönetimi</label>
+                <div style="font-size:11px;color:#7c3aed;margin-bottom:10px;">Rozet kotalarını buradan belirle. Her rozet için tam sıralamayı admin olarak görebilirsin; kullanıcılar kota dağılımını görmez.</div>
+                <div id="badgeAdminBox" style="display:flex;flex-direction:column;gap:6px;"></div>
+            </div>
             <button class="btn-admin" style="width: 100%; margin-top: 20px;" onclick="saveAdminSettings()">Ayarları Kaydet</button>
         </div>
     </div>
@@ -986,7 +1036,10 @@
         let matchdayStatus = { 1: true, 2: false, 3: false, 4: false, 5: false, 6: false, 7: false, 8: false };
         let clRealAdvance = {}; // Admin'in elle belirlediği tur atlayan (beraberlik/penaltı) { matchId: takım adı }
         let mainMatchOpen = {}; // Ana oyun: tur kapalıyken tek tek açılan maçlar { matchId: true }
-        let rvRoundOpen = {};   // Risk Var (RV) hangi turlarda açık { day: true/false }
+        let rvRoundOpen = {};   // Eski Risk Var (RV) hangi turlarda açık { day: true/false }
+        let rvChoiceOpen = { rv1:false, rv2:false, rv3:false }; // Yeni RV seçenekleri
+        let finalSpecialOpen = false; // Final özel seçenekleri
+        let finalSpecialResults = {}; // Final özel gerçek sonuçları
         let championOpen = true;
         let secondChampionOpen = false; // 2. şampiyon adayı (+7)
         let announcementText = "";
@@ -995,6 +1048,7 @@
 let dayVisibilitySettings = {}; // Tur bazlı skor/oran görünürlük ayarları
         let matchVisibilitySettings = {}; // Son 16 ve sonrası maç bazlı skor/oran görünürlük ayarları
 let userUnits = {}; // Kişi -> Ünite eşlemesi (admin tarafından atanır)
+let badgeQuotaSettings = {}; // Admin tarafından ayarlanan rozet kotaları
 let countdownInterval = null;
         let currentDay = 1;
         let isAdminMode = false;
@@ -1006,7 +1060,47 @@ let countdownInterval = null;
         let chatUnseenCount = 0;
         let chatFirstLoad = true;
         let chatLastCount = 0;
+const REMEMBER_USER_KEY = "wc2026_remembered_user";
+let rememberedLoginChecked = false;
 
+function rememberLoggedUser(username) {
+    if(username) {
+        localStorage.setItem(REMEMBER_USER_KEY, username);
+    }
+}
+
+function getRememberedUser() {
+    return localStorage.getItem(REMEMBER_USER_KEY) || "";
+}
+
+function clearRememberedUser() {
+    localStorage.removeItem(REMEMBER_USER_KEY);
+}
+
+function tryAutoLoginRememberedUser() {
+    if(rememberedLoginChecked) return false;
+    rememberedLoginChecked = true;
+
+    let rememberedUser = getRememberedUser();
+
+    if(!rememberedUser) return false;
+
+    if(!savedUsers[rememberedUser]) {
+        clearRememberedUser();
+        return false;
+    }
+
+    currentAuthenticatedUser = rememberedUser;
+    currentViewingUser = rememberedUser;
+
+    let userSelect = document.getElementById('viewUserSelect');
+    if(userSelect) {
+        userSelect.value = rememberedUser;
+    }
+
+    loadUserPredictions(true);
+    return true;
+}
         const groupsList = ["A Grubu", "B Grubu", "C Grubu", "D Grubu", "E Grubu", "F Grubu", "G Grubu", "H Grubu", "I Grubu", "J Grubu", "K Grubu", "L Grubu"];
         let allTeamsList = [];
         let nextMatchMap = {};
@@ -1592,7 +1686,7 @@ function filterByTeam() {
         }
         // Kaydet butonu görünmeli mi? Açık maç YA DA şampiyon/2.şampiyon seçimi açıksa.
         function canSaveNow() {
-            return isAnyMatchOpenInDay(currentDay) || championOpen || secondChampionOpen;
+            return isAnyMatchOpenInDay(currentDay) || championOpen || secondChampionOpen || (currentDay === 8 && finalSpecialOpen);
         }
         // ANA OYUN: Admin Ayarları - maç bazında açma kutusu (tur kapalıyken tek maç aç)
         function renderMainMatchOpenControls() {
@@ -1618,33 +1712,588 @@ function filterByTeam() {
         }
 
 function showReports() {
-    let html = `<div style="display:flex;gap:8px;margin-bottom:15px;">
-        <button id="repTabTahmin" onclick="renderReportTab('tahmin')" style="flex:1;padding:10px;border:2px solid #1e3a8a;border-radius:8px;font-weight:900;font-size:14px;cursor:pointer;background:#1e3a8a;color:white;">📋 Tahmin İstatistikleri</button>
-        <button id="repTabGercek" onclick="renderReportTab('gercek')" style="flex:1;padding:10px;border:2px solid #059669;border-radius:8px;font-weight:900;font-size:14px;cursor:pointer;background:white;color:#059669;">✅ Gerçekleşen İstatistikler</button>
+    let html = `<div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;align-items:center;">
+        <button id="repTabUser" onclick="renderReportTab('user')" style="flex:1;min-width:95px;padding:7px 8px;border:1.5px solid #7c3aed;border-radius:7px;font-weight:900;font-size:11px;line-height:1.15;cursor:pointer;background:#7c3aed;color:white;">👤 Kullanıcı</button>
+        <button id="repTabTahmin" onclick="renderReportTab('tahmin')" style="flex:1;min-width:95px;padding:7px 8px;border:1.5px solid #1e3a8a;border-radius:7px;font-weight:900;font-size:11px;line-height:1.15;cursor:pointer;background:white;color:#1e3a8a;">📋 Tahmin</button>
+        <button id="repTabGercek" onclick="renderReportTab('gercek')" style="flex:1;min-width:95px;padding:7px 8px;border:1.5px solid #059669;border-radius:7px;font-weight:900;font-size:11px;line-height:1.15;cursor:pointer;background:white;color:#059669;">✅ Gerçekleşen</button>
     </div>
     <div id="reportTabContent"></div>`;
     document.getElementById('reportsContent').innerHTML = html;
-    renderReportTab('tahmin');
+    renderReportTab('user');
     document.getElementById('reportsOverlay').style.display = 'flex';
 }
 
 function renderReportTab(tab) {
-    // Tab buton stillerini güncelle
+    let btnU = document.getElementById('repTabUser');
     let btnT = document.getElementById('repTabTahmin');
     let btnG = document.getElementById('repTabGercek');
-    if(tab === 'tahmin') {
-        btnT.style.background = '#1e3a8a'; btnT.style.color = 'white';
-        btnG.style.background = 'white'; btnG.style.color = '#059669';
-    } else {
-        btnG.style.background = '#059669'; btnG.style.color = 'white';
-        btnT.style.background = 'white'; btnT.style.color = '#1e3a8a';
-    }
-
-    if(tab === 'tahmin') {
+    if(btnU){ btnU.style.background='white'; btnU.style.color='#7c3aed'; }
+    if(btnT){ btnT.style.background='white'; btnT.style.color='#1e3a8a'; }
+    if(btnG){ btnG.style.background='white'; btnG.style.color='#059669'; }
+    if(tab === 'user') {
+        if(btnU){ btnU.style.background='#7c3aed'; btnU.style.color='white'; }
+        document.getElementById('reportTabContent').innerHTML = buildUserSummaryReport();
+    } else if(tab === 'tahmin') {
+        if(btnT){ btnT.style.background='#1e3a8a'; btnT.style.color='white'; }
         document.getElementById('reportTabContent').innerHTML = buildPredictionReport();
     } else {
+        if(btnG){ btnG.style.background='#059669'; btnG.style.color='white'; }
         document.getElementById('reportTabContent').innerHTML = buildRealResultsReport();
     }
+}
+
+function getUserSummaryAllowedUsers() {
+    // Kullanıcı İst. sekmesinde artık Genel + tüm kullanıcılar seçilebilir.
+    return Object.keys(savedUsers).sort((a,b)=>a.localeCompare(b,'tr'));
+}
+
+function buildUserSummaryReport(selectedUser) {
+    const allUsers = getUserSummaryAllowedUsers();
+    if(allUsers.length === 0) return `<div style="text-align:center;padding:35px;color:#94a3b8;">Kullanıcı bulunamadı.</div>`;
+    let chosen = selectedUser || (currentAuthenticatedUser && allUsers.includes(currentAuthenticatedUser) ? currentAuthenticatedUser : "__ALL__");
+    if(chosen !== "__ALL__" && !allUsers.includes(chosen)) chosen = "__ALL__";
+    let opts = `<option value="__ALL__" ${chosen==="__ALL__"?'selected':''}>🌍 Genel</option>` + allUsers.map(u => `<option value="${String(u).replace(/"/g,'&quot;')}" ${u===chosen?'selected':''}>${u}</option>`).join('');
+    let html = `<h3 style="margin:8px 0 10px;font-size:18px;">👤 Kullanıcı Özeti</h3>
+        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:9px;padding:8px;margin-bottom:10px;">
+            <div style="font-size:10px;color:#64748b;font-weight:bold;margin-bottom:4px;">Kullanıcı seç</div>
+            <select id="userSummarySelect" onchange="renderUserSummarySelected()" style="width:100%;padding:7px;border-radius:7px;border:1px solid #cbd5e1;font-weight:bold;font-size:12px;color:#7c3aed;">${opts}</select>
+        </div>
+        <div id="userSummaryDetail">${chosen === "__ALL__" ? buildGeneralUserSummaryTable() : buildSingleUserSummary(chosen)}</div>`;
+    return html;
+}
+
+function renderUserSummarySelected() {
+    const sel = document.getElementById('userSummarySelect');
+    const box = document.getElementById('userSummaryDetail');
+    if(!sel || !box) return;
+    box.innerHTML = sel.value === "__ALL__" ? buildGeneralUserSummaryTable() : buildSingleUserSummary(sel.value);
+}
+
+function getPlayedMatchesForSummary() {
+    return matches.filter(m => realResults[m.id]).sort((a,b)=>parseInt(a.id.replace('m',''))-parseInt(b.id.replace('m','')));
+}
+function normSummaryScore(h,a){ h=parseInt(h); a=parseInt(a); return Math.min(h,a) + '-' + Math.max(h,a); }
+function outcomeSummary(h,a){ h=parseInt(h); a=parseInt(a); return h>a?'1':(h<a?'2':'X'); }
+function summaryDifficulty(matchId) {
+    let total=0, correct=0;
+    for(let u in savedUsers) {
+        let p=savedUsers[u][matchId], r=realResults[matchId];
+        if(p && r && p.home!==undefined && p.away!==undefined) { total++; if(getMatchPoints(p.home,p.away,r.home,r.away)>0) correct++; }
+    }
+    let pct = total ? Math.round((correct/total)*100) : 0;
+    if(pct >= 60) return 'Kolay';
+    if(pct >= 30) return 'Orta';
+    if(pct >= 10) return 'Zor';
+    return 'İmkansız';
+}
+function summaryTeamPointFor(user, team, played) {
+    if(!team || team==='-') return 0;
+    let data=savedUsers[user] || {}, pts=0;
+    played.forEach(m=>{
+        let mh=resolveMatchSlot(m.id,'h'), ma=resolveMatchSlot(m.id,'a');
+        if(mh!==team && ma!==team) return;
+        let p=data[m.id], r=realResults[m.id];
+        if(p&&r&&p.home!==undefined&&p.away!==undefined) pts += getMatchPoints(p.home,p.away,r.home,r.away);
+    });
+    return pts;
+}
+function summaryMatchPoints(user, played) {
+    let data=savedUsers[user] || {}, pts=0;
+    played.forEach(m=>{ let p=data[m.id], r=realResults[m.id]; if(p&&r&&p.home!==undefined&&p.away!==undefined) pts += getMatchPoints(p.home,p.away,r.home,r.away); });
+    return pts;
+}
+function summaryRankMapFor(list) {
+    let users=Object.keys(savedUsers);
+    let arr=users.map(u=>({user:u, pts:summaryMatchPoints(u,list)}));
+    arr.sort((a,b)=>(b.pts-a.pts)||a.user.localeCompare(b.user,'tr'));
+    let map={}; arr.forEach((x,i)=>map[x.user]=i+1); return map;
+}
+function buildSummaryDataForUser(user, played) {
+    let data=savedUsers[user] || {};
+    let totalMatchPts=0, teamPts={}, catPts={'Kolay':0,'Orta':0,'Zor':0,'İmkansız':0}, scorePointMap={};
+    let exactCount=0, resultCount=0, wrongCount=0;
+    played.forEach(m=>{
+        let mh=resolveMatchSlot(m.id,'h'), ma=resolveMatchSlot(m.id,'a');
+        if(!teamPts[mh]) teamPts[mh]=0; if(!teamPts[ma]) teamPts[ma]=0;
+        let p=data[m.id], r=realResults[m.id];
+        if(p&&r&&p.home!==undefined&&p.away!==undefined) {
+            let pts=getMatchPoints(p.home,p.away,r.home,r.away);
+            totalMatchPts += pts;
+            teamPts[mh]+=pts; teamPts[ma]+=pts;
+            catPts[summaryDifficulty(m.id)] += pts;
+            if(pts>0) { let sk=normSummaryScore(p.home,p.away); if(!scorePointMap[sk]) scorePointMap[sk]={pts:0,count:0}; scorePointMap[sk].pts += pts; scorePointMap[sk].count++; }
+            if(pts===5) exactCount++; else if(pts===3) resultCount++; else wrongCount++;
+        }
+    });
+    let champTeam=data.champion || '-';
+    let secondTeam=data.secondChampion || '-';
+    let champTeamPts=summaryTeamPointFor(user, champTeam, played);
+    let secondTeamPts=summaryTeamPointFor(user, secondTeam, played);
+    let riskPts=(typeof getRiskPoints === 'function') ? getRiskPoints(data) : 0;
+    let finalSpecialPts=(typeof getFinalSpecialPoints === 'function') ? getFinalSpecialPoints(data) : 0;
+    let fastPts=data.fastMode ? calculateFastPoints(data.fastMode, extractRealFastData()) : 0;
+    let totalAll=totalMatchPts + riskPts + finalSpecialPts + fastPts;
+    let teamEntries=Object.entries(teamPts).sort((a,b)=>(b[1]-a[1])||a[0].localeCompare(b[0],'tr'));
+    let bestTeam=teamEntries.length ? `${teamEntries[0][0]} (${teamEntries[0][1]}p)` : '-';
+    let worstTeam=teamEntries.length ? `${teamEntries[teamEntries.length-1][0]} (${teamEntries[teamEntries.length-1][1]}p)` : '-';
+    return {user,totalAll,totalMatchPts,champTeam,secondTeam,champTeamPts,secondTeamPts,riskPts,finalSpecialPts,fastPts,bestTeam,worstTeam,catPts,scorePointMap,exactCount,resultCount,wrongCount};
+}
+
+function buildGeneralUserSummaryTable() {
+    const played=getPlayedMatchesForSummary();
+    const users=getUserSummaryAllowedUsers();
+    if(played.length===0) return `<div style="text-align:center;padding:25px;color:#94a3b8;">Henüz gerçekleşen maç sonucu girilmediği için genel özet hesaplanamıyor.</div>`;
+    let rows=users.map(u=>buildSummaryDataForUser(u, played)).sort((a,b)=>(b.totalAll-a.totalAll)||a.user.localeCompare(b.user,'tr'));
+
+    let scorePointMap={};
+    let totalExact=0, totalResult=0, totalPred=0;
+    rows.forEach(r=>{
+        totalExact += r.exactCount;
+        totalResult += r.resultCount;
+        totalPred += r.exactCount + r.resultCount + r.wrongCount;
+        Object.entries(r.scorePointMap).forEach(([score,o])=>{
+            if(!scorePointMap[score]) scorePointMap[score]={pts:0,count:0};
+            scorePointMap[score].pts += o.pts;
+            scorePointMap[score].count += o.count;
+        });
+    });
+    let topScores=Object.entries(scorePointMap).sort((a,b)=>(b[1].pts-a[1].pts)||(b[1].count-a[1].count)).slice(0,5);
+
+    let html=`<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px;">
+        <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:10px;text-align:center;"><div style="font-size:11px;color:#1e3a8a;font-weight:bold;">Kullanıcı</div><div style="font-size:22px;font-weight:900;color:#1e3a8a;">${users.length}</div></div>
+        <div style="background:#ecfdf5;border:1px solid #a7f3d0;border-radius:8px;padding:10px;text-align:center;"><div style="font-size:11px;color:#047857;font-weight:bold;">Skor Bilme</div><div style="font-size:22px;font-weight:900;color:#059669;">${totalExact}</div></div>
+        <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:10px;text-align:center;"><div style="font-size:11px;color:#92400e;font-weight:bold;">Sonuç Bilme</div><div style="font-size:22px;font-weight:900;color:#d97706;">${totalResult}</div></div>
+        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:10px;text-align:center;"><div style="font-size:11px;color:#475569;font-weight:bold;">Toplam Tahmin</div><div style="font-size:22px;font-weight:900;color:#334155;">${totalPred}</div></div>
+    </div>`;
+
+    html += `<h4 style="margin:10px 0 6px;color:#1e3a8a;">🏆 En Çok Puan Toplanan İlk 5 Skor</h4>`;
+    if(topScores.length===0) html += `<div style="font-size:12px;color:#94a3b8;background:#f8fafc;border-radius:8px;padding:10px;">Henüz puan getiren skor yok.</div>`;
+    else { html += `<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:12px;">`; topScores.forEach(([score,o],i)=>{ html += `<div style="background:${i===0?'#fef3c7':'#f8fafc'};border:1px solid ${i===0?'#f59e0b':'#e2e8f0'};border-radius:8px;padding:8px;text-align:center;"><div style="font-size:10px;color:#64748b;font-weight:bold;">#${i+1}</div><div style="font-size:18px;font-weight:900;color:#111827;">${score}</div><div style="font-size:11px;color:#059669;font-weight:bold;">${o.pts}p</div><div style="font-size:10px;color:#94a3b8;">${o.count} kez</div></div>`; }); html += `</div>`; }
+
+    html += `<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:11px;margin-top:8px;">`;
+    html += `<thead><tr style="background:#7c3aed;color:white;">
+        <th style="padding:6px;border:1px solid #cbd5e1;text-align:left;">Kullanıcı</th>
+        <th style="padding:6px;border:1px solid #cbd5e1;text-align:center;">Toplam</th>
+        <th style="padding:6px;border:1px solid #cbd5e1;text-align:center;">1. Şamp.</th>
+        <th style="padding:6px;border:1px solid #cbd5e1;text-align:center;">2. Favori</th>
+        <th style="padding:6px;border:1px solid #cbd5e1;text-align:center;">En Çok Takım</th>
+        <th style="padding:6px;border:1px solid #cbd5e1;text-align:center;">En Az Takım</th>
+    </tr></thead><tbody>`;
+    rows.forEach((r,i)=>{
+        let bg=i%2===0?'#ffffff':'#f8fafc';
+        html += `<tr style="background:${bg};">
+            <td style="padding:6px;border:1px solid #e2e8f0;font-weight:bold;white-space:nowrap;">👤 ${r.user}</td>
+            <td style="padding:6px;border:1px solid #e2e8f0;text-align:center;font-weight:900;color:#7c3aed;">${r.totalAll}</td>
+            <td style="padding:6px;border:1px solid #e2e8f0;text-align:center;">${r.champTeamPts}</td>
+            <td style="padding:6px;border:1px solid #e2e8f0;text-align:center;">${r.secondTeamPts}</td>
+            <td style="padding:6px;border:1px solid #e2e8f0;text-align:center;">${r.bestTeam}</td>
+            <td style="padding:6px;border:1px solid #e2e8f0;text-align:center;">${r.worstTeam}</td>
+        </tr>`;
+    });
+    html += `</tbody></table></div>`;
+    return html;
+}
+
+
+function toggleSimilarityHeatmapRest(btn, id) {
+    const box = document.getElementById(id);
+    if(!box) return;
+    const isHidden = box.style.display === 'none';
+    box.style.display = isHidden ? 'flex' : 'none';
+    btn.innerText = isHidden ? 'Daha az göster' : 'Devamını göster';
+}
+
+function buildSimilarityHeatmap(user, played) {
+    const data = savedUsers[user] || {};
+    let rows = [];
+    Object.keys(savedUsers).forEach(v=>{
+        if(v===user) return;
+        let exact=0, res=0, common=0;
+        played.forEach(m=>{
+            let a=data[m.id], b=savedUsers[v]&&savedUsers[v][m.id];
+            if(a&&b&&a.home!==undefined&&a.away!==undefined&&b.home!==undefined&&b.away!==undefined){
+                common++;
+                if(parseInt(a.home)===parseInt(b.home)&&parseInt(a.away)===parseInt(b.away)) exact++;
+                if(outcomeSummary(a.home,a.away)===outcomeSummary(b.home,b.away)) res++;
+            }
+        });
+        if(common>0){
+            let score = exact*3 + res;
+            let pct = Math.round((score / (common*4)) * 100);
+            rows.push({user:v, exact, res, common, score, pct});
+        }
+    });
+    rows.sort((a,b)=>(b.pct-a.pct)||(b.score-a.score)||a.user.localeCompare(b.user,'tr'));
+    if(rows.length===0) return `<div style="font-size:11px;color:#94a3b8;">Isı haritası için ortak tahmin bulunamadı.</div>`;
+    function heatColor(pct){
+        if(pct>=75) return '#16a34a';
+        if(pct>=55) return '#65a30d';
+        if(pct>=35) return '#d97706';
+        return '#dc2626';
+    }
+    function heatRow(r){
+        let c = heatColor(r.pct);
+        return `<div style="display:grid;grid-template-columns:92px 1fr 48px;gap:6px;align-items:center;font-size:10.5px;">
+            <div style="font-weight:bold;color:#334155;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${r.user}">${r.user}</div>
+            <div style="height:18px;background:#f1f5f9;border-radius:6px;overflow:hidden;border:1px solid #e2e8f0;">
+                <div style="height:100%;width:${r.pct}%;background:${c};display:flex;align-items:center;justify-content:flex-end;color:white;font-weight:900;font-size:9px;padding-right:4px;box-sizing:border-box;min-width:${r.pct>0?'18px':'0'};">${r.pct}%</div>
+            </div>
+            <div style="text-align:right;color:#64748b;font-size:9.5px;">${r.exact}/${r.res}<br>${r.common} maç</div>
+        </div>`;
+    }
+    const restId = 'simHeatRest_' + String(user).replace(/[^a-zA-Z0-9]/g, '_');
+    let firstRows = rows.slice(0,5).map(heatRow).join('');
+    let restRows = rows.slice(5).map(heatRow).join('');
+    let html = `<div style="background:#fff;border:1px solid #e2e8f0;border-radius:9px;padding:9px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:7px;">
+            <div style="font-weight:900;color:#7c3aed;font-size:12px;">Benzerlik Isı Haritası</div>
+            <div style="font-size:9px;color:#94a3b8;white-space:nowrap;">İlk 5 kullanıcı</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:5px;">${firstRows}</div>`;
+    if(restRows) {
+        html += `<div id="${restId}" style="display:none;flex-direction:column;gap:5px;margin-top:5px;">${restRows}</div>
+        <button type="button" onclick="toggleSimilarityHeatmapRest(this, '${restId}')" style="margin-top:7px;width:100%;border:1px solid #c4b5fd;background:#f5f3ff;color:#7c3aed;border-radius:7px;padding:6px;font-size:11px;font-weight:900;cursor:pointer;">Devamını göster</button>`;
+    }
+    html += `<div style="font-size:9px;color:#94a3b8;margin-top:6px;line-height:1.35;">Not: Yüzde, ortak tahmin yapılan maçlarda skor benzerliği ve sonuç benzerliğinden hesaplanır. Sağdaki değer: skor aynı / sonuç aynı / ortak maç sayısı.</div></div>`;
+    return html;
+}
+
+function getDefaultBadgeQuotas() {
+    return {
+        '✅ Sonuççu': 9,
+        '💥 Cesur Skorcu': 6,
+        '📌 İstikrarlı': 10,
+        '🎯 Skor Ustası': 7,
+        '💎 Sürpriz Avcısı': 6,
+        '🧭 Ters Köşe': 6,
+        '🧊 Güvenli Liman': 6,
+        '🎲 Risk Kazananı': 5
+    };
+}
+function getBadgeQuotas() {
+    const defaults = getDefaultBadgeQuotas();
+    const merged = Object.assign({}, defaults);
+    Object.keys(defaults).forEach(function(label){
+        if(badgeQuotaSettings && badgeQuotaSettings[label] !== undefined) {
+            let v = parseInt(badgeQuotaSettings[label], 10);
+            if(!isNaN(v) && v >= 0) merged[label] = v;
+        }
+    });
+    return merged;
+}
+function safeBadgeId(label) {
+    return btoa(unescape(encodeURIComponent(label))).replace(/=/g,'').replace(/\+/g,'p').replace(/\//g,'s');
+}
+
+function badgeCommunityProfile(matchId) {
+    let outcomeCounts = { '1':0, 'X':0, '2':0 };
+    let hSum = 0, aSum = 0, count = 0;
+    for(let u in savedUsers) {
+        let p = savedUsers[u] && savedUsers[u][matchId];
+        if(!p || p.home === undefined || p.away === undefined) continue;
+        let ph = parseInt(p.home), pa = parseInt(p.away);
+        if(isNaN(ph) || isNaN(pa)) continue;
+        count++;
+        hSum += ph;
+        aSum += pa;
+        let o = outcomeSummary(ph, pa);
+        outcomeCounts[o]++;
+    }
+    let majority = 'X';
+    if(outcomeCounts['1'] >= outcomeCounts['X'] && outcomeCounts['1'] >= outcomeCounts['2']) majority = '1';
+    else if(outcomeCounts['2'] >= outcomeCounts['1'] && outcomeCounts['2'] >= outcomeCounts['X']) majority = '2';
+    return { count, avgH: count ? hSum/count : 0, avgA: count ? aSum/count : 0, majority };
+}
+
+function buildBaseGamificationStats(userName, played, rData) {
+    const data = savedUsers[userName] || {};
+    let hardPts = (rData.catPts['Zor'] || 0) + (rData.catPts['İmkansız'] || 0);
+    let rvCount = 0, rvNet = 0, predCount = 0, rvWinCount = 0, rvLossCount = 0;
+    let differentCount = 0, safeCount = 0, boldScoreCount = 0;
+
+    played.forEach(m=>{
+        let p = data[m.id];
+        if(p && p.home !== undefined && p.away !== undefined) {
+            let ph = parseInt(p.home), pa = parseInt(p.away);
+            if(!isNaN(ph) && !isNaN(pa)) {
+                predCount++;
+                let profile = badgeCommunityProfile(m.id);
+                if(profile.count > 1) {
+                    let userOutcome = outcomeSummary(ph, pa);
+                    let scoreDistance = Math.abs(ph - profile.avgH) + Math.abs(pa - profile.avgA);
+                    let totalGoalDiff = Math.abs((ph + pa) - (profile.avgH + profile.avgA));
+                    let isDifferent = (userOutcome !== profile.majority) || scoreDistance >= 2.2 || totalGoalDiff >= 2;
+                    let isSafe = (userOutcome === profile.majority) && scoreDistance <= 1.1 && totalGoalDiff <= 1;
+                    if(isDifferent) differentCount++;
+                    if(isSafe) safeCount++;
+                    if(Math.abs(ph - pa) >= 2 || ph + pa >= 4) boldScoreCount++;
+                }
+            }
+        }
+        if(data.risk && data.risk[m.id]) rvCount++;
+        if(data.riskChoice && data.riskChoice[m.id]) rvCount++;
+        if(typeof riskOutcomeForMatch === 'function') { let rvScore = riskOutcomeForMatch(data, m.id); rvNet += rvScore; if(rvScore > 0) rvWinCount++; else if(rvScore < 0) rvLossCount++; }
+    });
+
+    let differentRatio = predCount ? differentCount / predCount : 0;
+    let safeRatio = predCount ? safeCount / predCount : 0;
+    let boldScoreRatio = predCount ? boldScoreCount / predCount : 0;
+    let exactRate = predCount ? rData.exactCount / predCount : 0;
+    let resultRate = predCount ? rData.resultCount / predCount : 0;
+
+    let style = 'Dengeli';
+    let styleEmoji = '⚖️';
+    let styleNote = `Genelden farklı: ${differentCount}/${predCount || 0}`;
+    if(predCount >= 5 && differentRatio >= 0.30) {
+        style = 'Riskli Oyuncu';
+        styleEmoji = '🎲';
+    } else if(predCount >= 5 && safeRatio >= 0.65 && differentRatio <= 0.15) {
+        style = 'Güvenli Oyuncu';
+        styleEmoji = '🧊';
+        styleNote = `Genel ortalamaya uygun: ${safeCount}/${predCount || 0}`;
+    }
+
+    let candidateScores = {};
+    function add(label, score) { if(score > 0) candidateScores[label] = score; }
+    add('🎯 Skor Ustası', rData.exactCount > 0 ? (rData.exactCount * 3 + Math.round(exactRate * 100)) : 0);
+    add('✅ Sonuççu', rData.resultCount > 0 ? (rData.resultCount * 2 + Math.round(resultRate * 100)) : 0);
+    add('💎 Sürpriz Avcısı', hardPts > 0 ? hardPts * 4 : 0);
+    add('🧭 Ters Köşe', differentCount > 0 ? Math.round(differentRatio * 100) + differentCount : 0);
+    add('🧊 Güvenli Liman', safeCount > 0 ? Math.round(safeRatio * 100) + safeCount : 0);
+    add('💥 Cesur Skorcu', boldScoreCount > 0 ? Math.round(boldScoreRatio * 100) + boldScoreCount : 0);
+    add('🎲 Risk Kazananı', rvNet > 0 ? (rvNet * 10000 + rvWinCount * 1000 + rvCount * 100 - rvLossCount * 50 + (rData.totalMatchPts || 0) + (rData.exactCount || 0) * 3 + (rData.resultCount || 0)) : 0);
+    add('📌 İstikrarlı', predCount > 0 ? (predCount * 1000 + (rData.exactCount || 0) * 20 + (rData.resultCount || 0) * 10 + (rData.totalMatchPts || 0)) : 0);
+
+    return {hardPts, rvCount, rvNet, rvWinCount, rvLossCount, style, styleEmoji, styleNote, differentCount, safeCount, predCount, candidateScores};
+}
+
+function buildBadgeAwardData(played) {
+    const badgeQuotas = getBadgeQuotas();
+    const users = Object.keys(savedUsers).sort((a,b)=>a.localeCompare(b,'tr'));
+    let stats = {};
+    let perBadge = {};
+    let awarded = {};
+    Object.keys(badgeQuotas).forEach(label => perBadge[label] = []);
+    users.forEach(u => awarded[u] = []);
+
+    users.forEach(u=>{
+        let rData = buildSummaryDataForUser(u, played);
+        let st = buildBaseGamificationStats(u, played, rData);
+        stats[u] = st;
+        Object.entries(st.candidateScores).forEach(([label, score])=>{
+            if(perBadge[label]) perBadge[label].push({user:u, score});
+        });
+    });
+
+    Object.entries(perBadge).forEach(([label, arr])=>{
+        let quota = badgeQuotas[label] || 0;
+        arr.sort((a,b) => (b.score - a.score) || a.user.localeCompare(b.user, 'tr'));
+        arr.slice(0, quota).forEach(x => awarded[x.user].push({label, score:x.score}));
+    });
+
+    const data = {badgeQuotas, perBadge, awarded, stats, users};
+    window.latestBadgeAwardData = data;
+    return data;
+}
+
+function buildGamificationStats(user, played, r) {
+    const awardData = buildBadgeAwardData(played);
+    let current = awardData.stats[user] || buildBaseGamificationStats(user, played, r);
+    let badges = (awardData.awarded[user] || [])
+        .sort((a,b) => (b.score - a.score) || a.label.localeCompare(b.label, 'tr'))
+        .slice(0, 3)
+        .map(x => x.label);
+    return {hardPts:current.hardPts, rvCount:current.rvCount, rvNet:current.rvNet, rvWinCount:current.rvWinCount, rvLossCount:current.rvLossCount, style:current.style, styleEmoji:current.styleEmoji, styleNote:current.styleNote, differentCount:current.differentCount, safeCount:current.safeCount, predCount:current.predCount, badges};
+}
+
+function badgeDetailText(label, user, score, data) {
+    const st = data.stats[user] || {};
+    if(label === '🎲 Risk Kazananı') {
+        return `RV Net ${st.rvNet || 0} · Doğru ${st.rvWinCount || 0} · Yanlış ${st.rvLossCount || 0} · RV ${st.rvCount || 0}`;
+    }
+    if(label === '📌 İstikrarlı') {
+        const rData = buildSummaryDataForUser(user, getPlayedMatchesForSummary());
+        return `Tahmin ${st.predCount || 0} · Skor ${rData.exactCount || 0} · Sonuç ${rData.resultCount || 0} · Maç P. ${rData.totalMatchPts || 0}`;
+    }
+    if(label === '🎯 Skor Ustası') {
+        const rData = buildSummaryDataForUser(user, getPlayedMatchesForSummary());
+        return `Skor ${rData.exactCount || 0} · Tahmin ${st.predCount || 0}`;
+    }
+    if(label === '✅ Sonuççu') {
+        const rData = buildSummaryDataForUser(user, getPlayedMatchesForSummary());
+        return `Sonuç ${rData.resultCount || 0} · Tahmin ${st.predCount || 0}`;
+    }
+    if(label === '💎 Sürpriz Avcısı') return `Zor+İmkansız ${st.hardPts || 0}p`;
+    if(label === '🧭 Ters Köşe') return `Genelden farklı ${st.differentCount || 0}/${st.predCount || 0}`;
+    if(label === '🧊 Güvenli Liman') return `Ortalamaya uygun ${st.safeCount || 0}/${st.predCount || 0}`;
+    if(label === '💥 Cesur Skorcu') return `Skor cesaret puanı ${score}`;
+    return `Skor ${score}`;
+}
+
+function showBadgeAwardPopup(label, showFull) {
+    if(showFull && !isAdminMode) return;
+    const played = getPlayedMatchesForSummary();
+    const data = window.latestBadgeAwardData || buildBadgeAwardData(played);
+    const quota = data.badgeQuotas[label] || 0;
+    const allRows = (data.perBadge[label] || []);
+    const rows = showFull ? allRows : allRows.slice(0, quota);
+    let overlay = document.getElementById('badgeAwardPopup');
+    if(!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'badgeAwardPopup';
+        overlay.style.cssText = 'position:fixed;inset:0;background:rgba(15,23,42,0.45);z-index:10050;display:none;align-items:center;justify-content:center;padding:18px;';
+        overlay.innerHTML = `<div style="background:white;border-radius:12px;max-width:520px;width:100%;box-shadow:0 18px 45px rgba(15,23,42,0.25);border:1px solid #e2e8f0;overflow:hidden;">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:#f8fafc;border-bottom:1px solid #e2e8f0;">
+                <div id="badgeAwardPopupTitle" style="font-weight:900;color:#7c3aed;font-size:14px;"></div>
+                <button onclick="document.getElementById('badgeAwardPopup').style.display='none'" style="border:0;background:#fee2e2;color:#dc2626;border-radius:8px;font-weight:900;cursor:pointer;padding:5px 8px;">×</button>
+            </div>
+            <div id="badgeAwardPopupBody" style="max-height:470px;overflow:auto;padding:10px 12px;"></div>
+        </div>`;
+        overlay.addEventListener('click', function(e){ if(e.target === overlay) overlay.style.display='none'; });
+        document.body.appendChild(overlay);
+    }
+    document.getElementById('badgeAwardPopupTitle').innerHTML = `${label} <span style="font-size:11px;color:#64748b;">${showFull ? 'Tam sıralama' : 'Kota'} (${Math.min(allRows.length, quota)}/${quota})</span>`;
+    let body = '';
+    if(rows.length === 0) {
+        body = `<div style="font-size:12px;color:#94a3b8;text-align:center;padding:18px;">Bu rozet için sıralama yok.</div>`;
+    } else {
+        rows.forEach((x,i)=>{
+            const inQuota = i < quota;
+            const detail = badgeDetailText(label, x.user, x.score, data);
+            body += `<div style="display:grid;grid-template-columns:32px 1fr 70px;gap:8px;align-items:center;border-bottom:1px solid #f1f5f9;padding:7px 0;font-size:12px;${inQuota?'':'opacity:.55;'}">
+                <div style="font-weight:900;color:${inQuota?'#7c3aed':'#94a3b8'};text-align:center;">${i+1}</div>
+                <div style="min-width:0;"><div style="font-weight:900;color:#334155;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${x.user}">${x.user}</div><div style="font-size:10px;color:#64748b;line-height:1.25;">${detail}</div></div>
+                <div style="font-weight:900;color:${inQuota?'#059669':'#94a3b8'};text-align:right;">${x.score}</div>
+            </div>`;
+        });
+    }
+    document.getElementById('badgeAwardPopupBody').innerHTML = body;
+    overlay.style.display = 'flex';
+}
+
+function renderBadgeAdminControls() {
+    const box = document.getElementById('badgeAdminBox');
+    if(!box) return;
+    const played = getPlayedMatchesForSummary();
+    const data = buildBadgeAwardData(played);
+    let html = '';
+    Object.entries(data.badgeQuotas).forEach(([label, quota])=>{
+        const safe = safeBadgeId(label);
+        const awardedCount = Math.min((data.perBadge[label] || []).length, quota);
+        html += `<div style="display:grid;grid-template-columns:1fr 58px 92px;gap:6px;align-items:center;background:#fff;border:1px solid #ddd6fe;border-radius:8px;padding:7px;">
+            <div style="font-weight:900;color:#334155;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${label} <span style="color:#7c3aed;">${awardedCount}/${quota}</span></div>
+            <input id="badgeQuota_${safe}" type="number" min="0" value="${quota}" style="width:100%;padding:5px;border:1px solid #c4b5fd;border-radius:6px;font-weight:900;text-align:center;color:#6d28d9;">
+            <button type="button" onclick="showBadgeAwardPopup('${label.replace(/'/g, "\\'")}', true)" style="background:#7c3aed;color:white;border:none;border-radius:7px;padding:6px;font-size:10px;font-weight:900;cursor:pointer;">Sıralama</button>
+        </div>`;
+    });
+    box.innerHTML = html;
+}
+
+function buildBadgeQuotaDistribution(played) {
+    return '';
+}
+
+function buildBadgeQuotaDistribution(played) {
+    const data = buildBadgeAwardData(played);
+    let html = `<div style="background:#fff;border:1px solid #e2e8f0;border-radius:9px;padding:9px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:7px;">
+            <div style="font-weight:900;color:#7c3aed;font-size:12px;">Rozet Kota Dağılımı</div>
+            <div style="font-size:9px;color:#94a3b8;white-space:nowrap;">Rozete tıkla, listeyi gör</div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px;">`;
+    Object.entries(data.badgeQuotas).forEach(([label, quota])=>{
+        let awardedCount = Math.min((data.perBadge[label] || []).length, quota);
+        html += `<button type="button" onclick="showBadgeAwardPopup('${label.replace(/'/g, "\\'")}')" style="text-align:left;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:7px;cursor:pointer;">
+            <div style="display:flex;justify-content:space-between;gap:5px;align-items:center;">
+                <span style="font-weight:900;color:#334155;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${label}</span>
+                <span style="font-weight:900;color:#7c3aed;background:#f5f3ff;border:1px solid #ddd6fe;border-radius:999px;padding:1px 6px;font-size:10px;">${awardedCount}/${quota}</span>
+            </div>
+        </button>`;
+    });
+    html += `</div></div>`;
+    return html;
+}
+
+function buildSingleUserSummary(user) {
+    const data=savedUsers[user];
+    if(!data) return `<div style="text-align:center;padding:25px;color:#94a3b8;">Kullanıcı verisi bulunamadı.</div>`;
+    const played=getPlayedMatchesForSummary();
+    if(played.length===0) return `<div style="text-align:center;padding:25px;color:#94a3b8;">Henüz gerçekleşen maç sonucu girilmediği için özet hesaplanamıyor.</div>`;
+    let r=buildSummaryDataForUser(user, played);
+
+    let movement={jump:null, drop:null};
+    // İlk 3 maçtan sonra oluşan sıralamayı baz alıyoruz.
+    // Böylece ilk maç sonundaki alfabetik sıralama kaynaklı yapay sıçrayış/düşüşler hesaba girmez.
+    const movementStartIndex = Math.min(3, played.length);
+    for(let i=movementStartIndex;i<played.length;i++) {
+        let before=summaryRankMapFor(played.slice(0,i));
+        let after=summaryRankMapFor(played.slice(0,i+1));
+        let m=played[i];
+        let name=`${resolveMatchSlot(m.id,'h')} - ${resolveMatchSlot(m.id,'a')}`;
+        let delta=(before[user]||999)-(after[user]||999);
+        if(delta>0 && (!movement.jump || delta>movement.jump.delta)) movement.jump={delta,name};
+        if(delta<0 && (!movement.drop || Math.abs(delta)>Math.abs(movement.drop.delta))) movement.drop={delta,name};
+    }
+    let jumpText=movement.jump ? `${movement.jump.name}<br><b style="color:#059669;">+${movement.jump.delta} sıra</b>` : (played.length <= 3 ? 'İlk 3 maç sonrası baz alınacak' : '-');
+    let dropText=movement.drop ? `${movement.drop.name}<br><b style="color:#dc2626;">${movement.drop.delta} sıra</b>` : (played.length <= 3 ? 'İlk 3 maç sonrası baz alınacak' : '-');
+
+    let bestSimilar=null, farSimilar=null;
+    // En uzak benzeyen için filtre: aday kullanıcı toplam girilen/sonuçlanan maçların en az %90'ına tahmin girmiş olmalı.
+    // Böylece az tahmin yapan kullanıcılar düşük benzerlik nedeniyle sürekli en uzak kişi çıkmaz.
+    const farMinPredictionCount = Math.ceil(played.length * 0.90);
+    Object.keys(savedUsers).forEach(v=>{
+        if(v===user) return;
+        let exact=0,res=0,common=0,vPredCount=0;
+        played.forEach(m=>{
+            let a=data[m.id], b=savedUsers[v]&&savedUsers[v][m.id];
+            if(b&&b.home!==undefined&&b.away!==undefined) vPredCount++;
+            if(a&&b&&a.home!==undefined&&a.away!==undefined&&b.home!==undefined&&b.away!==undefined){
+                common++;
+                if(parseInt(a.home)===parseInt(b.home)&&parseInt(a.away)===parseInt(b.away)) exact++;
+                if(outcomeSummary(a.home,a.away)===outcomeSummary(b.home,b.away)) res++;
+            }
+        });
+        let score=exact*3+res;
+        if(common>0 && (!bestSimilar || score>bestSimilar.score || (score===bestSimilar.score && exact>bestSimilar.exact))) bestSimilar={user:v,exact,res,common,score,predCount:vPredCount};
+        if(vPredCount>=farMinPredictionCount && common>0 && (!farSimilar || score<farSimilar.score || (score===farSimilar.score && exact<farSimilar.exact))) farSimilar={user:v,exact,res,common,score,predCount:vPredCount};
+    });
+    let simText=bestSimilar ? `${bestSimilar.user}<br><span style="color:#64748b;">Skor ${bestSimilar.exact} · Sonuç ${bestSimilar.res}</span>` : '-';
+    let farText=farSimilar ? `${farSimilar.user}<br><span style="color:#64748b;">Skor ${farSimilar.exact} · Sonuç ${farSimilar.res}<br>${farSimilar.predCount}/${played.length} maç</span>` : `Yeterli aday yok<br><span style="color:#94a3b8;">En az ${farMinPredictionCount}/${played.length} maç</span>`;
+    let topScores=Object.entries(r.scorePointMap).sort((a,b)=>(b[1].pts-a[1].pts)||(b[1].count-a[1].count)).slice(0,5);
+    let gameStats = buildGamificationStats(user, played, r);
+
+    let html=`<div style="display:flex;flex-direction:column;gap:8px;">`;
+    html += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;">
+        <div style="background:#f5f3ff;border:1px solid #c4b5fd;border-radius:8px;padding:8px;text-align:center;"><div style="font-size:10px;color:#6d28d9;font-weight:bold;">Toplam</div><div style="font-size:20px;font-weight:900;color:#7c3aed;">${r.totalAll}</div></div>
+        <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:8px;text-align:center;"><div style="font-size:10px;color:#1e3a8a;font-weight:bold;">Maç P.</div><div style="font-size:20px;font-weight:900;color:#1e3a8a;">${r.totalMatchPts}</div></div>
+        <div style="background:#ecfdf5;border:1px solid #a7f3d0;border-radius:8px;padding:8px;text-align:center;"><div style="font-size:10px;color:#047857;font-weight:bold;">Skor</div><div style="font-size:20px;font-weight:900;color:#059669;">${r.exactCount}</div></div>
+        <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:8px;text-align:center;"><div style="font-size:10px;color:#92400e;font-weight:bold;">Sonuç</div><div style="font-size:20px;font-weight:900;color:#d97706;">${r.resultCount}</div></div>
+    </div>`;
+
+    html += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <div style="background:#fff;border:1px solid #e2e8f0;border-radius:9px;padding:9px;"><div style="font-weight:900;color:#7c3aed;margin-bottom:6px;font-size:12px;">Takım Puanları</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 8px;font-size:11px;line-height:1.55;"><div><b>1. Şampiyon:</b><br>${r.champTeam} → <b>${r.champTeamPts}p</b></div><div><b>2. Favori:</b><br>${r.secondTeam} → <b>${r.secondTeamPts}p</b></div><div><b>En çok:</b><br>${r.bestTeam}</div><div><b>En az:</b><br>${r.worstTeam}</div></div></div>
+        <div style="background:#fff;border:1px solid #e2e8f0;border-radius:9px;padding:9px;"><div style="font-weight:900;color:#7c3aed;margin-bottom:6px;font-size:12px;">Zorluk Puanları</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 8px;font-size:11px;line-height:1.55;"><div>🟢 Kolay:<br><b>${r.catPts.Kolay}p</b></div><div>🟠 Orta:<br><b>${r.catPts.Orta}p</b></div><div>🔴 Zor:<br><b>${r.catPts.Zor}p</b></div><div>⚫ İmkansız:<br><b>${r.catPts['İmkansız']}p</b></div></div></div>
+    </div>`;
+
+    html += `<div style="background:#fff;border:1px solid #e2e8f0;border-radius:9px;padding:9px;"><div style="font-weight:900;color:#7c3aed;margin-bottom:6px;font-size:12px;">Sürpriz / Oyuncu Stili / Rozetler</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:11px;line-height:1.65;">
+            <div><b>💎 Sürpriz Avcısı:</b><br>Zor + İmkansız: <b>${gameStats.hardPts}p</b><br><b>${gameStats.styleEmoji} Oyuncu stili:</b><br>${gameStats.style}<br><span style="color:#64748b;font-weight:900;">${gameStats.styleNote}</span><br><span style="color:${gameStats.rvNet>=0?'#059669':'#dc2626'};font-weight:900;">RV Net: ${gameStats.rvNet>=0?'+':''}${gameStats.rvNet}</span> · ${gameStats.rvCount} RV</div>
+            <div><b>🏅 Mini Rozetler:</b><br>${gameStats.badges.map(b=>`<span style="display:inline-block;margin:2px 3px 2px 0;padding:2px 6px;border-radius:999px;background:#f5f3ff;border:1px solid #ddd6fe;color:#6d28d9;font-weight:900;">${b}</span>`).join('')}</div>
+        </div></div>`;
+    html += `<div style="background:#fff;border:1px solid #e2e8f0;border-radius:9px;padding:9px;"><div style="font-weight:900;color:#7c3aed;margin-bottom:6px;font-size:12px;">Sıçrayış / Düşüş / Benzerlik</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:11px;line-height:1.65;">
+            <div><b>Büyük sıçrayış:</b><br>${jumpText}<br><b>Büyük düşüş:</b><br>${dropText}</div>
+            <div><b>En benzediği kullanıcı:</b><br>${simText}<br><b>En uzak benzeyen:</b><br>${farText}</div>
+        </div></div>`;
+    html += `<div style="background:#fff;border:1px solid #e2e8f0;border-radius:9px;padding:9px;"><div style="font-weight:900;color:#7c3aed;margin-bottom:6px;font-size:12px;">En çok puan getiren ilk 5 skor</div>`;
+    if(topScores.length===0) html += `<div style="font-size:11px;color:#94a3b8;">Henüz puan getiren skor yok.</div>`;
+    else topScores.forEach(([score,o],i)=>{ html += `<div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid #f1f5f9;padding:5px 0;font-size:11px;"><span><b>#${i+1}</b> ${score}</span><span style="font-weight:900;color:#059669;">${o.pts}p</span><span style="color:#94a3b8;">${o.count} kez</span></div>`; });
+    html += `</div>`;
+    html += buildSimilarityHeatmap(user, played);
+    html += `<div style="font-size:10px;color:#94a3b8;line-height:1.35;">Not: 1. Şampiyon ve 2. Favori alanları, kullanıcının seçtiği takımın maçlarından topladığı maç puanını gösterir. Skor listesinde 2-1 ile 1-2 aynı kabul edilir.</div></div>`;
+    return html;
 }
 
 function buildPredictionReport() {
@@ -2130,6 +2779,9 @@ function extractRealFastData() {
                     clMatchLock = data.clMatchLock || {};
                     clRealAdvance = data.clRealAdvance || {};
                     rvRoundOpen = data.rvRoundOpen || {};
+                    rvChoiceOpen = data.rvChoiceOpen || { rv1:false, rv2:false, rv3:false };
+                    finalSpecialOpen = data.finalSpecialOpen || false;
+                    finalSpecialResults = data.finalSpecialResults || {};
                     matchdayStatus = data.matchdayStatus || matchdayStatus;
                     mainMatchOpen = data.mainMatchOpen || {};
                     championOpen = data.championOpen !== undefined ? data.championOpen : true;
@@ -2140,6 +2792,7 @@ function extractRealFastData() {
 dayVisibilitySettings = data.dayVisibilitySettings || {};
 matchVisibilitySettings = data.matchVisibilitySettings || {};
 userUnits = data.userUnits || {};
+badgeQuotaSettings = data.badgeQuotaSettings || {};
 updateAnnouncementDisplay();
                     updateChampionLock();
                     startCountdown();
@@ -2153,17 +2806,24 @@ updateAnnouncementDisplay();
             });
 
             db.collection("users").onSnapshot((snapshot) => {
-                savedUsers = {};
-                snapshot.forEach((doc) => {
-                    savedUsers[doc.id] = doc.data(); 
-                });
-                initUserSelect();
-                if(currentViewingUser && savedUsers[currentViewingUser]) {
-                    loadUserPredictions(true); 
-                } else if(currentViewingUser === "ALL") {
-                    renderMatches(currentDay);
-                }
-            });
+    savedUsers = {};
+
+    snapshot.forEach((doc) => {
+        savedUsers[doc.id] = doc.data(); 
+    });
+
+    initUserSelect();
+
+    if(tryAutoLoginRememberedUser()) {
+        return;
+    }
+
+    if(currentViewingUser && savedUsers[currentViewingUser]) {
+        loadUserPredictions(true); 
+    } else if(currentViewingUser === "ALL") {
+        renderMatches(currentDay);
+    }
+});
         }
 
         function updateAnnouncementDisplay() {
@@ -2624,11 +3284,14 @@ updateLockedNotice()
                     // RV (Risk Var) puanları
                     let riskPts = getRiskPoints(savedUsers[viewMode]);
                     totalPts += riskPts;
+                    let finalSpecialPts = getFinalSpecialPoints(savedUsers[viewMode]);
+                    totalPts += finalSpecialPts;
 
                     let champText = savedUsers[viewMode].champion ? savedUsers[viewMode].champion : "Seçilmedi";
                     let secondChampText = savedUsers[viewMode].secondChampion ? savedUsers[viewMode].secondChampion : "Seçilmedi";
                     let fastInfo = savedUsers[viewMode].fastMode ? `<div style="font-size:12px; margin-top:5px; color:#1e3a8a;">⚡ Hızlı Tahmin Puanı: <b>+${fastPts}</b></div>` : `<div style="font-size:12px; margin-top:5px; color:#ef4444;"></div>`;
                     let riskInfo = riskPts !== 0 ? `<div style="font-size:12px; margin-top:3px; color:${riskPts>0?'#059669':'#dc2626'};">🎲 Risk (RV) Puanı: <b>${riskPts>0?'+':''}${riskPts}</b></div>` : '';
+                    let finalSpecialInfo = finalSpecialPts !== 0 ? `<div style="font-size:12px; margin-top:3px; color:${finalSpecialPts>0?'#059669':'#dc2626'};">🏁 Final Özel Puanı: <b>${finalSpecialPts>0?'+':''}${finalSpecialPts}</b></div>` : '';
 
                     champBox.innerHTML = `
     <div style="text-align:center;font-size:13px;font-weight:900;color:#92400e;">
@@ -2644,6 +3307,7 @@ updateLockedNotice()
     </div>
     ${fastInfo}
     ${riskInfo}
+    ${finalSpecialInfo}
 `;
                     champBox.style.display = "block";
                 } else {
@@ -2676,8 +3340,11 @@ updateLockedNotice();
             const pass = document.getElementById('userPassInput').value;
             if(savedUsers[pendingLoginUser] && savedUsers[pendingLoginUser].password === pass) {
                 currentAuthenticatedUser = pendingLoginUser;
-                document.getElementById('userLoginOverlay').style.display = 'none';
-                loadUserPredictions(true);
+rememberLoggedUser(pendingLoginUser);
+
+document.getElementById('userLoginOverlay').style.display = 'none';
+loadUserPredictions(true);
+
             } else {
                 alert("Hatalı şifre!");
             }
@@ -2698,60 +3365,62 @@ updateLockedNotice();
             return 0;
         }
 
-        // RV (Risk Var) butonunu aç/kapa
-        function toggleRisk(btn) {
-            if(btn.disabled) return;
-            btn.classList.toggle('rv-on');
-        }
-        // RV bu turda açık mı?
-        function isRvOpenForMatch(mId) {
-            const m = matches.find(x => x.id === mId);
-            return !!(m && rvRoundOpen[m.day]);
-        }
-        // Bir maç için RV sonucu: skor/sonuç bilindiyse +2, bilinmediyse -2 (tahmin yoksa / RV kapalıysa 0)
-        function riskOutcomeForMatch(userData, mId) {
-            if(!userData || !userData.risk || !userData.risk[mId]) return 0;
-            if(!isRvOpenForMatch(mId)) return 0; // RV bu turda kapalı
-            if(!realResults[mId]) return 0; // maç oynanmadı
-            let p = userData[mId];
-            if(!p || p.home === undefined || p.away === undefined) return 0; // tahmin yok
-            let pts = getMatchPoints(p.home, p.away, realResults[mId].home, realResults[mId].away);
-            return (pts > 0) ? 2 : -2;
-        }
-        // Bir kullanıcının toplam RV puanı (tüm risk açtığı, sonucu girilmiş maçlar)
-        function getRiskPoints(userData) {
-            if(!userData || !userData.risk) return 0;
-            let rp = 0;
-            for(let mId in userData.risk) {
-                if(userData.risk[mId]) rp += riskOutcomeForMatch(userData, mId);
-            }
-            return rp;
-        }
-        // Gerçekleşen sonuçlarda kullanıcı ismi yanına RV kişi ikonu (renkli SVG).
-        // RV işaretliyse: bildi -> yeşil, bilemedi/henüz belli değil -> kırmızı. RV yoksa "" döner.
-      function rvUserIcon(userData, mId) {
-    if(!userData || !userData.risk || !userData.risk[mId]) return "";
-    if(!isRvOpenForMatch(mId)) return "";
+        // RV (Risk Var) butonlarını yönet
+        function toggleRisk(btn) { if(btn.disabled) return; btn.classList.toggle('rv-on'); }
+        function selectRvOption(btn) { if(btn.disabled) return; let mid = btn.getAttribute('data-rvopt'); document.querySelectorAll('.rv-opt-btn[data-rvopt="' + mid + '"]').forEach(function(b){ if(b !== btn) b.classList.remove('rv-opt-on'); }); btn.classList.toggle('rv-opt-on'); }
+        function isRvOpenForMatch(mId) { const m = matches.find(x => x.id === mId); return !!(m && rvRoundOpen[m.day]); }
+        function getRvChoiceConfig(choice) { if(choice === 'rv1') return { win:1, lose:-2, label:'RV1-2' }; if(choice === 'rv2') return { win:2, lose:-3, label:'RV2-3' }; if(choice === 'rv3') return { win:3, lose:-5, label:'RV3-5' }; return null; }
+        function riskOutcomeForMatch(userData, mId) { let total = 0; if(!userData) return 0; if(userData.risk && userData.risk[mId] && realResults[mId]) { let p = userData[mId]; if(p && p.home !== undefined && p.away !== undefined) { let pts = getMatchPoints(p.home, p.away, realResults[mId].home, realResults[mId].away); total += (pts > 0) ? 2 : -2; } } if(userData.riskChoice && userData.riskChoice[mId]) { let choice = userData.riskChoice[mId]; let cfg = getRvChoiceConfig(choice); if(cfg && realResults[mId]) { let p = userData[mId]; if(p && p.home !== undefined && p.away !== undefined) { let pts = getMatchPoints(p.home, p.away, realResults[mId].home, realResults[mId].away); total += (pts > 0) ? cfg.win : cfg.lose; } } } return total; }
+        function getRiskPoints(userData) { if(!userData) return 0; let mids = new Set(); if(userData.risk) Object.keys(userData.risk).forEach(m => mids.add(m)); if(userData.riskChoice) Object.keys(userData.riskChoice).forEach(m => mids.add(m)); let rp = 0; mids.forEach(mId => rp += riskOutcomeForMatch(userData, mId)); return rp; }
+        function rvUserIcon(userData, mId) {
+    // Eski RV seçilmiş mi?
+    let hasOldRv = !!(userData && userData.risk && userData.risk[mId]);
 
-    // Mavi: RV yapılmış ama maç sonucu henüz belli değil
+    // Yeni RV seçeneklerinden biri seçilmiş mi? RV1-2 / RV2-3 / RV3-5
+    let hasNewRv = !!(userData && userData.riskChoice && userData.riskChoice[mId]);
+
+    // Hiç risk seçimi yoksa ikon gösterme
+    if(!hasOldRv && !hasNewRv) return "";
+
+    // Varsayılan mavi: RV oynanmış ama maç sonucu henüz belli değil
     let color = "#2563eb";
 
-    // Sonuç girildiyse bildi/bilemedi durumuna göre yeşil/kırmızı
+    // Sonuç girildiyse bildi / bilemedi durumuna göre yeşil-kırmızı
     if(realResults[mId]) {
-        color = (riskOutcomeForMatch(userData, mId) > 0) 
-            ? "#16a34a"   // yeşil: bildi
-            : "#dc2626";  // kırmızı: bilemedi
+        color = (riskOutcomeForMatch(userData, mId) > 0)
+            ? "#16a34a"   // yeşil: riskten puan aldı
+            : "#dc2626";  // kırmızı: riskten puan kaybetti
     }
 
-    return `<svg width="13" height="13" viewBox="0 0 24 24" fill="${color}" style="vertical-align:middle;margin-right:2px;flex-shrink:0;"><title>Risk Var (RV)</title><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>`;
+    return `<svg width="13" height="13" viewBox="0 0 24 24" fill="${color}" style="vertical-align:middle;margin-right:2px;flex-shrink:0;">
+        <title>Risk Var</title>
+        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+    </svg>`;
 }
+        function specialStakeReward(stake) { const map = {2:1,3:2,4:3,5:4}; return map[parseInt(stake)] || 0; }
+        function getFinalSpecialPoints(userData) { if(!userData || !userData.finalSpecial || !finalSpecialResults) return 0; let total = 0; ['firstGoal','kg','htft'].forEach(function(k) { let bet = userData.finalSpecial[k], real = finalSpecialResults[k]; if(!bet || !real || !bet.pick || !bet.stake) return; let stake = parseInt(bet.stake); if(stake < 2 || stake > 5) return; total += (bet.pick === real) ? specialStakeReward(stake) : -stake; }); return total; }
+        function updateFinalSpecialHelp(key) {
+            let stakeEl = document.getElementById('fs_' + key + '_stake');
+            let helpEl = document.getElementById('fs_' + key + '_help');
+            if(!stakeEl || !helpEl) return;
+            let raw = String(stakeEl.value || '').replace(/[^0-5]/g, '');
+            if(raw !== stakeEl.value) stakeEl.value = raw;
+            let stake = parseInt(raw);
+            helpEl.className = 'final-special-mini';
+            if(!stake) { helpEl.innerHTML = '—'; return; }
+            if(stake < 2 || stake > 5) { helpEl.className = 'final-special-mini warn'; helpEl.innerHTML = '2-5'; return; }
+            let reward = specialStakeReward(stake);
+            helpEl.className = 'final-special-mini ok';
+            helpEl.innerHTML = `<span class="minus">-${stake}</span><span style="color:#94a3b8;">/</span><span class="plus">+${reward}</span>`;
+        }
+        function renderFinalSpecialBox(match, dataSrc, isLocked) { if(match.id !== 'm104' || !finalSpecialOpen || isAdminMode || currentViewingUser === 'ALL') return ''; let fs = (dataSrc && dataSrc.finalSpecial) ? dataSrc.finalSpecial : {}; function row(key, label, options) { let cur = fs[key] || {}; let optHTML = '<option value="">Seç</option>' + options.map(o => `<option value="${o.v}" ${cur.pick===o.v?'selected':''}>${o.t}</option>`).join(''); let stake = cur.stake || ''; let reward = specialStakeReward(stake); let helpClass = 'final-special-mini'; let helpText = '—'; if(stake) { let st = parseInt(stake); if(st >= 2 && st <= 5) { helpClass = 'final-special-mini ok'; helpText = `<span class="minus">-${st}</span><span style="color:#94a3b8;">/</span><span class="plus">+${reward}</span>`; } else { helpClass = 'final-special-mini warn'; helpText = '2-5'; } } return `<div class="final-special-row"><div class="final-special-label">${label}</div><div class="final-special-controls"><select id="fs_${key}" ${isLocked?'disabled':''}>${optHTML}</select><input id="fs_${key}_stake" class="final-special-stake" type="text" inputmode="numeric" maxlength="1" value="${stake}" placeholder="2-5" oninput="updateFinalSpecialHelp('${key}')" ${isLocked?'disabled':''}><div class="${helpClass}" id="fs_${key}_help">${helpText}</div></div></div>`; } let pts = getFinalSpecialPoints(dataSrc || {}); let result = pts !== 0 ? `<div class="final-special-result">Final özel puan: <b style="color:${pts>0?'#059669':'#dc2626'};">${pts>0?'+':''}${pts}</b></div>` : ''; return `<div class="final-special-box"><div class="final-special-title">🏁 Final Özel Seçenekleri <span style="font-size:9px;color:#64748b;font-weight:700;">(Admin açık)</span></div>${row('firstGoal','İlk golü kim atar?', [{v:'home',t:'Ev Sahibi'}, {v:'away',t:'Deplasman'}, {v:'none',t:'Gol Yok'}])}${row('kg','KG Var mı?', [{v:'yes',t:'KG Var'}, {v:'no',t:'KG Yok'}])}${row('htft','İlk Yarı / Maç Sonucu', [{v:'1/1',t:'1/1'}, {v:'1/X',t:'1/X'}, {v:'1/2',t:'1/2'}, {v:'X/1',t:'X/1'}, {v:'X/X',t:'X/X'}, {v:'X/2',t:'X/2'}, {v:'2/1',t:'2/1'}, {v:'2/X',t:'2/X'}, {v:'2/2',t:'2/2'}])}<div class="final-special-note">KG: Karşılıklı gol var.  X:Berabere</div>${result}</div>`; }
 
         // Maç kartında hep görünen küçük detay: kaç tahmin girildi, kaçı RV (skor/oran gizli olsa da görünür)
         function matchCountDetail(matchId) {
             let cntPreds = 0, cntRv = 0;
             for(let u in savedUsers) {
                 if(savedUsers[u][matchId]) cntPreds++;
-                if(savedUsers[u].risk && savedUsers[u].risk[matchId] && isRvOpenForMatch(matchId)) cntRv++;
+                if((savedUsers[u].risk && savedUsers[u].risk[matchId]) || (savedUsers[u].riskChoice && savedUsers[u].riskChoice[matchId])) cntRv++;
             }
             return `<div style="text-align:center;font-size:10px;color:#94a3b8;margin-top:4px;">📊 <b>${cntPreds}</b> tahmin${cntRv>0 ? ` · <span style="color:#dc2626;font-weight:900;">🎲 ${cntRv} RV</span>` : ''}</div>`;
         }
@@ -3121,20 +3790,70 @@ matchMiddleHTML = `
                             </div>
                         </div>`;
                     }
+// ✅ Kullanıcı kendi hesabındayken, admin izin verdiyse diğer tahminleri göster
+let otherPredictionsHTML = "";
 
-                    // RV (Risk Var) — sadece admin'in RV'yi açtığı turlarda gösterilir
+if(currentViewingUser !== "NEW" && canShowMatchScores(match)) {
+    let otherList = "";
+
+    for(let u in savedUsers) {
+        if(u === currentViewingUser) continue;
+
+        if(savedUsers[u][match.id]) {
+            let p = savedUsers[u][match.id];
+
+            let ptsHTML = "";
+            if(realResults[match.id]) {
+                let r = realResults[match.id];
+                let pts = getMatchPoints(p.home, p.away, r.home, r.away);
+                let ptsClass = pts === 5 ? 'pts-5' : (pts === 3 ? 'pts-3' : 'pts-0');
+                ptsHTML = `<span class="${ptsClass}" style="font-size:10px;">+${pts}p</span>`;
+            }
+
+            let rvPts = riskOutcomeForMatch(savedUsers[u], match.id);
+            let rvBadge = rvPts === 0 ? "" : (rvPts > 0
+                ? `<span style="color:#16a34a;font-weight:900;font-size:10px;background:#d1fae5;padding:1px 5px;border-radius:5px;">+${rvPts}</span>`
+                : `<span style="color:#dc2626;font-weight:900;font-size:10px;background:#fee2e2;padding:1px 5px;border-radius:5px;">${rvPts}</span>`);
+
+            otherList += `
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid #f1f5f9;font-size:11px;">
+                    <span style="color:#334155;font-weight:bold;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:95px;display:flex;align-items:center;">
+                        ${rvUserIcon(savedUsers[u], match.id) || "👤"} ${u}
+                    </span>
+                    <div style="display:flex;align-items:center;gap:7px;">
+                        ${rvBadge}
+                        <span style="font-weight:900;color:#0f172a;">${p.home} - ${p.away}</span>
+                        <div style="width:30px;text-align:right;">${ptsHTML}</div>
+                    </div>
+                </div>
+            `;
+        }
+    }
+
+    if(otherList !== "") {
+        otherPredictionsHTML = `
+            <div class="prediction-expand-btn" onclick="toggleMatchPredictions(this, 'own_preds_${match.id}')">
+                + Diğer Tahminleri Gör
+            </div>
+            <div id="own_preds_${match.id}" class="predictions-collapsible" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:3px 10px;">
+                ${otherList}
+            </div>
+        `;
+    }
+}
+                    // RV seçenekleri
                     let rvAllowed = !!rvRoundOpen[match.day];
-                    let riskOn = rvAllowed && !!(dataSrc && dataSrc.risk && dataSrc.risk[match.id]);
+                    let oldRiskOn = !!(dataSrc && dataSrc.risk && dataSrc.risk[match.id]);
+                    let selectedRvChoice = dataSrc && dataSrc.riskChoice ? dataSrc.riskChoice[match.id] : "";
                     let rvResultHTML = "";
-                    if(riskOn && realResults[match.id]) {
-                        let ro = riskOutcomeForMatch(dataSrc, match.id);
-                        rvResultHTML = ro > 0 ? `<span class="rv-result rv-win">Risk ✓ +2</span>` : `<span class="rv-result rv-lose">Risk ✗ −2</span>`;
-                    }
-                    let rvRowHTML = "";
-                    if(rvAllowed) {
-                        let rvBtnHTML = `<button type="button" class="rv-btn ${riskOn ? 'rv-on' : ''}" data-rv="${match.id}" ${isLocked ? 'disabled' : ''} onclick="toggleRisk(this)" title="Risk Var — bilirsen +2, bilemezsen −2">RV</button>`;
-                        rvRowHTML = `<div class="rv-row">${rvBtnHTML}${rvResultHTML || '<span class="rv-hint">Risk: bilirsen +2 · bilemezsen −2</span>'}</div>`;
-                    }
+                    let riskScore = dataSrc ? riskOutcomeForMatch(dataSrc, match.id) : 0;
+                    if((oldRiskOn || selectedRvChoice) && realResults[match.id]) rvResultHTML = riskScore > 0 ? `<span class="rv-result rv-win">Risk ✓ +${riskScore}</span>` : `<span class="rv-result rv-lose">Risk ✗ ${riskScore}</span>`;
+                    let rvRowHTML = ""; let rvPieces = [];
+                    if(rvAllowed || oldRiskOn) rvPieces.push(`<button type="button" class="rv-btn ${oldRiskOn ? 'rv-on' : ''}" data-rv="${match.id}" ${(isLocked || !rvAllowed) ? 'disabled' : ''} onclick="toggleRisk(this)" title="Eski RV — bilirsen +2, bilemezsen −2">RV</button>`);
+                    if((rvChoiceOpen && rvChoiceOpen.rv1) || selectedRvChoice==='rv1') rvPieces.push(`<button type="button" class="rv-opt-btn ${selectedRvChoice==='rv1' ? 'rv-opt-on' : ''}" data-rvopt="${match.id}" data-val="rv1" ${(isLocked || !(rvChoiceOpen && rvChoiceOpen.rv1)) ? 'disabled' : ''} onclick="selectRvOption(this)" title="RV1-2 — bilirsen +1, bilemezsen −2">RV1-2</button>`);
+                    if((rvChoiceOpen && rvChoiceOpen.rv2) || selectedRvChoice==='rv2') rvPieces.push(`<button type="button" class="rv-opt-btn ${selectedRvChoice==='rv2' ? 'rv-opt-on' : ''}" data-rvopt="${match.id}" data-val="rv2" ${(isLocked || !(rvChoiceOpen && rvChoiceOpen.rv2)) ? 'disabled' : ''} onclick="selectRvOption(this)" title="RV2-3 — bilirsen +2, bilemezsen −3">RV2-3</button>`);
+                    if((rvChoiceOpen && rvChoiceOpen.rv3) || selectedRvChoice==='rv3') rvPieces.push(`<button type="button" class="rv-opt-btn ${selectedRvChoice==='rv3' ? 'rv-opt-on' : ''}" data-rvopt="${match.id}" data-val="rv3" ${(isLocked || !(rvChoiceOpen && rvChoiceOpen.rv3)) ? 'disabled' : ''} onclick="selectRvOption(this)" title="RV3-5 — bilirsen +3, bilemezsen −5">RV3-5</button>`);
+                    if(rvPieces.length > 0) rvRowHTML = `<div class="rv-row">${rvPieces.join('')}${rvResultHTML || '<span class="rv-hint">Risk seçimi</span>'}</div>`;
                     matchMiddleHTML = `
                         <div class="match-teams">
                             <div class="team home">${displayHome}</div>
@@ -3145,11 +3864,15 @@ matchMiddleHTML = `
                             </div>
                             <div class="team away">${displayAway}</div>
                         </div>
-                        ${matchCountDetail(match.id)}
-                        ${rvRowHTML}
-                        ${statsBarHTML2}
-                        ${resultHTML}
-                    `;
+                       
+${matchCountDetail(match.id)}
+    ${rvRowHTML}
+    ${renderFinalSpecialBox(match, dataSrc, false)}
+    ${statsBarHTML2}
+    ${otherPredictionsHTML}
+    ${resultHTML}
+`;
+
                 }
 
                 const card = document.createElement('div'); card.className = 'match-card';
@@ -3499,7 +4222,9 @@ function validateR32Selections(currentSelect) {
                 if(savedUsers[user].champion && realResults.champion && savedUsers[user].champion === realResults.champion) totalPts += 15;
                 if(savedUsers[user].secondChampion && realResults.champion && savedUsers[user].secondChampion === realResults.champion) totalPts += 7;
                 if(savedUsers[user].fastMode) totalPts += calculateFastPoints(savedUsers[user].fastMode, realFast);
-                totalPts += getRiskPoints(savedUsers[user]); // RV (Risk Var) puanları
+                totalPts += getRiskPoints(savedUsers[user]);
+        totalPts += getFinalSpecialPoints(savedUsers[user]); // RV puanları
+                totalPts += getFinalSpecialPoints(savedUsers[user]); // Final özel puanları
                 totals[user] = totalPts;
             }
             return totals;
@@ -3918,7 +4643,8 @@ if(checks.length < 2 || checks.length > 4) {
         }
         if(data.champion && realResults.champion && data.champion === realResults.champion) stats.puan += 15;
         if(data.secondChampion && realResults.champion && data.secondChampion === realResults.champion) stats.puan += 7;
-        stats.puan += getRiskPoints(data); // RV (Risk Var) puanları
+        stats.puan += getRiskPoints(data);
+        stats.puan += getFinalSpecialPoints(data); // RV (Risk Var) puanları
         stats.isabet = stats.tahmin > 0 ? Math.round(((stats.skorBildi + stats.sonucBildi) / stats.tahmin) * 100) : 0;
         return stats;
     }
@@ -4118,6 +4844,13 @@ if (btoa(girilenSifre) === "MTkxOTIz") {
         function openAdminSettings() {
             for(let i=1; i<=8; i++) { if(document.getElementById('setDay'+i)) document.getElementById('setDay'+i).value = matchdayStatus[i] ? "true" : "false"; }
             for(let i=1; i<=8; i++) { if(document.getElementById('setRv'+i)) document.getElementById('setRv'+i).value = rvRoundOpen[i] ? "true" : "false"; }
+            if(document.getElementById('setRvOpt1')) document.getElementById('setRvOpt1').value = rvChoiceOpen.rv1 ? "true" : "false";
+            if(document.getElementById('setRvOpt2')) document.getElementById('setRvOpt2').value = rvChoiceOpen.rv2 ? "true" : "false";
+            if(document.getElementById('setRvOpt3')) document.getElementById('setRvOpt3').value = rvChoiceOpen.rv3 ? "true" : "false";
+            if(document.getElementById('setFinalSpecialOpen')) document.getElementById('setFinalSpecialOpen').value = finalSpecialOpen ? "true" : "false";
+            if(document.getElementById('setFinalFirstGoal')) document.getElementById('setFinalFirstGoal').value = finalSpecialResults.firstGoal || "";
+            if(document.getElementById('setFinalKG')) document.getElementById('setFinalKG').value = finalSpecialResults.kg || "";
+            if(document.getElementById('setFinalHTFT')) document.getElementById('setFinalHTFT').value = finalSpecialResults.htft || "";
             if(realResults.champion) document.getElementById('realChampionSelect').value = realResults.champion;
             document.getElementById('setChampionOpen').value = championOpen ? "true" : "false";
             document.getElementById('setSecondChampionOpen').value = secondChampionOpen ? "true" : "false";
@@ -4132,6 +4865,7 @@ renderThirdAssignControls();
 renderClAccessControls();
 renderClMatchLockControls();
 renderMainMatchOpenControls();
+renderBadgeAdminControls();
             document.getElementById('adminSettingsOverlay').style.display = 'flex';
         }
 
@@ -4139,6 +4873,17 @@ renderMainMatchOpenControls();
             for(let i=1; i<=8; i++) { matchdayStatus[i] = document.getElementById('setDay'+i).value === "true"; }
             rvRoundOpen = {};
             for(let i=1; i<=8; i++) { if(document.getElementById('setRv'+i)) rvRoundOpen[i] = document.getElementById('setRv'+i).value === "true"; }
+            rvChoiceOpen = {
+                rv1: document.getElementById('setRvOpt1') ? document.getElementById('setRvOpt1').value === "true" : false,
+                rv2: document.getElementById('setRvOpt2') ? document.getElementById('setRvOpt2').value === "true" : false,
+                rv3: document.getElementById('setRvOpt3') ? document.getElementById('setRvOpt3').value === "true" : false
+            };
+            finalSpecialOpen = document.getElementById('setFinalSpecialOpen') ? document.getElementById('setFinalSpecialOpen').value === "true" : false;
+            finalSpecialResults = {
+                firstGoal: document.getElementById('setFinalFirstGoal') ? document.getElementById('setFinalFirstGoal').value : "",
+                kg: document.getElementById('setFinalKG') ? document.getElementById('setFinalKG').value : "",
+                htft: document.getElementById('setFinalHTFT') ? document.getElementById('setFinalHTFT').value : ""
+            };
             championOpen = document.getElementById('setChampionOpen').value === "true";
             secondChampionOpen = document.getElementById('setSecondChampionOpen').value === "true";
             if(document.getElementById('setClOpen')) clOpen = document.getElementById('setClOpen').value === "true";
@@ -4207,7 +4952,16 @@ const champ = document.getElementById('realChampionSelect').value;
                 mainMatchOpen[mid] = (cb.checked === roundDef) ? "" : cb.checked; // "" = turu izle, true/false = override
             });
 
-            db.collection("appData").doc("admin").set({ realResults: realResults, thirdAssign: thirdAssign, clAccess: clAccess, clOpen: clOpen, clMatchLock: clMatchLock, mainMatchOpen: mainMatchOpen, rvRoundOpen: rvRoundOpen, matchdayStatus: matchdayStatus, championOpen: championOpen, secondChampionOpen: secondChampionOpen, announcementText: announcementText, clAnnouncementText: clAnnouncementText, matchdayDeadlines: matchdayDeadlines, dayVisibilitySettings: dayVisibilitySettings, matchVisibilitySettings: matchVisibilitySettings, userUnits: userUnits }, { merge: true })
+            badgeQuotaSettings = {};
+            Object.keys(getDefaultBadgeQuotas()).forEach(function(label){
+                var el = document.getElementById('badgeQuota_' + safeBadgeId(label));
+                if(el) {
+                    var v = parseInt(el.value, 10);
+                    if(!isNaN(v) && v >= 0) badgeQuotaSettings[label] = v;
+                }
+            });
+
+            db.collection("appData").doc("admin").set({ realResults: realResults, thirdAssign: thirdAssign, clAccess: clAccess, clOpen: clOpen, clMatchLock: clMatchLock, mainMatchOpen: mainMatchOpen, rvRoundOpen: rvRoundOpen, rvChoiceOpen: rvChoiceOpen, finalSpecialOpen: finalSpecialOpen, finalSpecialResults: finalSpecialResults, matchdayStatus: matchdayStatus, championOpen: championOpen, secondChampionOpen: secondChampionOpen, announcementText: announcementText, clAnnouncementText: clAnnouncementText, matchdayDeadlines: matchdayDeadlines, dayVisibilitySettings: dayVisibilitySettings, matchVisibilitySettings: matchVisibilitySettings, userUnits: userUnits, badgeQuotaSettings: badgeQuotaSettings }, { merge: true })
             .then(() => { document.getElementById('adminSettingsOverlay').style.display = 'none'; alert("Ayarlar güncellendi!"); })
             .catch((error) => alert("Hata: " + error.message));
         }
@@ -4251,8 +5005,8 @@ if(existingSecondChamp && secondChampionOpen) {
     champSaved = true;
 }
 
-                // Hiç açık maç yoksa: şampiyon seçimi kaydedildiyse onu onayla, yoksa kilit uyarısı ver.
-                if(!isAnyMatchOpenInDay(currentDay)) {
+                // Hiç açık maç yoksa: şampiyon veya final özel seçimi kaydedilebilsin; sadece tamamen kapalıysa uyarı ver.
+                if(!isAnyMatchOpenInDay(currentDay) && !(currentDay === 8 && finalSpecialOpen)) {
                     if(champSaved) {
                         alert("Şampiyon tercihiniz kaydedildi!");
                         currentAuthenticatedUser = username;
@@ -4284,6 +5038,9 @@ if(existingSecondChamp && secondChampionOpen) {
                 document.querySelectorAll('.rv-btn[data-rv]').forEach(function(b) {
                     userObj.risk[b.getAttribute('data-rv')] = b.classList.contains('rv-on');
                 });
+                userObj.riskChoice = userObj.riskChoice || {};
+                document.querySelectorAll('.rv-opt-btn[data-rvopt]').forEach(function(b) { let mid = b.getAttribute('data-rvopt'); if(b.classList.contains('rv-opt-on')) userObj.riskChoice[mid] = b.getAttribute('data-val'); else if(!document.querySelector('.rv-opt-btn[data-rvopt=\'' + mid + '\'].rv-opt-on')) delete userObj.riskChoice[mid]; });
+                if(finalSpecialOpen && currentDay === 8) { userObj.finalSpecial = userObj.finalSpecial || {}; ['firstGoal','kg','htft'].forEach(function(k) { let pickEl = document.getElementById('fs_' + k); let stakeEl = document.getElementById('fs_' + k + '_stake'); if(pickEl && stakeEl) { let stake = parseInt(stakeEl.value); if(pickEl.value && stake >= 2 && stake <= 5) userObj.finalSpecial[k] = { pick: pickEl.value, stake: stake }; else delete userObj.finalSpecial[k]; } }); }
                 
                 db.collection("users").doc(username).set(userObj, { merge: true })
                 .then(() => {
