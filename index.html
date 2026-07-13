@@ -906,28 +906,10 @@
                 <div class="admin-setting-row" style="grid-column:1/-1;background:#fffbeb;border-color:#fbbf24;"><label style="color:#b45309;">🏆 Şampiyon Seçimi</label><select id="setChampionOpen"><option value="true">Açık</option><option value="false">Kapalı</option></select></div>
                 <div class="admin-setting-row" style="grid-column:1/-1;background:#f0fdf4;border-color:#86efac;"><label style="color:#059669;">🥈 2. Şampiyon Adayı (+7)</label><select id="setSecondChampionOpen"><option value="true">Açık</option><option value="false">Kapalı</option></select></div>
             </div>
-            <div style="margin-top:15px;background:#fef2f2;padding:15px;border-radius:8px;border:2px solid #fecaca;">
-                <label style="font-weight:bold;color:#dc2626;display:block;margin-bottom:4px;">🎲 Risk Var (RV) — Tur Bazlı Aç/Kapa</label>
-                <div style="font-size:11px;color:#ef4444;margin-bottom:10px;">RV butonu yalnızca "Açık" yaptığın turlarda görünür ve puanlanır (bilirsen +2, bilemezsen −2).</div>
-                <div class="admin-grid">
-                    <div class="admin-setting-row"><label>1. Maçlar</label><select id="setRv1"><option value="false">Kapalı</option><option value="true">Açık</option></select></div>
-                    <div class="admin-setting-row"><label>2. Maçlar</label><select id="setRv2"><option value="false">Kapalı</option><option value="true">Açık</option></select></div>
-                    <div class="admin-setting-row"><label>3. Maçlar</label><select id="setRv3"><option value="false">Kapalı</option><option value="true">Açık</option></select></div>
-                    <div class="admin-setting-row"><label>Son 32</label><select id="setRv4"><option value="false">Kapalı</option><option value="true">Açık</option></select></div>
-                    <div class="admin-setting-row"><label>Son 16</label><select id="setRv5"><option value="false">Kapalı</option><option value="true">Açık</option></select></div>
-                    <div class="admin-setting-row"><label>Çeyrek F.</label><select id="setRv6"><option value="false">Kapalı</option><option value="true">Açık</option></select></div>
-                    <div class="admin-setting-row"><label>Yarı F.</label><select id="setRv7"><option value="false">Kapalı</option><option value="true">Açık</option></select></div>
-                    <div class="admin-setting-row"><label>Final</label><select id="setRv8"><option value="false">Kapalı</option><option value="true">Açık</option></select></div>
-                </div>
-            </div>
-            <div style="margin-top:15px;background:#eff6ff;padding:15px;border-radius:8px;border:2px solid #bfdbfe;">
-                <label style="font-weight:bold;color:#1e3a8a;display:block;margin-bottom:4px;">🎲 RV Seçenekleri Aç/Kapa</label>
-                <div style="font-size:11px;color:#475569;margin-bottom:10px;">Kullanıcı maçta RV1-2 / RV2-3 / RV3-5 seçeneklerinden birini seçebilir. Eski RV sistemi yukarıdaki tur bazlı aç/kapa ile aynen devam eder.</div>
-                <div class="admin-grid">
-                    <div class="admin-setting-row"><label>RV1-2 (+1 / -2)</label><select id="setRvOpt1"><option value="false">Kapalı</option><option value="true">Açık</option></select></div>
-                    <div class="admin-setting-row"><label>RV2-3 (+2 / -3)</label><select id="setRvOpt2"><option value="false">Kapalı</option><option value="true">Açık</option></select></div>
-                    <div class="admin-setting-row"><label>RV3-5 (+3 / -5)</label><select id="setRvOpt3"><option value="false">Kapalı</option><option value="true">Açık</option></select></div>
-                </div>
+            <div style="margin-top:15px;background:#f5f3ff;padding:15px;border-radius:8px;border:2px solid #c4b5fd;">
+                <label style="font-weight:bold;color:#6d28d9;display:block;margin-bottom:4px;">🎲 RV Türleri — Tur Bazlı Yönetim</label>
+                <div style="font-size:11px;color:#64748b;margin-bottom:10px;">Her tur için görünmesini istediğin RV türünü ayrı ayrı aç. Kullanıcı seçimi, ilgili maçın skor girişi kapanana kadar değiştirilebilir veya silinebilir.</div>
+                <div id="rvRoundTypeBox" style="display:flex;flex-direction:column;gap:6px;"></div>
             </div>
             <div style="margin-top:15px;background:#fff7ed;padding:15px;border-radius:8px;border:2px solid #fdba74;">
                 <label style="font-weight:bold;color:#c2410c;display:block;margin-bottom:4px;">🏁 Final Özel Seçenekleri</label>
@@ -1037,7 +1019,8 @@
         let clRealAdvance = {}; // Admin'in elle belirlediği tur atlayan (beraberlik/penaltı) { matchId: takım adı }
         let mainMatchOpen = {}; // Ana oyun: tur kapalıyken tek tek açılan maçlar { matchId: true }
         let rvRoundOpen = {};   // Eski Risk Var (RV) hangi turlarda açık { day: true/false }
-        let rvChoiceOpen = { rv1:false, rv2:false, rv3:false }; // Yeni RV seçenekleri
+        let rvChoiceOpen = { rv1:false, rv2:false, rv3:false }; // Eski verilerle uyumluluk
+        let rvRoundTypes = {}; // Tur bazlı RV türleri: {day:{old,rv1,rv2,rv3}}
         let finalSpecialOpen = false; // Final özel seçenekleri
         let finalSpecialResults = {}; // Final özel gerçek sonuçları
         let championOpen = true;
@@ -2780,6 +2763,7 @@ function extractRealFastData() {
                     clRealAdvance = data.clRealAdvance || {};
                     rvRoundOpen = data.rvRoundOpen || {};
                     rvChoiceOpen = data.rvChoiceOpen || { rv1:false, rv2:false, rv3:false };
+                    rvRoundTypes = data.rvRoundTypes || {};
                     finalSpecialOpen = data.finalSpecialOpen || false;
                     finalSpecialResults = data.finalSpecialResults || {};
                     matchdayStatus = data.matchdayStatus || matchdayStatus;
@@ -3366,9 +3350,21 @@ loadUserPredictions(true);
         }
 
         // RV (Risk Var) butonlarını yönet
+        function getRvTypesForDay(day) {
+            const saved = rvRoundTypes && (rvRoundTypes[String(day)] || rvRoundTypes[day]);
+            if(saved) return {old:!!saved.old,rv1:!!saved.rv1,rv2:!!saved.rv2,rv3:!!saved.rv3};
+            return {old:!!rvRoundOpen[day],rv1:!!(rvRoundOpen[day]&&rvChoiceOpen.rv1),rv2:!!(rvRoundOpen[day]&&rvChoiceOpen.rv2),rv3:!!(rvRoundOpen[day]&&rvChoiceOpen.rv3)};
+        }
+        function isRvTypeOpenForMatch(mId,type) { const m=matches.find(x=>x.id===mId); return !!(m&&isMatchInputOpen(m)&&getRvTypesForDay(m.day)[type]); }
+        function renderRvRoundTypeControls() {
+            const box=document.getElementById('rvRoundTypeBox'); if(!box)return;
+            const names={1:'1. Maçlar',2:'2. Maçlar',3:'3. Maçlar',4:'Son 32',5:'Son 16',6:'Çeyrek F.',7:'Yarı F.',8:'Final'}; let html='';
+            for(let d=1;d<=8;d++){const c=getRvTypesForDay(d);html+=`<div style="display:grid;grid-template-columns:86px repeat(4,1fr);gap:5px;align-items:center;background:white;border:1px solid #ddd6fe;border-radius:8px;padding:7px;font-size:10px;"><b style="color:#4c1d95;">${names[d]}</b><label><input type="checkbox" id="rvType_${d}_old" ${c.old?'checked':''}> RV ±2</label><label><input type="checkbox" id="rvType_${d}_rv1" ${c.rv1?'checked':''}> RV1-2</label><label><input type="checkbox" id="rvType_${d}_rv2" ${c.rv2?'checked':''}> RV2-3</label><label><input type="checkbox" id="rvType_${d}_rv3" ${c.rv3?'checked':''}> RV3-5</label></div>`;} box.innerHTML=html;
+        }
+        function readRvRoundTypeControls(){rvRoundTypes={};rvRoundOpen={};for(let d=1;d<=8;d++){const x={old:!!(document.getElementById(`rvType_${d}_old`)||{}).checked,rv1:!!(document.getElementById(`rvType_${d}_rv1`)||{}).checked,rv2:!!(document.getElementById(`rvType_${d}_rv2`)||{}).checked,rv3:!!(document.getElementById(`rvType_${d}_rv3`)||{}).checked};rvRoundTypes[String(d)]=x;rvRoundOpen[d]=Object.values(x).some(Boolean);}}
         function toggleRisk(btn) { if(btn.disabled) return; btn.classList.toggle('rv-on'); }
         function selectRvOption(btn) { if(btn.disabled) return; let mid = btn.getAttribute('data-rvopt'); document.querySelectorAll('.rv-opt-btn[data-rvopt="' + mid + '"]').forEach(function(b){ if(b !== btn) b.classList.remove('rv-opt-on'); }); btn.classList.toggle('rv-opt-on'); }
-        function isRvOpenForMatch(mId) { const m = matches.find(x => x.id === mId); return !!(m && rvRoundOpen[m.day]); }
+        function isRvOpenForMatch(mId) { return isRvTypeOpenForMatch(mId,'old'); }
         function getRvChoiceConfig(choice) { if(choice === 'rv1') return { win:1, lose:-2, label:'RV1-2' }; if(choice === 'rv2') return { win:2, lose:-3, label:'RV2-3' }; if(choice === 'rv3') return { win:3, lose:-5, label:'RV3-5' }; return null; }
         function riskOutcomeForMatch(userData, mId) { let total = 0; if(!userData) return 0; if(userData.risk && userData.risk[mId] && realResults[mId]) { let p = userData[mId]; if(p && p.home !== undefined && p.away !== undefined) { let pts = getMatchPoints(p.home, p.away, realResults[mId].home, realResults[mId].away); total += (pts > 0) ? 2 : -2; } } if(userData.riskChoice && userData.riskChoice[mId]) { let choice = userData.riskChoice[mId]; let cfg = getRvChoiceConfig(choice); if(cfg && realResults[mId]) { let p = userData[mId]; if(p && p.home !== undefined && p.away !== undefined) { let pts = getMatchPoints(p.home, p.away, realResults[mId].home, realResults[mId].away); total += (pts > 0) ? cfg.win : cfg.lose; } } } return total; }
         function getRiskPoints(userData) { if(!userData) return 0; let mids = new Set(); if(userData.risk) Object.keys(userData.risk).forEach(m => mids.add(m)); if(userData.riskChoice) Object.keys(userData.riskChoice).forEach(m => mids.add(m)); let rp = 0; mids.forEach(mId => rp += riskOutcomeForMatch(userData, mId)); return rp; }
@@ -3709,13 +3705,14 @@ if(showScoresForMatch) {
                 let r = realResults[match.id];
                 let pts = getMatchPoints(p.home, p.away, r.home, r.away);
                 let ptsClass = pts === 5 ? 'pts-5' : (pts === 3 ? 'pts-3' : 'pts-0');
-                ptsHTML = `<span class="${ptsClass}" style="font-size:11px;">+${pts}p</span>`;
+                ptsHTML = `<span class="${ptsClass}" style="font-size:11px;">+${pts}</span>`;
             }
             // RV puanı: skorun SOLUNA (+2 yeşil / −2 kırmızı). Sadece RV işaretli + sonuç belliyse.
             let rvPts = riskOutcomeForMatch(savedUsers[u], match.id);
-            let rvBadge = rvPts === 0 ? "" : (rvPts > 0
-                ? `<span style="color:#16a34a;font-weight:900;font-size:11px;background:#d1fae5;padding:2px 6px;border-radius:5px;">+2</span>`
-                : `<span style="color:#dc2626;font-weight:900;font-size:11px;background:#fee2e2;padding:2px 6px;border-radius:5px;">−2</span>`);
+            let hasRvChoice = !!((savedUsers[u].risk && savedUsers[u].risk[match.id]) || (savedUsers[u].riskChoice && savedUsers[u].riskChoice[match.id]));
+            let rvBadge = (!hasRvChoice || !realResults[match.id]) ? "" : (rvPts > 0
+                ? `<span style="color:#16a34a;font-weight:900;font-size:11px;background:#d1fae5;padding:2px 6px;border-radius:5px;">+${rvPts}</span>`
+                : `<span style="color:#dc2626;font-weight:900;font-size:11px;background:#fee2e2;padding:2px 6px;border-radius:5px;">${rvPts}</span>`);
             predictionsList += `
             <div style="display:flex; justify-content:space-between; align-items:center; padding:4px 0; border-bottom:1px solid #f1f5f9; font-size:11px;">
                 <span style="color:#334155; font-weight:bold; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:95px; display:flex; align-items:center;">${rvUserIcon(savedUsers[u], match.id) || "👤"} ${u}</span>
@@ -3807,11 +3804,12 @@ if(currentViewingUser !== "NEW" && canShowMatchScores(match)) {
                 let r = realResults[match.id];
                 let pts = getMatchPoints(p.home, p.away, r.home, r.away);
                 let ptsClass = pts === 5 ? 'pts-5' : (pts === 3 ? 'pts-3' : 'pts-0');
-                ptsHTML = `<span class="${ptsClass}" style="font-size:10px;">+${pts}p</span>`;
+                ptsHTML = `<span class="${ptsClass}" style="font-size:10px;">+${pts}</span>`;
             }
 
             let rvPts = riskOutcomeForMatch(savedUsers[u], match.id);
-            let rvBadge = rvPts === 0 ? "" : (rvPts > 0
+            let hasRvChoice = !!((savedUsers[u].risk && savedUsers[u].risk[match.id]) || (savedUsers[u].riskChoice && savedUsers[u].riskChoice[match.id]));
+            let rvBadge = (!hasRvChoice || !realResults[match.id]) ? "" : (rvPts > 0
                 ? `<span style="color:#16a34a;font-weight:900;font-size:10px;background:#d1fae5;padding:1px 5px;border-radius:5px;">+${rvPts}</span>`
                 : `<span style="color:#dc2626;font-weight:900;font-size:10px;background:#fee2e2;padding:1px 5px;border-radius:5px;">${rvPts}</span>`);
 
@@ -3842,17 +3840,18 @@ if(currentViewingUser !== "NEW" && canShowMatchScores(match)) {
     }
 }
                     // RV seçenekleri
-                    let rvAllowed = !!rvRoundOpen[match.day];
+                    let rvAllowed = isRvTypeOpenForMatch(match.id,'old');
+                    let rvTypes = getRvTypesForDay(match.day);
                     let oldRiskOn = !!(dataSrc && dataSrc.risk && dataSrc.risk[match.id]);
                     let selectedRvChoice = dataSrc && dataSrc.riskChoice ? dataSrc.riskChoice[match.id] : "";
                     let rvResultHTML = "";
                     let riskScore = dataSrc ? riskOutcomeForMatch(dataSrc, match.id) : 0;
                     if((oldRiskOn || selectedRvChoice) && realResults[match.id]) rvResultHTML = riskScore > 0 ? `<span class="rv-result rv-win">Risk ✓ +${riskScore}</span>` : `<span class="rv-result rv-lose">Risk ✗ ${riskScore}</span>`;
                     let rvRowHTML = ""; let rvPieces = [];
-                    if(rvAllowed || oldRiskOn) rvPieces.push(`<button type="button" class="rv-btn ${oldRiskOn ? 'rv-on' : ''}" data-rv="${match.id}" ${(isLocked || !rvAllowed) ? 'disabled' : ''} onclick="toggleRisk(this)" title="Eski RV — bilirsen +2, bilemezsen −2">RV</button>`);
-                    if((rvChoiceOpen && rvChoiceOpen.rv1) || selectedRvChoice==='rv1') rvPieces.push(`<button type="button" class="rv-opt-btn ${selectedRvChoice==='rv1' ? 'rv-opt-on' : ''}" data-rvopt="${match.id}" data-val="rv1" ${(isLocked || !(rvChoiceOpen && rvChoiceOpen.rv1)) ? 'disabled' : ''} onclick="selectRvOption(this)" title="RV1-2 — bilirsen +1, bilemezsen −2">RV1-2</button>`);
-                    if((rvChoiceOpen && rvChoiceOpen.rv2) || selectedRvChoice==='rv2') rvPieces.push(`<button type="button" class="rv-opt-btn ${selectedRvChoice==='rv2' ? 'rv-opt-on' : ''}" data-rvopt="${match.id}" data-val="rv2" ${(isLocked || !(rvChoiceOpen && rvChoiceOpen.rv2)) ? 'disabled' : ''} onclick="selectRvOption(this)" title="RV2-3 — bilirsen +2, bilemezsen −3">RV2-3</button>`);
-                    if((rvChoiceOpen && rvChoiceOpen.rv3) || selectedRvChoice==='rv3') rvPieces.push(`<button type="button" class="rv-opt-btn ${selectedRvChoice==='rv3' ? 'rv-opt-on' : ''}" data-rvopt="${match.id}" data-val="rv3" ${(isLocked || !(rvChoiceOpen && rvChoiceOpen.rv3)) ? 'disabled' : ''} onclick="selectRvOption(this)" title="RV3-5 — bilirsen +3, bilemezsen −5">RV3-5</button>`);
+                    if(rvAllowed || oldRiskOn) rvPieces.push(`<button type="button" class="rv-btn ${oldRiskOn ? 'rv-on' : ''}" data-rv="${match.id}" ${(isLocked || (!rvAllowed && !oldRiskOn)) ? 'disabled' : ''} onclick="toggleRisk(this)" title="Eski RV — bilirsen +2, bilemezsen −2">RV</button>`);
+                    if((rvTypes.rv1 && isMatchInputOpen(match)) || selectedRvChoice==='rv1') rvPieces.push(`<button type="button" class="rv-opt-btn ${selectedRvChoice==='rv1' ? 'rv-opt-on' : ''}" data-rvopt="${match.id}" data-val="rv1" ${(isLocked || (!rvTypes.rv1 && selectedRvChoice!=='rv1')) ? 'disabled' : ''} onclick="selectRvOption(this)" title="RV1-2 — bilirsen +1, bilemezsen −2">RV1-2</button>`);
+                    if((rvTypes.rv2 && isMatchInputOpen(match)) || selectedRvChoice==='rv2') rvPieces.push(`<button type="button" class="rv-opt-btn ${selectedRvChoice==='rv2' ? 'rv-opt-on' : ''}" data-rvopt="${match.id}" data-val="rv2" ${(isLocked || (!rvTypes.rv2 && selectedRvChoice!=='rv2')) ? 'disabled' : ''} onclick="selectRvOption(this)" title="RV2-3 — bilirsen +2, bilemezsen −3">RV2-3</button>`);
+                    if((rvTypes.rv3 && isMatchInputOpen(match)) || selectedRvChoice==='rv3') rvPieces.push(`<button type="button" class="rv-opt-btn ${selectedRvChoice==='rv3' ? 'rv-opt-on' : ''}" data-rvopt="${match.id}" data-val="rv3" ${(isLocked || (!rvTypes.rv3 && selectedRvChoice!=='rv3')) ? 'disabled' : ''} onclick="selectRvOption(this)" title="RV3-5 — bilirsen +3, bilemezsen −5">RV3-5</button>`);
                     if(rvPieces.length > 0) rvRowHTML = `<div class="rv-row">${rvPieces.join('')}${rvResultHTML || '<span class="rv-hint">Risk seçimi</span>'}</div>`;
                     matchMiddleHTML = `
                         <div class="match-teams">
@@ -4222,8 +4221,7 @@ function validateR32Selections(currentSelect) {
                 if(savedUsers[user].champion && realResults.champion && savedUsers[user].champion === realResults.champion) totalPts += 15;
                 if(savedUsers[user].secondChampion && realResults.champion && savedUsers[user].secondChampion === realResults.champion) totalPts += 7;
                 if(savedUsers[user].fastMode) totalPts += calculateFastPoints(savedUsers[user].fastMode, realFast);
-                totalPts += getRiskPoints(savedUsers[user]);
-        totalPts += getFinalSpecialPoints(savedUsers[user]); // RV puanları
+                totalPts += getRiskPoints(savedUsers[user]); // RV puanları
                 totalPts += getFinalSpecialPoints(savedUsers[user]); // Final özel puanları
                 totals[user] = totalPts;
             }
@@ -4514,6 +4512,8 @@ function calcStandings(step) {
         playedMatches.forEach(m => {
             if(savedUsers[u][m.id] && realResults[m.id]) {
                 pts += getMatchPoints(savedUsers[u][m.id].home, savedUsers[u][m.id].away, realResults[m.id].home, realResults[m.id].away);
+                // Puan akışındaki sıra, puan tablosuyla aynı olsun: ilgili maçın RV puanını da ekle.
+                pts += riskOutcomeForMatch(savedUsers[u], m.id);
             }
         });
         standings.push({ name: u, pts: pts });
@@ -4865,19 +4865,16 @@ renderThirdAssignControls();
 renderClAccessControls();
 renderClMatchLockControls();
 renderMainMatchOpenControls();
+renderRvRoundTypeControls();
 renderBadgeAdminControls();
             document.getElementById('adminSettingsOverlay').style.display = 'flex';
         }
 
         function saveAdminSettings() {
             for(let i=1; i<=8; i++) { matchdayStatus[i] = document.getElementById('setDay'+i).value === "true"; }
-            rvRoundOpen = {};
-            for(let i=1; i<=8; i++) { if(document.getElementById('setRv'+i)) rvRoundOpen[i] = document.getElementById('setRv'+i).value === "true"; }
-            rvChoiceOpen = {
-                rv1: document.getElementById('setRvOpt1') ? document.getElementById('setRvOpt1').value === "true" : false,
-                rv2: document.getElementById('setRvOpt2') ? document.getElementById('setRvOpt2').value === "true" : false,
-                rv3: document.getElementById('setRvOpt3') ? document.getElementById('setRvOpt3').value === "true" : false
-            };
+            readRvRoundTypeControls();
+            rvChoiceOpen={rv1:false,rv2:false,rv3:false};
+            Object.values(rvRoundTypes).forEach(x=>{rvChoiceOpen.rv1=rvChoiceOpen.rv1||x.rv1;rvChoiceOpen.rv2=rvChoiceOpen.rv2||x.rv2;rvChoiceOpen.rv3=rvChoiceOpen.rv3||x.rv3;});
             finalSpecialOpen = document.getElementById('setFinalSpecialOpen') ? document.getElementById('setFinalSpecialOpen').value === "true" : false;
             finalSpecialResults = {
                 firstGoal: document.getElementById('setFinalFirstGoal') ? document.getElementById('setFinalFirstGoal').value : "",
@@ -4961,7 +4958,7 @@ const champ = document.getElementById('realChampionSelect').value;
                 }
             });
 
-            db.collection("appData").doc("admin").set({ realResults: realResults, thirdAssign: thirdAssign, clAccess: clAccess, clOpen: clOpen, clMatchLock: clMatchLock, mainMatchOpen: mainMatchOpen, rvRoundOpen: rvRoundOpen, rvChoiceOpen: rvChoiceOpen, finalSpecialOpen: finalSpecialOpen, finalSpecialResults: finalSpecialResults, matchdayStatus: matchdayStatus, championOpen: championOpen, secondChampionOpen: secondChampionOpen, announcementText: announcementText, clAnnouncementText: clAnnouncementText, matchdayDeadlines: matchdayDeadlines, dayVisibilitySettings: dayVisibilitySettings, matchVisibilitySettings: matchVisibilitySettings, userUnits: userUnits, badgeQuotaSettings: badgeQuotaSettings }, { merge: true })
+            db.collection("appData").doc("admin").set({ realResults: realResults, thirdAssign: thirdAssign, clAccess: clAccess, clOpen: clOpen, clMatchLock: clMatchLock, mainMatchOpen: mainMatchOpen, rvRoundOpen: rvRoundOpen, rvChoiceOpen: rvChoiceOpen, rvRoundTypes: rvRoundTypes, finalSpecialOpen: finalSpecialOpen, finalSpecialResults: finalSpecialResults, matchdayStatus: matchdayStatus, championOpen: championOpen, secondChampionOpen: secondChampionOpen, announcementText: announcementText, clAnnouncementText: clAnnouncementText, matchdayDeadlines: matchdayDeadlines, dayVisibilitySettings: dayVisibilitySettings, matchVisibilitySettings: matchVisibilitySettings, userUnits: userUnits, badgeQuotaSettings: badgeQuotaSettings }, { merge: true })
             .then(() => { document.getElementById('adminSettingsOverlay').style.display = 'none'; alert("Ayarlar güncellendi!"); })
             .catch((error) => alert("Hata: " + error.message));
         }
