@@ -5015,7 +5015,7 @@ if(existingSecondChamp && secondChampionOpen) {
                     return;
                 }
 
-                let userObj = savedUsers[username] || {};
+                let userObj = JSON.parse(JSON.stringify(savedUsers[username] || {}));
                 if (viewMode === "NEW") { userObj.password = password; if(champ && championOpen) userObj.champion = champ; if(secondChamp && secondChampionOpen) userObj.secondChampion = secondChamp; }
                 // ÖNEMLİ: maç kaydı, seçili (yeni) şampiyonları geri yazsın — eski değeri ezmesin.
                 if(existingChamp && championOpen) userObj.champion = existingChamp;
@@ -5036,10 +5036,17 @@ if(existingSecondChamp && secondChampionOpen) {
                     userObj.risk[b.getAttribute('data-rv')] = b.classList.contains('rv-on');
                 });
                 userObj.riskChoice = userObj.riskChoice || {};
-                document.querySelectorAll('.rv-opt-btn[data-rvopt]').forEach(function(b) { let mid = b.getAttribute('data-rvopt'); if(b.classList.contains('rv-opt-on')) userObj.riskChoice[mid] = b.getAttribute('data-val'); else if(!document.querySelector('.rv-opt-btn[data-rvopt=\'' + mid + '\'].rv-opt-on')) delete userObj.riskChoice[mid]; });
+                // Her açık maç için RV seçimini tek seferde ve kesin olarak yaz/sil.
+                // Böylece Kaydet sonrası seçili RV'ye tekrar basıp iptal edildiğinde Firestore'daki eski değer geri gelmez.
+                dayMatches.forEach(function(match) {
+                    if(!isMatchInputOpen(match)) return;
+                    let selected = document.querySelector('.rv-opt-btn[data-rvopt="' + match.id + '"].rv-opt-on');
+                    if(selected) userObj.riskChoice[match.id] = selected.getAttribute('data-val');
+                    else delete userObj.riskChoice[match.id];
+                });
                 if(finalSpecialOpen && currentDay === 8) { userObj.finalSpecial = userObj.finalSpecial || {}; ['firstGoal','kg','htft'].forEach(function(k) { let pickEl = document.getElementById('fs_' + k); let stakeEl = document.getElementById('fs_' + k + '_stake'); if(pickEl && stakeEl) { let stake = parseInt(stakeEl.value); if(pickEl.value && stake >= 2 && stake <= 5) userObj.finalSpecial[k] = { pick: pickEl.value, stake: stake }; else delete userObj.finalSpecial[k]; } }); }
                 
-                db.collection("users").doc(username).set(userObj, { merge: true })
+                db.collection("users").doc(username).set(userObj)
                 .then(() => {
                     alert("Kayıt başarılı!");
                     currentAuthenticatedUser = username;
