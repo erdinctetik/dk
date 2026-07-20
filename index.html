@@ -4013,7 +4013,7 @@ if(currentViewingUser !== "NEW" && canShowMatchScores(match)) {
                        
 ${matchCountDetail(match.id)}
     ${rvRowHTML}
-    ${renderFinalSpecialBox(match, dataSrc, false)}
+    ${renderFinalSpecialBox(match, dataSrc, isLocked)}
     ${statsBarHTML2}
     ${otherPredictionsHTML}
     ${renderFinalSpecialAll(match)}
